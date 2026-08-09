@@ -1,0 +1,228 @@
+---
+id: ui-implementation
+title: "7.4 UI Layer - Views & Widgets"
+sidebar_label: "7.4 UI Layer - Views & Widgets"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 7.4 مشروع Capstone: بناء واجهات المستخدم (TaskListView & UI Widgets)
+
+في هذه الجلسة الرابعة، سنقوم برص وتشييد **واجهة المستخدم البصرية الكاملة (UI Layer)**. تتشكل الشاشة من ودجة قائمة المهام الرئيسية `TaskListView` وودجة البطاقة المستخرجة `TaskItemCard` ومربع التصفية التفاعلي.
+
+---
+
+## 🎯 أهداف الدرس (Learning Objectives)
+
+1. بناء `TaskListView` على هيئة `StatelessWidget` نظيفة ممتدة من `Consumer`.
+2. تصميم ودجة البطاقة المخصصة `TaskItemCard` مع تفاعلات الأيقونات والخط المشطوب عند الإنجاز.
+3. فتح نافذة إضافة مهمة جديدة عبر `showModalBottomSheet`.
+4. ربط السمة والألوان بمظهر متناسق وجذاب.
+
+---
+
+## 💻 التطبيق المعماري (MVVM & Clean Code)
+
+### 1. ودجة بطاقة المهمة `TaskItemCard`
+
+```dart
+// ==========================================
+// File: lib/features/tasks/presentation/widgets/task_item_card.dart
+// Architecture Layer: Presentation (Widget)
+// ==========================================
+
+import 'package:flutter/material.dart';
+import '../../data/models/task_model.dart';
+
+class TaskItemCard extends StatelessWidget {
+  final TaskModel task;
+  final VoidCallback onToggle;
+
+  const TaskItemCard({
+    super.key,
+    required this.task,
+    required this.onToggle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 2,
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: ListTile(
+        leading: Checkbox(
+          value: task.isCompleted,
+          onChanged: (_) => onToggle(),
+          activeColor: const Color(0xFF0175C2),
+        ),
+        title: Text(
+          task.title,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            decoration: task.isCompleted ? TextDecoration.lineThrough : null,
+            color: task.isCompleted ? Colors.grey : null,
+          ),
+        ),
+        subtitle: Text(
+          task.description,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+    );
+  }
+}
+```
+
+### 2. الشاشة الرئيسية للمهام `TaskListView`
+
+```dart
+// ==========================================
+// File: lib/features/tasks/presentation/views/task_list_view.dart
+// Architecture Layer: Presentation (View)
+// ==========================================
+
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../viewmodels/task_list_viewmodel.dart';
+import '../widgets/task_item_card.dart';
+import '../../../../core/enums/view_status.dart';
+
+class TaskListView extends StatefulWidget {
+  const TaskListView({super.key});
+
+  @override
+  State<TaskListView> createState() => _TaskListViewState();
+}
+
+class _TaskListViewState extends State<TaskListView> {
+  @override
+  void initState() {
+    super.initState();
+    // جلب المهام فور ظهور الشاشة
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<TaskListViewModel>().fetchTasks();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('إدارة المهام TaskFlow'),
+        centerTitle: true,
+      ),
+      body: Consumer<TaskListViewModel>(
+        builder: (context, viewModel, child) {
+          switch (viewModel.status) {
+            case ViewStatus.loading:
+              return const Center(child: CircularProgressIndicator());
+
+            case ViewStatus.failure:
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(viewModel.errorMessage ?? 'حدث خطأ غير متوقع'),
+                    const SizedBox(height: 12),
+                    ElevatedButton(
+                      onPressed: () => viewModel.fetchTasks(),
+                      child: const Text('إعادة المحاولة'),
+                    ),
+                  ],
+                ),
+              );
+
+            case ViewStatus.empty:
+              return const Center(child: Text('لا توجد مهام حالياً. أضف مهمتك الأولى!'));
+
+            case ViewStatus.success:
+              final tasks = viewModel.filteredTasks;
+              return ListView.builder(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                itemCount: tasks.length,
+                itemBuilder: (context, index) {
+                  final task = tasks[index];
+                  return TaskItemCard(
+                    task: task,
+                    onToggle: () => viewModel.toggleTask(task.id),
+                  );
+                },
+              );
+
+            default:
+              return const SizedBox.shrink();
+          }
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showAddTaskDialog(context),
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+
+  void _showAddTaskDialog(BuildContext context) {
+    final titleController = TextEditingController();
+    final descController = TextEditingController();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.only(
+          top: 20,
+          left: 20,
+          right: 20,
+          bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: titleController,
+              decoration: const InputDecoration(labelText: 'عنوان المهمة'),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: descController,
+              decoration: const InputDecoration(labelText: 'التفاصيل'),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                context.read<TaskListViewModel>().addNewTask(
+                      titleController.text,
+                      descController.text,
+                    );
+                Navigator.pop(ctx);
+              },
+              child: const Text('حفظ المهمة'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+---
+
+<ExerciseBox title="جرب بنفسك 💻">
+
+1. أضف شريط الفلتر العلوي `SegmentedButton` للتنقل بين (الكل / النشطة / المكتملة).
+2. اربط خيارات الفلتر بـ `viewModel.setFilter(TaskFilter.active)`.
+
+</ExerciseBox>
+
+---
+
+<SummaryBox title="خلاصة الدرس 📌">
+
+- تقتصر الـ View حصرياً على بناء ودجات التنسيق وعرض الحالات المختلفة لـ `ViewStatus`.
+- يتم استقبال تفاعلات الإضافة والتغيير عبر استدعاءات نظيفة لدوّال الـ ViewModel المباشرة.
+
+</SummaryBox>

@@ -1,0 +1,291 @@
+﻿---
+id: functions
+title: "1.4 Functions & Lexical Scope"
+sidebar_label: "1.4 Functions & Lexical Scope"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 1.4 Functions & Lexical Scope
+
+الدوال (Functions) هي اللبنات الأساسية اللي بتبني بيها أي برنامج. وظيفتها إنها تاخد input، تعمل عليه عمليات (logic)، وترجع output أو تنفذ أمر معين. هنتعلم هنا إزاي نكتب دوال احترافية بدون أي Classes.
+
+---
+
+## 🎯 Learning Objectives
+
+1. تعريف الدوال الأساسية واستخدام `void` و `return`.
+2. استخدام الدوال السهمية (Arrow Functions `=>`).
+3. التفريق بين المعاملات الموقعية (Positional) والمسماة (Named Parameters).
+4. استخدام القيم الافتراضية للمعاملات (Default Values).
+5. فهم الـ Lexical Scope (نطاق الرؤية للمتغيرات).
+6. دوال المستوى الأعلى (First-Class Functions).
+
+---
+
+## 1. Anatomy of a Function
+
+ده الشكل الكلاسيكي لأي دالة في Dart:
+
+```dart
+// Return Type (Output)  // Function Name
+String                   buildGreeting(String name) {
+  // Body (Logic)
+  return 'Hello, $name!';
+}
+
+void main() {
+  // Calling the function
+  String msg = buildGreeting('Ahmed');
+  print(msg); // Hello, Ahmed!
+}
+```
+
+- **`String`**: النوع اللي الدالة هترجعه.
+- **`buildGreeting`**: اسم الدالة (يُكتب بـ camelCase).
+- **`String name`**: المُعامل (Input / Parameter).
+- **`void`**: معناها إن الدالة دي بتنفذ كود بس، مش بترجع حاجة (زي `main`).
+
+---
+
+## 2. Arrow Functions (`=>`)
+
+لو الدالة بتاعتك عبارة عن **سطر واحد بس** (تعبير بيتم إرجاعه)، ممكن تستخدم الـ Arrow Syntax عشان تخلي الكود أنظف وأقصر.
+
+```dart
+// ❌ Verbose
+int add(int a, int b) {
+  return a + b;
+}
+
+// ✅ Concise with Arrow Function
+int add(int a, int b) => a + b;
+```
+
+> ⚠️ الـ `=>` معناها `return`. مينفعش تحط وراها block من الكود `{}` ولا تستخدم جواها `if-else` معقد (ممكن تستخدم Ternary `? :`).
+
+---
+
+## 3. Parameters in Dart (المُعاملات)
+
+Dart فيها طريقتين لبعت البيانات للدوال، ولازم تفهم الفرق بينهم كويس جداً.
+
+### A. Positional Parameters (معاملات مكانية)
+الترتيب هو اللي بيحدد المتغير.
+
+```dart
+void printInfo(String name, int age) {
+  print('$name is $age years old.');
+}
+
+void main() {
+  // الترتيب إجباري: لازم String ثم int
+  printInfo('Ahmed', 25);
+  // ❌ printInfo(25, 'Ahmed'); // Compile Error!
+}
+```
+
+---
+
+### B. Named Parameters (معاملات مسماة) 🔥 الأهم في Flutter!
+بتحط المُعاملات بين أقواس معقوفة `{}`. ده بيخليك تبعتها بالاسم، والترتيب ملوش أهمية. الكود بيكون أسهل بكتير في القراءة (**Self-documenting**).
+
+```dart
+void createAccount({required String username, required String email}) {
+  print('Account created for $username ($email)');
+}
+
+void main() {
+  // الترتيب مش مهم، المهم الاسم
+  createAccount(
+    email: 'ahmed@test.com',
+    username: 'ahmed123',
+  );
+}
+```
+
+> ✅ **Clean Code Rule**: استخدم Named Parameters دايماً لو دالتك بتاخد أكتر من معامل واحد أو لو نوعيات المعاملات مش واضحة بديهياً.
+
+---
+
+### C. Optional & Default Values
+
+تقدر تخلي المُعامل اختياري، وتعطيه قيمة افتراضية لو المستدعي مبعتوش:
+
+```dart
+// [] for Optional Positional
+String greet(String name, [String title = 'Mr/Ms']) {
+  return 'Hello, $title $name';
+}
+
+// {} for Optional Named
+void logEvent({required String eventName, bool isFatal = false}) {
+  if (isFatal) {
+    print('CRITICAL: $eventName');
+  } else {
+    print('Info: $eventName');
+  }
+}
+
+void main() {
+  print(greet('Ahmed')); // Hello, Mr/Ms Ahmed
+  logEvent(eventName: 'Login'); // Info: Login (isFatal defaulted to false)
+}
+```
+
+---
+
+## 4. Lexical Scope (نطاق المتغيرات)
+
+في Dart، نطاق رؤية المتغير بيتحدد بمكان وجوده في الكود (بين الأقواس `{}`). المتغير الموجود في الـ block الخارجي، الـ blocks الداخلية تقدر تشوفه. العكس **مستحيل**.
+
+```dart
+bool topLevel = true; // يمكن رؤيته من أي مكان
+
+void main() {
+  bool insideMain = true; // يمكن رؤيته جوه main بس
+
+  if (topLevel) {
+    bool insideIf = true; // يمكن رؤيته جوه الـ if بس
+    
+    print(topLevel);   // ✅ Works
+    print(insideMain); // ✅ Works
+    print(insideIf);   // ✅ Works
+  }
+
+  // ❌ print(insideIf); // Compile Error: Undefined name 'insideIf'
+}
+```
+
+---
+
+## 5. First-Class Functions
+
+في Dart، الدوال تعامل معاملة "المواطن درجة أولى" - يعني تقدر:
+1. تعينها لمتغير.
+2. تمررها كـ argument لدالة تانية.
+3. ترجعها من دالة.
+
+```dart
+// دالة بتستقبل دالة تانية كـ argument (Callback)
+void executeOperation(int a, int b, int Function(int, int) operation) {
+  int result = operation(a, b);
+  print('Result: $result');
+}
+
+void main() {
+  // 1. Assign to a variable
+  var multiply = (int x, int y) => x * y;
+  var add      = (int x, int y) => x + y;
+
+  // 2. Pass as arguments
+  executeOperation(5, 3, multiply); // Result: 15
+  executeOperation(5, 3, add);      // Result: 8
+  
+  // 3. Pass anonymous inline function
+  executeOperation(10, 2, (x, y) => x ~/ y); // Result: 5
+}
+```
+
+---
+
+## ⚡ Performance Tips
+
+:::tip Use Tear-offs
+لما تكون عايز تمرر دالة كـ callback، مش محتاج تكتب anonymous function لو الدالة جاهزة بالفعل.
+```dart
+void printItem(String item) => print(item);
+List<String> items = ['A', 'B', 'C'];
+
+// ❌ Verbose
+items.forEach((item) => printItem(item));
+
+// ✅ Clean & fast (Tear-off)
+items.forEach(printItem); 
+```
+:::
+
+:::tip Avoid heavy computation in UI callbacks
+في Flutter، متخليش الـ functions المرتبطة بالـ زر (OnPressed) تعمل عمليات ثقيلة (زي معالجة صور كبيرة) على نفس الـ Thread، عشان ماتعملش Freeze للـ UI. هندرس حلول ده في قسم Async.
+:::
+
+---
+
+## 🎤 Interview Questions & Answers
+
+<details>
+<summary><strong>Q1: إيه الفرق بين Positional و Named Parameters ومتى أستخدم كل واحد؟</strong></summary>
+
+- **Positional**: تعتمد على الترتيب (مثل `add(1, 2)`). استخدمها لما تكون المعاملات قليلة (1-2) ومعناها واضح جداً من اسم الدالة (زي دالة الجمع، مش محتاج أسمي المعامل الأول والثاني).
+- **Named**: تعتمد على الاسم (مثل `user(age: 20, name: 'A')`). استخدمها لما تكتر المعاملات، أو لو الدالة بتاخد كذا `bool` أو أنواع متشابهة، عشان الـ Caller يبقى عارف هو بيبعت إيه بالضبط بدون ما يبص على توقيع الدالة. في Flutter أغلب الـ Widgets بتستخدم Named.
+</details>
+
+<details>
+<summary><strong>Q2: ما هي الـ Higher-Order Function؟</strong></summary>
+
+هي الدالة اللي:
+1. تستقبل دالة واحدة أو أكتر كـ parameter.
+2. أو تُرجع دالة كـ return value.
+زي ما شوفنا في الـ First-Class functions، وزي ما هنشوف في الدرس الجاي مع الـ `map` و `where`.
+</details>
+
+<details>
+<summary><strong>Q3: ماذا يعني Lexical Scope في Dart؟</strong></summary>
+
+يعني إن نطاق المتغير بيتحدد "مكانياً" (Lexically) بناءً على الكود المكتوب وقت الـ Compilation، وليس وقت التنفيذ. بمجرد فتح block جديد `{}`، بيتكون نطاق داخلي يقدر يقرأ المتغيرات من النطاق الخارجي، لكن الخارجي لا يقدر يقرأ الداخلي.
+</details>
+
+---
+
+## 🐛 Common Mistakes
+
+```dart
+// ❌ 1 - Returning void implicitly
+String processData() {
+  print('Processing');
+  // 💥 Missing return statement! Dart will return null implicitly.
+}
+
+// ❌ 2 - Arrow function with block
+int getFive() => { return 5; }; // Compile Error!
+
+// ✅ Correct Arrow
+int getFive() => 5;
+
+
+// ❌ 3 - Too many positional booleans (Unreadable caller)
+void saveUser(String name, bool isActive, bool isAdmin) {}
+saveUser('Ahmed', true, false); // What does true/false mean here?
+
+// ✅ Better (Named parameters for clarity)
+void saveUser(String name, {required bool isActive, required bool isAdmin}) {}
+saveUser('Ahmed', isActive: true, isAdmin: false); // Crystal clear!
+```
+
+---
+
+<ExerciseBox title="🏋️ Exercise - Build a Shipping Calculator">
+
+بدون أي Classes، اكتب دوال بتعمل الآتي:
+
+1. دالة سهمية `calculateVat(double price)` ترجع السعر مضروب في `0.14`.
+2. دالة `calculateShipping` تستقبل `double weight` كمعامل موقعي، وتستقبل `bool isExpress` كمعامل مسجل إجباري (`required named`).
+   - لو `isExpress` بـ `true` → تكلفة الشحن = الوزن * 20
+   - لو `false` → الشحن = الوزن * 10
+3. دالة `calculateTotal` تستقبل السعر والوزن، وتستدعي الدوال السابقة لتحسب الإجمالي: (السعر + الـ VAT + الشحن)، واطبع النتيجة بطريقة مرتبة.
+
+</ExerciseBox>
+
+---
+
+<SummaryBox title="📌 Lesson Summary">
+
+- **`return` type**: حدد دايماً نوع القيمة اللي الدالة هترجعها، أو `void` لو مفيش.
+- **`=>` Arrow**: للـ single-line expressions فقط.
+- **`{required Type name}`**: المعاملات المسماة (Named)، الأفضل للقراءة والوضوح في Flutter.
+- **`[Type name = value]`**: المعاملات الاختيارية مع قيمة افتراضية.
+- **Lexical Scope**: المتغيرات بتتشاف من جوه لبره، مش العكس.
+- **First-Class**: الدوال ممكن تتبعت وتتخزن كأنها متغيرات عادية.
+
+</SummaryBox>

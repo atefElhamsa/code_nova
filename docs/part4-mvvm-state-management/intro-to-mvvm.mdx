@@ -1,0 +1,133 @@
+﻿---
+id: intro-to-mvvm
+title: "4.1 Introduction to MVVM"
+sidebar_label: "4.1 Introduction to MVVM"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 4.1 مقدمة في نمط MVVM (MVVM Architecture Overview)
+
+نمط **MVVM** (Model-View-ViewModel) هو إشراق معمارية هندسة واجهات المستخدم الحديثة. يوفر هذا النمط فصلاً تاماً ومثالياً بين التنسيق البصري للواجهة (UI) وبين العمليات والمنطق التجاري (Business Logic).
+
+---
+
+## 🎯 أهداف الدرس (Learning Objectives)
+
+1. فهم الأركان الأربعة لمعمارية MVVM: **Model**, **View**, **ViewModel**, و **Repository**.
+2. تتبع تدفق البيانات (Data Flow) بين الطبقات من الألف إلى الياء.
+3. استيعاب ميزة الفصل التام وكيف يمنع نمط MVVM كتابة أي منطق داخل طريقة `build()`.
+4. المقارنة بين MVVM والأنماط الأخرى مثل MVC و Bloc.
+
+---
+
+## 📘 الشرح النظري (Theoretical Explanation)
+
+### أركان المعمارية:
+```text
++-------------------+       Binds/Notifies       +-----------------------+
+|    View (UI)      | <------------------------> | ViewModel (UI Logic)  |
++-------------------+                            +-----------------------+
+                                                             |
+                                                       Calls Methods
+                                                             v
++-------------------+    Parses DTOs / Models    +-----------------------+
+|   Model (DTOs)    | <------------------------> |  Repository (Data)    |
++-------------------+                            +-----------------------+
+```
+
+1. **View (الواجهة):** ودجات Flutter التي ترسم البكسلات (StatelessWidget). لا تملك أي معرفة بكيفية جلب البيانات أو معالجتها.
+2. **ViewModel (مُهيئ الواجهة):** يحتوي على حالة الواجهة والمنطق التجاري ومجالات العمل. يستجيب لأحداث المستخدم ويصعد التغيير للواجهة عبر `notifyListeners()`.
+3. **Repository (المستودع):** مصدر البيانات الموثوق. يقرر من أين تأتي البيانات (من الـ API أو من التخزين المحلي).
+4. **Model (نماذج البيانات):** فئات DTO الخفيفة التي تمثل البيانات ككائنات غير قابلة للتعديل.
+
+---
+
+## 💻 التطبيق المعماري (MVVM & Clean Code)
+
+نستعرض المخطط العام لكيفية إعداد هذه الأجزاء متصلة بنظافة دون أي تداخل في المسؤوليات.
+
+```dart
+// ==========================================
+// File: lib/data/models/task_model.dart
+// Architecture Layer: Model
+// ==========================================
+
+class TaskModel {
+  final String id;
+  final String title;
+  final bool isCompleted;
+
+  const TaskModel({
+    required this.id,
+    required this.title,
+    this.isCompleted = false,
+  });
+}
+
+// ==========================================
+// File: lib/data/repositories/task_repository.dart
+// Architecture Layer: Repository
+// ==========================================
+
+class TaskRepository {
+  Future<List<TaskModel>> fetchTasksFromApi() async {
+    await Future.delayed(const Duration(seconds: 1));
+    return const [
+      TaskModel(id: '1', title: 'دراسة معمارية MVVM'),
+      TaskModel(id: '2', title: 'كتابة اختبارات الأحداث'),
+    ];
+  }
+}
+
+// ==========================================
+// File: lib/presentation/viewmodels/task_viewmodel.dart
+// Architecture Layer: ViewModel
+// ==========================================
+
+import 'package:flutter/foundation.dart';
+import '../../data/models/task_model.dart';
+import '../../data/repositories/task_repository.dart';
+
+class TaskViewModel extends ChangeNotifier {
+  final TaskRepository repository;
+
+  TaskViewModel(this.repository);
+
+  List<TaskModel> _tasks = [];
+  bool _isLoading = false;
+
+  List<TaskModel> get tasks => _tasks;
+  bool get isLoading => _isLoading;
+
+  Future<void> loadTasks() async {
+    _isLoading = true;
+    notifyListeners();
+
+    _tasks = await repository.fetchTasksFromApi();
+
+    _isLoading = false;
+    notifyListeners();
+  }
+}
+```
+
+---
+
+<ExerciseBox title="جرب بنفسك 💻">
+
+1. ارسم دياجراماً يوضح انتقال حدث نُقر زر "إعادة التحميل" من الـ View إلى الـ ViewModel وصولاً للـ Repository ثم عودة البيانات كـ Models للـ View.
+2. أجب: لماذا يمنع نمط MVVM إنشاء كائن الـ Repository داخل طريقة `build()` للودجة؟
+
+</ExerciseBox>
+
+---
+
+<SummaryBox title="خلاصة الدرس 📌">
+
+- يضمن نمط MVVM أن الـ View لا تتعامل مع البيانات الخام مباشرة، بل تتعامل مع حالة جاهزة يوفرها الـ ViewModel.
+- الـ ViewModel مستقل تماماً عن ودجات Flutter ولا يستورد `package:flutter/material.dart` مما يسهل اختباره تلقائياً.
+- هذا الفصل المعماري يضمن قابلية إعادة الاستخدام وسهولة التطوير في الفرق الكبيرة.
+
+</SummaryBox>

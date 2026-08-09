@@ -1,0 +1,106 @@
+---
+id: oop-basics
+title: "1.6 OOP Basics - Classes & Objects"
+sidebar_label: "1.6 OOP Basics - Classes & Objects"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 1.6 البرمجة الكائنية التوجه - الأساسيات (Classes & Objects)
+
+تُعتبر البرمجة الكائنية (OOP) الركيزة الأساسية لبناء تطبيقات Dart و Flutter. من خلال الفئات (Classes) والكائنات (Objects)، نقوم بمحاكاة عالم الواقع وكتابة كود قابل لإعادة الاستخدام والصيانة.
+
+---
+
+## 🎯 أهداف الدرس (Learning Objectives)
+
+1. فهم مفهوم الفئات (Classes) والكائنات (Objects).
+2. إتقان أنواع البناة المختلفين: Generative Constructors, Named Constructors, و Factory Constructors.
+3. تطبيق مفهوم الكبسولة (Encapsulation) لحماية المتغيرات وتخصيص الوصول عبر `Getters`.
+
+---
+
+## 💻 الكود البرمجي أولاً (Code Example First)
+
+<span className="code-first-badge">⚡ Pure English Dart Code (MVVM & Clean Code)</span>
+
+```dart
+// ==========================================
+// File: lib/data/models/bank_account_model.dart
+// Description: Bank account domain model with encapsulation and factory constructor
+// Architecture Layer: Data (Model)
+// ==========================================
+
+class BankAccountModel {
+  final String accountNumber;
+  final String accountHolder;
+  // Private property to prevent unauthorized external mutation
+  double _balance;
+
+  /// Generative Constructor
+  BankAccountModel({
+    required this.accountNumber,
+    required this.accountHolder,
+    required double initialBalance,
+  }) : _balance = initialBalance >= 0 ? initialBalance : 0.0;
+
+  /// Named Constructor creating account with zero balance
+  BankAccountModel.zeroBalance({
+    required this.accountNumber,
+    required this.accountHolder,
+  }) : _balance = 0.0;
+
+  /// Factory Constructor parsing JSON object safely
+  factory BankAccountModel.fromJson(Map<String, dynamic> json) {
+    return BankAccountModel(
+      accountNumber: json['account_number'] as String? ?? 'UNKNOWN',
+      accountHolder: json['account_holder'] as String? ?? 'Guest User',
+      initialBalance: (json['balance'] as num?)?.toDouble() ?? 0.0,
+    );
+  }
+
+  /// Public Getter for reading balance safely
+  double get balance => _balance;
+
+  /// Method to deposit funds securely
+  void deposit(double amount) {
+    if (amount > 0) {
+      _balance += amount;
+    }
+  }
+}
+```
+
+---
+
+## 📘 الشرح التفصيلي للكود (Line-by-Line Technical Explanation)
+
+### 1. الكبسولة والوصول الخاص (Encapsulation & Private Members)
+في `double _balance;`: الشحطة السفلية `_` تجعل الحقل خاصاً بالملف (File-Private).
+
+### 2. أنواع البناة (Constructors)
+* **`Generative Constructor`**: البناء المباشر.
+* **`Named Constructor`**: البناء المسمى `BankAccountModel.zeroBalance`.
+* **`Factory Constructor`**: البناء المصنعي `BankAccountModel.fromJson` المخصص لتحويل بيانات JSON.
+
+---
+
+<ExerciseBox title="جرب بنفسك 💻">
+
+قم بتصميم فئة `AuthTokenModel`:
+1. تمتلك المتغيرات الخاصة `_accessToken` و `_refreshToken` و `_expiresIn`.
+2. قم بإنشاء Getter باسم `isExpired` يرجع `true` إذا كانت الصلاحية صفر.
+3. أنشئ Named Constructor باسم `AuthTokenModel.empty()` يضع قيم افتراضية فارغة للمتغيرات.
+
+</ExerciseBox>
+
+---
+
+<SummaryBox title="خلاصة الدرس 📌">
+
+- الكود البرمجي مكتوب بلغة إنجليزية نقية 100% جهة اليسار LTR.
+- تبدأ العناصر الخاصة في Dart برمز الشحطة السفلية `_` وتكون محصورة بالملف نفسه.
+- البناء من نوع `Factory` يُتيح التحكم في كيفية إنشاء الكائنات وإعادة استخراجها من JSON.
+
+</SummaryBox>

@@ -1,0 +1,110 @@
+﻿---
+id: clean-code-naming
+title: "3.1 Clean Naming Conventions"
+sidebar_label: "3.1 Clean Naming Conventions"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 3.1 الكود النظيف وقواعد التسمية (Clean Code & Naming Conventions)
+
+الكود النظيف (Clean Code) هو الكود الذي يمكن قراءته وفهمه بسهولة وتعديله بواسطة أي مبرمج في الفريق دون عناء. في هذا الدرس، ستتعلم القواعد الذهبية لتسمية المتغيرات والفئات والملفات في Dart و Flutter.
+
+---
+
+## 🎯 أهداف الدرس (Learning Objectives)
+
+1. إتقان قواعد التسمية القياسية في Dart: `PascalCase`, `camelCase`, و `snake_case`.
+2. التخلص المباشر من "الأرقام والنصوص السحرية" (Magic Numbers & Strings).
+3. كتابة كود مفسر لذاته (Self-Documenting Code) يقلل الحاجة للتعليقات الزائدة.
+4. تطهير أسماء الفئات والدوّال لتعبّر عن وظيفتها المعمارية بدقة.
+
+---
+
+## 📘 الشرح النظري (Theoretical Explanation)
+
+### 1. قواعد التسمية في Dart
+* **`PascalCase`**: تـُستخدم في أسماء الفئات (Classes)، الأنواع المعرفة (Enums)، والـ Mixins (مثل `UserProfileViewModel`).
+* **`camelCase`**: تـُستخدم في أسماء المتغيرات، الدوال، المعاملات، والمفاتيح (مثل `calculateTotalPrice`).
+* **`lowercase_with_underscores` (snake_case)**: تـُستخدم حصراً في أسماء الملفات والمجلدات والمكتبات (مثل `user_profile_viewmodel.dart`).
+
+### 2. تجنب الأرقام والنصوص السحرية
+عدم كتابة قيم ثابتة عشوائية كـ `15.0` أو `"http://api.example.com"` داخل الدوال، بل تجميعها كـ ثوابت تسمية واضحة في `core/constants/`.
+
+---
+
+## 💻 التطبيق المعماري (MVVM & Clean Code)
+
+مقارنة عملي بين الكود السيء (Dirty Code) والكود النظيف (Clean Code).
+
+```dart
+// ==========================================
+// ❌ كود سيء (Dirty Code): غير واضح ومكتظ بالأرقام السحرية
+// ==========================================
+class C1 {
+  double p = 100;
+  double d() {
+    return p * 0.15; // ما هو 0.15؟ رقم سحري مبهم!
+  }
+}
+
+// ==========================================
+// ✅ كود نظيف (Clean Code) متبعاً للممارسات القياسية
+// File: lib/core/constants/app_constants.dart
+// Architecture Layer: Core Constants
+// ==========================================
+
+class AppConstants {
+  static const double vatTaxRate = 0.15; // 15% نسبة ضريبة القيمة المضافة
+  static const int minPasswordLength = 8;
+  static const String currencySymbol = 'ر.س';
+}
+
+// File: lib/presentation/viewmodels/invoice_calculator_viewmodel.dart
+// Architecture Layer: Presentation (ViewModel)
+
+import 'package:flutter/foundation.dart';
+import '../../core/constants/app_constants.dart';
+
+class InvoiceCalculatorViewModel extends ChangeNotifier {
+  double _subtotalAmount = 0.0;
+
+  double get subtotalAmount => _subtotalAmount;
+
+  /// حساب قيمة الضريبة بناءً على الثابت المعرف
+  double get calculatedTaxAmount =>
+      _subtotalAmount * AppConstants.vatTaxRate;
+
+  /// السعر الإجمالي النهائي شامل الضريبة
+  double get grandTotalAmount => _subtotalAmount + calculatedTaxAmount;
+
+  void updateSubtotal(double newSubtotal) {
+    if (newSubtotal >= 0) {
+      _subtotalAmount = newSubtotal;
+      notifyListeners();
+    }
+  }
+}
+```
+
+---
+
+<ExerciseBox title="جرب بنفسك 💻">
+
+قم بإعادة صياغة الدالة التالية لتصبح كوداً نظيفاً:
+`double fn(double a, int b) { return a * b * 0.9; }`
+1. اختر أسماء معبرة ذات مغزى للمتغيرات والدالة.
+2. استخرج النسبة `0.9` إلى ثابت معنون يعكس نسبة الخصم 10%.
+
+</ExerciseBox>
+
+---
+
+<SummaryBox title="خلاصة الدرس 📌">
+
+- اتبع دائماً `PascalCase` للفئات، `camelCase` للدوال والمتغيرات، و `snake_case` للملفات.
+- استخرج كل الأرقام والنصوص السحرية إلى ثوابت مسمّاة ذات مغزى واضح في `core/constants/`.
+- اكتب أسماءً تعبر بوضوح عن وظيفة العنصر لتستغني عن كتابة التعليقات المكررة الشارحة للبديهيات.
+
+</SummaryBox>

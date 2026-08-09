@@ -1,0 +1,416 @@
+---
+id: collections
+title: "1.5 Collections & Higher-Order Methods"
+sidebar_label: "1.5 Collections & Higher-Order Methods"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 1.5 Collections & Higher-Order Methods
+
+المجموعات (Collections) هي أساس التعامل مع البيانات في أي لغة برمجة. هي الطريقة اللي بنجمع بيها أكتر من قيمة ونخزنهم مع بعض عشان نعالجهم. 
+في الدرس ده هندخل بعمق في الـ **Lists**, **Sets**, و **Maps**، وهنشوف أدوات سحرية بتخلي التعامل معاهم متعة (زي `map` و `where`). الأهم كمان إننا هنشرح **الـ Nested Collections (المجموعات المتداخلة)** بالتفصيل لأنها أكتر حاجة هتقابلك لما تتعامل مع APIs.
+
+كل الأمثلة هنا بتشتغل جوه `main()` وبدون أي Classes!
+
+---
+
+## 🎯 Learning Objectives
+
+1. إتقان التعامل مع `List`, `Set`, و `Map` بجميع دوالها الأساسية.
+2. فهم المجموعات المتداخلة (Nested Collections) مثل `List<Map>` و `Map<String, List>`.
+3. استخدام سحر الـ Dart: **Spread Operator (`...`)**, **Collection `if`**, و **Collection `for`**.
+4. احتراف الدوال المتقدمة (Higher-Order Methods) مثل `map`, `where`, `fold`, `any`, `every`.
+
+---
+
+## 1. Lists (القوائم المرتبة)
+
+الـ List هي مجموعة من العناصر **مرتبة**، كل عنصر له **Index** (رقم يبدأ من الصفر). تسمح بتكرار العناصر.
+
+### العمليات الأساسية على الـ List
+```dart
+void main() {
+  // 1. إنشاء List
+  List<String> fruits = ['Apple', 'Banana', 'Mango'];
+  
+  // 2. قراءة البيانات (Read)
+  print(fruits[0]);        // Apple
+  print(fruits.first);     // Apple
+  print(fruits.last);      // Mango
+  
+  // 3. إضافة البيانات (Add/Insert)
+  fruits.add('Orange');         // بيضيف في الآخر
+  fruits.insert(1, 'Grapes');   // بيضيف في مكان محدد (Index 1)
+  
+  // 4. تعديل البيانات (Update)
+  fruits[0] = 'Green Apple';    // تعديل القيمة في Index 0
+  
+  // 5. مسح البيانات (Remove)
+  fruits.remove('Banana');      // بيمسح بالاسم
+  fruits.removeAt(2);           // بيمسح بالـ Index
+  
+  // 6. خصائص هامة
+  print(fruits.length);  // طول الـ List
+  print(fruits.isEmpty); // هل هي فاضية؟ (false)
+}
+```
+
+---
+
+## 2. Sets (المجموعات الفريدة)
+
+الـ Set زي الـ List، لكنها **غير مرتبة** (ملهاش Index) و **تمنع التكرار تماماً**.
+
+### متى نستخدم Set؟
+لو عندك بيانات وعايز تتأكد 100% إن مفيش ولا عنصر متكرر، أو لو محتاج تدور على عنصر بسرعة جداً.
+
+```dart
+void main() {
+  Set<String> uniqueTags = {'flutter', 'dart', 'ui'};
+
+  // لو حاولت تضيف حاجة موجودة، هيتم تجاهلها بصمت!
+  uniqueTags.add('mobile');
+  uniqueTags.add('dart'); // ⚠️ Ignored! 
+
+  print(uniqueTags); // {flutter, dart, ui, mobile}
+  
+  // ميزة الـ Set الكبرى: البحث سريع جداً جداً ⚡
+  print(uniqueTags.contains('flutter')); // true
+}
+```
+
+---
+
+## 3. Maps (القواميس / المفتاح والقيمة)
+
+الـ Map بيخزن البيانات كـ **أزواج (Key و Value)**. زي القاموس، بتدور بالكلمة (Key) وتلاقي المعنى (Value). الـ Key مستحيل يتكرر.
+
+```dart
+void main() {
+  // Map<KeyType, ValueType>
+  Map<String, dynamic> user = {
+    'name': 'Ahmed',
+    'age': 25,
+    'isVerified': true,
+  };
+
+  // 1. قراءة قيمة
+  print(user['name']); // Ahmed
+  print(user['email']); // null (Key مش موجود)
+
+  // 2. إضافة أو تعديل
+  user['email'] = 'ahmed@test.com'; // لو الـ key مش موجود، هيتم إضافته
+  user['age']   = 26;               // لو موجود، قيمته هتتعدل
+
+  // 3. مسح قيمة
+  user.remove('isVerified');
+
+  // 4. المرور على كل العناصر
+  user.forEach((key, value) {
+    print('Key: $key, Value: $value');
+  });
+}
+```
+
+---
+
+## 4. 🤯 Nested Collections (المجموعات المتداخلة)
+
+في الواقع العملي (خصوصاً لما تجيب داتا من الـ Internet / JSON)، المجموعات بتكون متداخلة ببعض. لازم تعرف تقرأها إزاي!
+
+### A. List of Maps (قائمة جواها قواميس)
+دي أشهر حالة على الإطلاق (بتعبر عن صفوف في داتا بيز أو Array من الـ API).
+
+```dart
+void main() {
+  // List جواها كذا Map
+  List<Map<String, dynamic>> usersList = [
+    {'id': 1, 'name': 'Ahmed', 'isActive': true},
+    {'id': 2, 'name': 'Sara',  'isActive': false},
+    {'id': 3, 'name': 'Omar',  'isActive': true},
+  ];
+
+  // إزاي أوصل لاسم "Sara"؟
+  // 1. أدخل على الـ List في Index 1 (العنصر التاني)
+  // 2. أدخل على الـ Map بالـ Key اللي اسمه 'name'
+  String saraName = usersList[1]['name'];
+  print(saraName); // Sara
+
+  // إزاي أطبع كل الأسامي؟
+  for (var user in usersList) {
+    print(user['name']);
+  }
+}
+```
+
+### B. Map of Lists (قاموس جواه قوائم)
+زي لما يكون عندك تصنيفات (Categories) وكل تصنيف جواه عناصر كتير.
+
+```dart
+void main() {
+  Map<String, List<String>> schoolClasses = {
+    'Class A': ['Ahmed', 'Ali', 'Sara'],
+    'Class B': ['Omar', 'Hoda'],
+  };
+
+  // إزاي أوصل لـ 'Ali'؟
+  // 1. أدخل على الـ Map بالـ key 'Class A'
+  // 2. هلاقي List، أدخل فيها على الـ Index 1
+  String student = schoolClasses['Class A']![1]; 
+  print(student); // Ali
+
+  // إضافة طالب جديد في Class B
+  schoolClasses['Class B']?.add('Mona');
+}
+```
+
+### C. Map of Maps (شجرة من القواميس)
+بيانات معقدة وكل حاجة جواها تفاصيل.
+
+```dart
+void main() {
+  Map<String, Map<String, dynamic>> config = {
+    'theme': {
+      'primaryColor': '#0ea5e9',
+      'isDark': true,
+    },
+    'notifications': {
+      'sound': true,
+      'vibrate': false,
+    }
+  };
+
+  // إزاي أعرف هل الـ sound شغال ولا لأ؟
+  bool isSoundOn = config['notifications']!['sound'];
+  print(isSoundOn); // true
+}
+```
+
+---
+
+## 5. Collection Operators (سحر الـ Dart)
+
+### Spread Operator (`...` و `...?`)
+لدمج المجموعات ببعض بسهولة كأنك بتكب المحتويات بتاعتهم جوا مجموعة جديدة.
+
+```dart
+List<int> oldScores = [50, 60];
+List<int>? newScores = null;
+
+List<int> allScores = [
+  10, 
+  ...oldScores,     // هيفككها وتبقى: 50, 60
+  ...?newScores,    // مش هيعمل كراش عشان استخدمنا ...? وهيتجاهلها لأنها null
+];
+print(allScores); // [10, 50, 60]
+```
+
+### Collection `if`
+بتحط عنصر في الـ List بناءً على شرط، مفيدة جداً في بناء الـ UI في Flutter!
+
+```dart
+bool isLoggedIn = false;
+List<String> menu = [
+  'Home',
+  'Settings',
+  if (isLoggedIn) 'Profile', // هيضاف بس لو الـ شرط true
+];
+// menu = ['Home', 'Settings']
+```
+
+### Collection `for`
+لتوليد عناصر List جديدة ديناميكياً من List تانية.
+
+```dart
+List<int> base = [1, 2, 3];
+List<String> labels = [
+  'Start',
+  for (int n in base) 'Item $n',
+  'End'
+];
+// ['Start', 'Item 1', 'Item 2', 'Item 3', 'End']
+```
+
+---
+
+## 6. Higher-Order Methods (الدوال المتقدمة)
+
+أدوات بتطبق كود معين على **كل عناصر المجموعة** وترجعلك النتيجة من غير `for` loop تقليدية.
+
+### `where` (للتصفية / Filtering)
+بترجعلك العناصر اللي بتحقق شرطك بس (شرطها يرجع `true`).
+
+```dart
+List<int> scores = [50, 85, 92, 45, 78];
+
+// هات الأرقام اللي أكبر من 50
+List<int> passed = scores.where((score) => score >= 50).toList();
+print(passed); // [50, 85, 92, 78]
+```
+
+### `map` (للتحويل / Transforming)
+بتحول كل عنصر في الـ List لشكل جديد تماماً (مثلاً تحول رقم لنص، أو تحول Object لـ Widget).
+
+```dart
+List<String> names = ['ahmed', 'sara'];
+
+// تحويل الأسماء لحروف كبيرة
+List<String> upperNames = names.map((name) => name.toUpperCase()).toList();
+print(upperNames); // [AHMED, SARA]
+```
+
+### `any` و `every` (للاختبار السريع)
+- `any`: هل **أي** عنصر يحقق الشرط؟ (لو واحد بس اتحقق بترجع `true`).
+- `every`: هل **كل** العناصر تحقق الشرط؟
+
+```dart
+List<int> marks = [40, 50, 90, 85];
+
+bool hasFailed = marks.any((m) => m < 50);   // true (في واحد 40)
+bool allPassed = marks.every((m) => m >= 50); // false (عشان الـ 40)
+```
+
+### `fold` (للتجميع / Reducing)
+بتاخد كل العناصر وتعصرهم في نتيجة واحدة (زي الجمع الإجمالي).
+
+```dart
+List<double> prices = [10.5, 20.0, 5.0];
+
+// initialValue هو 0.0
+// sum هو المتغير اللي بيشيل المجموع لحد دلوقتي
+// element هو السعر الحالي في اللفة
+double total = prices.fold(0.0, (sum, element) => sum + element);
+print(total); // 35.5
+```
+
+---
+
+## ⚡ Performance Tips
+
+:::tip Use `Set` for lookups
+لو هتعمل `contains` كتير جداً عشان تدور هل العنصر موجود ولا لأ، حول الـ List لـ Set الأول.
+الـ List بتاخد O(n) (بطيئة في الداتا الكبيرة)، لكن الـ Set بتاخد O(1) (سريعة جداً!).
+```dart
+List<String> largeList = get100kItems();
+Set<String> quickSearchSet = largeList.toSet(); ⚡
+```
+:::
+
+:::tip Don't forget `.toList()`
+دوال زي `map` و `where` مش بترجع List، بترجع نوع اسمه `Iterable` (بيأجل التنفيذ لحد ما تحتاجه). عشان تخزن النتيجة وتحولها لـ List فعلية في الميموري، دايماً حط `.toList()` في الآخر.
+:::
+
+---
+
+## 🎤 Interview Questions & Answers
+
+<details>
+<summary><strong>Q1: إيه الفرق بين List و Set؟</strong></summary>
+
+- **List**: مرتبة بالـ Index، تسمح بالتكرار (Duplicates allowed).
+- **Set**: غير مرتبة، فريدة (Unique values only)، سريعة جداً في البحث.
+</details>
+
+<details>
+<summary><strong>Q2: إزاي تحذف التكرار من List في سطر واحد؟</strong></summary>
+
+بحول الـ List لـ Set (عشان الـ Set تلقائياً بترمي التكرار)، وبعدين أرجعها لـ List تاني.
+```dart
+List<int> raw = [1, 2, 2, 3, 1];
+List<int> clean = raw.toSet().toList(); // [1, 2, 3]
+```
+</details>
+
+<details>
+<summary><strong>Q3: إيه الفرق بين `map` و `where`؟</strong></summary>
+
+- `where`: بتصفي العناصر (بيأخد Function بترجع `bool`). عدد العناصر المرجعة بيكون أصغر من أو يساوي الأصلي.
+- `map`: بتحول العناصر (بيأخد Function بترجع النوع الجديد). عدد العناصر المرجعة لازم يكون متطابق تماماً مع الأصل.
+</details>
+
+<details>
+<summary><strong>Q4: إزاي تعمل Loop على الـ Map؟</strong></summary>
+
+ممكن تستخدم `forEach` أو `entries`:
+```dart
+// Using forEach
+user.forEach((key, value) => print('$key: $value'));
+
+// Using entries (Better for loops)
+for (var entry in user.entries) {
+  print('${entry.key}: ${entry.value}');
+}
+```
+</details>
+
+---
+
+## 🐛 Common Mistakes
+
+```dart
+// ❌ 1 - Modifying a list during a standard loop
+List<String> items = ['A', 'B', 'C'];
+for (var item in items) {
+  if (item == 'B') items.remove(item); // 💥 ConcurrentModificationError
+}
+
+// ✅ Better: Use removeWhere
+items.removeWhere((item) => item == 'B');
+
+
+// ❌ 2 - Forgetting null-safety when accessing Maps
+Map<String, int> scores = {'Ahmed': 90};
+int ahmedScore = scores['Ahmed']; // 💥 Error: Map access returns nullable (int?)
+
+// ✅ Correct
+int ahmedScore = scores['Ahmed'] ?? 0; // Use fallback
+
+
+// ❌ 3 - Searching deep nested collections safely
+Map<String, dynamic> apiResponse = {'data': null};
+String name = apiResponse['data']['user']['name']; // 💥 Crash!
+
+// ✅ Correct (Chaining null-safety)
+String? name = apiResponse['data']?['user']?['name']; 
+```
+
+---
+
+<ExerciseBox title="🏋️ Exercise - The Nested Challenge">
+
+اكتب `main()` بتعمل الآتي (بدون أي Classes!):
+
+عندك الـ Data المعقدة دي جاية من سيرفر:
+```dart
+List<Map<String, dynamic>> orders = [
+  {'id': 1, 'items': ['Mouse', 'Keyboard'], 'total': 150.0, 'isPaid': true},
+  {'id': 2, 'items': ['Monitor'],           'total': 300.0, 'isPaid': false},
+  {'id': 3, 'items': ['USB', 'Cable'],      'total': 50.0,  'isPaid': true},
+];
+```
+
+**المطلوب:**
+1. استخدم `where` عشان تجيب الطلبات اللي اندفعت بس (`isPaid == true`).
+2. استخدم `map` على النتيجة عشان تستخرج قيمة الـ `total` بتاعتهم.
+3. استخدم `fold` عشان تحسب وتطبع المجموع النهائي لكل الطلبات المدفوعة.
+4. **تحدي صعب**: اطبع اسم أول منتج (`items[0]`) من الطلب التاني (`id: 2`).
+
+</ExerciseBox>
+
+---
+
+<SummaryBox title="📌 Lesson Summary">
+
+- **`List`**: للترتيب.
+- **`Set`**: للتفرد (Unique).
+- **`Map`**: للقاموس (Key-Value).
+- **`Nested Collections`**: مهم جداً تفهم إزاي تدخل لـ List جوا Map أو Map جوا List لأن ده شكل الداتا في كل الـ APIs!
+- **`where`**: تصفية البيانات.
+- **`map`**: تغيير شكل البيانات.
+- **`fold`**: تجميع الداتا لرقم/قيمة نهائية.
+
+> 🎉 **تهانينا!** لقد أنهيت الأساسيات البرمجية البحتة. في **الدرس القادم (1.6)** ستبدأ رحلتك الحقيقية مع عالم الـ **Classes و الـ OOP** وكيفية بناء نماذج قوية!
+
+</SummaryBox>

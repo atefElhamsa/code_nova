@@ -1,0 +1,125 @@
+﻿---
+id: solid-and-srp
+title: "3.2 SOLID & SRP Principles"
+sidebar_label: "3.2 SOLID & SRP Principles"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 3.2 مبادئ SOLID ومبدأ المسؤولية الأحادية (SRP)
+
+مبادئ **SOLID** هي المبادئ الخمسة الأساسية لتصميم البرمجيات الكائنية القابلة للتطوير والصيانة. في هذا الدرس، سنركز بشكل خاص على المبدأ الأول والأكثر أهمية في هندسة الواجهات: **مبدأ المسؤولية الأحادية (Single Responsibility Principle - SRP)**.
+
+---
+
+## 🎯 أهداف الدرس (Learning Objectives)
+
+1. فهم مبادئ SOLID الخمسة باختصار (SRP, OCP, LSP, ISP, DIP).
+2. تطبيق مبدأ SRP في تقسيم الفئات بالطبقات.
+3. التخلص من "الفئات المنفردة العملاقة" (God Classes).
+4. التأكد من أن الـ View لا تمتلك إلا سبباً واحداً للتغير (تغيير الشكل البصري فقط).
+
+---
+
+## 📘 الشرح النظري (Theoretical Explanation)
+
+ينص مبدأ المسؤولية الأحادية (SRP) على:
+> **"يجب أن تمتلك الفئة سبباً واحداً فقط للتغيير."**
+
+### تفكيك المسؤوليات في Flutter:
+* **`Model`**: مسؤول فقط عن تمثيل واستخراج البيانات (Data Holding & Serialization).
+* **`Repository`**: مسؤول فقط عن مصدر البيانات ورسائل الشبكة/قاعدة البيانات (Data Fetching).
+* **`ViewModel`**: مسؤول فقط عن منطق الواجهة وإدارة الحالة (UI Logic & State Management).
+* **`View`**: مسؤولة فقط عن رص الودجات وعرض الألوان والنصوص (UI Rendering).
+
+---
+
+## 💻 التطبيق المعماري (MVVM & Clean Code)
+
+تحويل فئة مكدسة تخرق مبدأ SRP إلى ثلاث فئات نظيفة تطبق SRP بالحرف.
+
+```dart
+// ==========================================
+// ❌ كود يخرق مبدأ SRP: الـ Widget تنفذ الاتصال الشبكي، التحليل، والعرص!
+// ==========================================
+// (تم تجنبه لتطبيق معايير الكورس الصارمة)
+
+// ==========================================
+// ✅ تطبيق مبدأ SRP بنظافة احترافية
+// File: lib/data/datasources/user_remote_datasource.dart
+// Architecture Layer: Data (Datasource)
+// ==========================================
+
+class UserRemoteDatasource {
+  Future<Map<String, dynamic>> fetchRawUserData(String userId) async {
+    // مسؤول حصرياً عن تنفيذ طلب الشبكة
+    return {'id': userId, 'name': 'سارة خالد', 'email': 'sara@example.com'};
+  }
+}
+
+// File: lib/data/repositories/user_repository_impl.dart
+// Architecture Layer: Data (Repository)
+
+import '../models/user_model.dart';
+import '../datasources/user_remote_datasource.dart';
+
+class UserRepositoryImpl {
+  final UserRemoteDatasource datasource;
+
+  UserRepositoryImpl(this.datasource);
+
+  Future<UserModel> getUserById(String id) async {
+    final rawData = await datasource.fetchRawUserData(id);
+    return UserModel.fromJson(rawData);
+  }
+}
+
+// File: lib/presentation/viewmodels/user_details_viewmodel.dart
+// Architecture Layer: Presentation (ViewModel)
+
+import 'package:flutter/foundation.dart';
+import '../../data/models/user_model.dart';
+import '../../data/repositories/user_repository_impl.dart';
+
+class UserDetailsViewModel extends ChangeNotifier {
+  final UserRepositoryImpl repository;
+
+  UserModel? _user;
+  bool _isLoading = false;
+
+  UserDetailsViewModel(this.repository);
+
+  UserModel? get user => _user;
+  bool get isLoading => _isLoading;
+
+  Future<void> loadUser(String id) async {
+    _isLoading = true;
+    notifyListeners();
+
+    _user = await repository.getUserById(id);
+
+    _isLoading = false;
+    notifyListeners();
+  }
+}
+```
+
+---
+
+<ExerciseBox title="جرب بنفسك 💻">
+
+1. حدد المسؤولية الأحادية لفئة تُسمى `InvoicePdfExporter`. هل يجب أن تحتوي هذه الفئة على دالة حساب الخصم البنكي؟
+2. أعد فصل فئة تحسب الرواتب وتطبع الإيصال وتتصل بقاعدة البيانات إلى 3 فئات مستقلة.
+
+</ExerciseBox>
+
+---
+
+<SummaryBox title="خلاصة الدرس 📌">
+
+- يضمن مبدأ SRP أن كل فئة تقوم بوظيفة واحدة فقط ومحددة بدقة.
+- فصل السيرفر والتخزين عن الـ ViewModel والـ View يسّهل عملية كتابة Unit Tests بنسبة 100%.
+- إذا وجدت نفسك تكتب دوال شبكة أو قواعد بيانات داخل ملف الـ Widget، فأنت تخرق مبدأ SRP بشكل مباشر!
+
+</SummaryBox>

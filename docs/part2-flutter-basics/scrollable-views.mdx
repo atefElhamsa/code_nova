@@ -1,0 +1,111 @@
+﻿---
+id: scrollable-views
+title: "2.4 Scrollable Views"
+sidebar_label: "2.4 Scrollable Views"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 2.4 القوائم والشاشات القابلة للتمرير (ListView & GridView)
+
+عند التعامل مع مجموعات بيانات كبيرة أو ديناميكية قادمة من الخادم، يصبح استخدام `ListView.builder` و `GridView.builder` ضرورة قصوى للحفاظ على كفاءة الذاكرة وسلاسة التمرير (60 FPS).
+
+---
+
+## 🎯 أهداف الدرس (Learning Objectives)
+
+1. التمييز بين البناء العادي للبناء الكسول (Lazy Loading) عبر `.builder`.
+2. استخدام `ListView.builder` للقوائم الطويلة.
+3. استخدام `GridView.builder` وشرح `SliverGridDelegateWithFixedCrossAxisCount`.
+4. ربط القوائم القابلة للتمرير بالـ ViewModel مع معالجة حماية الذاكرة.
+
+---
+
+## 📘 الشرح النظري (Theoretical Explanation)
+
+### البناء الكسول (Lazy Construction)
+عند استخدام `ListView(children: [...])` يتم بناء جميع العناصر في الذاكرة دفعة واحدة، مما يسبب تجميد التطبيقات عند وجود آلاف العناصر.
+
+بينما عند استخدام `ListView.builder(itemBuilder: ...)` يقوم Flutter ببناء العناصر **المعروضة على الشاشة فقط** وتدمير/إعادة استخدام العناصر التي تخرج من حدود الشؤون المرئية.
+
+---
+
+## 💻 التطبيق المعماري (MVVM & Clean Code)
+
+نستعرض بناء شاشة منتجات شبكية `ProductGridView` تعتمد على ViewModel لجلب القائمة وتمريرها للعرض.
+
+```dart
+// ==========================================
+// File: lib/presentation/views/product_catalog_view.dart
+// Description: View تعرض قائمة شبكية باستخدام GridView.builder
+// Architecture Layer: Presentation (View)
+// ==========================================
+
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../viewmodels/product_catalog_viewmodel.dart';
+import '../widgets/product_card_widget.dart';
+
+class ProductCatalogView extends StatelessWidget {
+  const ProductCatalogView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('كتالوج المنتجات'),
+      ),
+      body: Consumer<ProductCatalogViewModel>(
+        builder: (context, viewModel, child) {
+          if (viewModel.isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (viewModel.products.isEmpty) {
+            return const Center(child: Text('لا توجد منتجات متاحة حالياً'));
+          }
+
+          return GridView.builder(
+            padding: const EdgeInsets.all(12.0),
+            itemCount: viewModel.products.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2, // عدد الأعمدة أفقياً
+              childAspectRatio: 0.75, // نسبة العرض إلى الارتفاع
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+            ),
+            itemBuilder: (context, index) {
+              final product = viewModel.products[index];
+              return ProductCardWidget(
+                product: product,
+                onTap: () => viewModel.selectProduct(product.id),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+```
+
+---
+
+<ExerciseBox title="جرب بنفسك 💻">
+
+1. أنشئ شاشة قائمة تنقل باستخدام `ListView.separated`.
+2. استخدم المعامل `separatorBuilder` لإضافة خط فاصل `Divider()` بين كل عنصر وآخر.
+3. تأكد من توفير `itemCount` دائماً لتجنب خطأ التكرار غير المنتهي.
+
+</ExerciseBox>
+
+---
+
+<SummaryBox title="خلاصة الدرس 📌">
+
+- استخدم دائماً `.builder` للـ `ListView` و `GridView` مع القوائم الديناميكية والكبيرة لبناء العناصر كسولياً لحماية الذاكرة.
+- التحكم في تباعدات الشبكة يكون عن طريق `SliverGridDelegate`.
+- تفصل معمارية **MVVM** منطق جلب قائمة عناصر القائمة وتوفرها جاهزة للـ View عبر `itemCount` و `products[index]`.
+
+</SummaryBox>

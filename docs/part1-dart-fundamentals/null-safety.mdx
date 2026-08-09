@@ -1,0 +1,473 @@
+﻿---
+id: null-safety
+title: "1.2 Sound Null Safety"
+sidebar_label: "1.2 Sound Null Safety"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 1.2 Sound Null Safety
+
+واحدة من أهم ميزات Dart: **Sound Null Safety**. بتمنع أشهر crash في البرمجة - الـ `NullPointerException`. هنتعلم في الدرس ده كل حاجة عن الـ null بدون أي Classes - دول هيجوا في درس 1.6.
+
+---
+
+## 🎯 Learning Objectives
+
+1. تفهم معنى Null وليه خطير.
+2. تفرق بين Nullable (`?`) و Non-Nullable.
+3. تستخدم: `?.`, `??`, `??=`, `!`, `?.[]`, `...?`.
+4. تفهم Type Promotion.
+5. تجاوب على أسئلة الـ Interview.
+
+---
+
+## 1. What is Null?
+
+`null` معناها "مفيش قيمة هنا". المشكلة لما بتحاول تستخدم متغير فاضي من غير ما تتأكد:
+
+```dart
+// In Java/JavaScript - this CRASHES at runtime!
+String name = null;
+print(name.length); // 💥 NullPointerException
+```
+
+**Dart حل المشكلة من الجذور** - الـ compiler مش هيسمحلك تعمل ده أصلاً:
+
+```dart
+// Dart - COMPILE ERROR, not a runtime crash
+String name = null; // ❌ Error: A value of type 'Null' can't be assigned to 'String'
+```
+
+---
+
+## 2. Non-Nullable vs Nullable
+
+في Dart، **كل الأنواع non-nullable بشكل افتراضي**:
+
+```dart
+// ✅ Non-Nullable - guaranteed to always have a value
+String  city    = 'Cairo';
+int     age     = 25;
+double  score   = 98.5;
+bool    active  = true;
+
+// ❌ Can't assign null to non-nullable
+String  name    = null; // Compile Error!
+```
+
+لما البيانات ممكن فعلاً تكون فاضية، تضيف `?` بعد النوع:
+
+```dart
+// ✅ Nullable - explicitly says "this might be null"
+String? nickname;      // User might not have a nickname
+int?    phoneExt;      // User might not have a phone extension
+double? discount;      // Product might not have a discount
+
+print(nickname);       // null - no crash, it's declared nullable
+```
+
+---
+
+## 3. Null-Aware Operators
+
+### `?.` - Safe Access
+
+```dart
+String? email = getUserEmail(); // might return null
+
+// ❌ Dangerous - crashes if email is null
+print(email.length);
+
+// ✅ Safe - returns null instead of crashing
+print(email?.length);
+
+// Chain safely
+String? upper = email?.trim()?.toUpperCase();
+```
+
+---
+
+### `??` - Fallback Value
+
+```dart
+String? nickname = getNickname();
+
+// "If nickname is null, use 'Anonymous'"
+String displayName = nickname ?? 'Anonymous';
+
+// Chain multiple fallbacks
+String label = nickname ?? 'Guest';
+
+print(displayName); // Either the nickname or 'Anonymous'
+```
+
+---
+
+### `??=` - Assign Only If Null
+
+```dart
+String? cachedResult;
+
+// Assigns ONLY if currently null
+cachedResult ??= computeExpensiveResult();
+// Second call does nothing - already assigned!
+cachedResult ??= computeExpensiveResult();
+
+print(cachedResult); // result from first call
+```
+
+Equivalent to:
+```dart
+if (cachedResult == null) {
+  cachedResult = computeExpensiveResult();
+}
+```
+
+---
+
+### `!` - Force Unwrap (Dangerous!)
+
+```dart
+String? value = 'Hello';
+
+// You tell Dart: "I KNOW this is not null - trust me"
+String result = value!;
+print(result); // 'Hello'
+
+// But if you're WRONG:
+String? nothing = null;
+String crash = nothing!; // 💥 Null check operator used on a null value
+```
+
+> ⚠️ استخدم `!` بس لما تكون **متأكد 100%**. في الغالب `??` أو `?.` أحسن.
+
+---
+
+### `?.[]` - Safe Index Access
+
+```dart
+List<String>? tags = getTags();
+
+String? first = tags?[0]; // null if tags is null, otherwise tags[0]
+int?    count = tags?.length;
+```
+
+---
+
+### `...?` - Null-Aware Spread
+
+```dart
+List<String>? extras = getExtras(); // might be null
+
+List<String> allItems = [
+  'default',
+  ...?extras,   // spreads nothing if null, spreads items if not null
+  'end',
+];
+```
+
+---
+
+## 4. Type Promotion - الترقية التلقائية
+
+الـ Dart compiler بيفهم الـ if-checks ويرقي النوع تلقائياً:
+
+```dart
+String? name = getUserName();
+
+// Here: name is String? - need ?. to access
+print(name?.length);
+
+if (name != null) {
+  // HERE: Dart PROMOTES name to String automatically!
+  // No ?. or ! needed inside this block
+  print(name.length);        // ✅ direct access
+  print(name.toUpperCase()); // ✅ all String methods available
+}
+
+// After the if: name is String? again
+```
+
+**Guard clause pattern - the professional way:**
+
+```dart
+String processName(String? name) {
+  if (name == null) return 'Unknown'; // guard - exit early
+  // From this point, name is promoted to String
+  return name.trim().toUpperCase();   // no ! needed
+}
+
+void main() {
+  print(processName(null));       // Unknown
+  print(processName('  ahmed ')); // AHMED
+}
+```
+
+---
+
+## 5. Practical Example - No Classes!
+
+```dart
+// Top-level functions only - no classes yet!
+
+/// Returns a greeting message - null if name is blank
+String? buildGreeting(String? firstName, String? lastName) {
+  if (firstName == null && lastName == null) return null;
+
+  final first = firstName?.trim() ?? '';
+  final last  = lastName?.trim()  ?? '';
+  final full  = '$first $last'.trim();
+
+  return full.isEmpty ? null : 'Hello, $full!';
+}
+
+/// Safe display - always returns a non-null String
+String safeDisplay(String? value, String fallback) {
+  return value?.trim().isNotEmpty == true ? value!.trim() : fallback;
+}
+
+void main() {
+  // Test buildGreeting
+  print(buildGreeting('Ahmed', 'Ali'));    // Hello, Ahmed Ali!
+  print(buildGreeting('Sara', null));      // Hello, Sara!
+  print(buildGreeting(null, null));        // null
+
+  // Test safeDisplay
+  String? nickname;
+  String? city = 'Cairo';
+
+  print(safeDisplay(nickname, 'Anonymous')); // Anonymous
+  print(safeDisplay(city, 'Unknown'));       // Cairo
+
+  // Null-aware operators in action
+  List<String>? languages = ['Dart', 'Flutter'];
+  List<String>? extras    = null;
+
+  List<String> allSkills = [
+    ...?languages,  // spreads ['Dart', 'Flutter']
+    ...?extras,     // spreads nothing (null)
+    'MVVM',
+  ];
+
+  print(allSkills); // [Dart, Flutter, MVVM]
+  print('Count: ${allSkills.length}'); // Count: 3
+}
+```
+
+---
+
+## ⚡ Performance Tips
+
+:::tip Prefer `??` over ternary for null checks
+```dart
+// ❌ Verbose
+String name = value != null ? value : 'default';
+
+// ✅ Concise and same performance
+String name = value ?? 'default';
+```
+:::
+
+:::tip Capture mutable nullable in local variable for promotion
+```dart
+String? _token; // mutable - no type promotion directly
+
+void useToken() {
+  // ❌ No promotion on mutable variables
+  if (_token != null) {
+    doWork(_token); // still String?
+  }
+
+  // ✅ Capture in local final - gets promoted!
+  final token = _token;
+  if (token != null) {
+    doWork(token); // String ✅
+  }
+}
+```
+:::
+
+:::tip `whereType<T>()` to filter nulls from lists
+```dart
+List<String?> rawNames = ['Ahmed', null, 'Sara', null, 'Omar'];
+
+// ✅ One-liner to remove all nulls and get List<String>
+List<String> names = rawNames.whereType<String>().toList();
+
+print(names); // [Ahmed, Sara, Omar]
+```
+:::
+
+---
+
+## 🎤 Interview Questions & Answers
+
+<details>
+<summary><strong>Q1: ما الفرق بين Sound Null Safety و Unsound Null Safety؟</strong></summary>
+
+- **Sound** (Dart): الـ compiler يضمن 100% إن مفيش null وقت التشغيل لو الكود اتكمبل بنجاح.
+- **Unsound** (TypeScript): ممكن يتجاوز بـ `any` أو type casting - مش ضمان كامل.
+
+**في Dart**: لو الكود compile → مفيش NullPointerException. خالص.
+
+</details>
+
+<details>
+<summary><strong>Q2: إيه هو Type Promotion وإيه حدوده؟</strong></summary>
+
+Type Promotion = الـ compiler بيتتبع الـ control flow ويرقي النوع تلقائياً:
+
+```dart
+String? name = getName();
+if (name != null) {
+  print(name.length); // promoted to String - no ! needed
+}
+```
+
+**الحدود** - Promotion مش بيشتغل مع:
+1. الـ mutable class fields (لأن thread تاني ممكن يغيرها).
+2. الـ variables اللي بتتغير جوه closures.
+
+**الحل**: اعمل local final copy:
+```dart
+final localName = name; // copy to local
+if (localName != null) { /* promoted ✅ */ }
+```
+
+</details>
+
+<details>
+<summary><strong>Q3: امتى أستخدم `!` وامتى لا؟</strong></summary>
+
+**استخدم `!` فقط لما:**
+- الـ logic يضمن إن القيمة مش null وأنت متأكد.
+- بعد guard clause أو type check.
+
+**ابعد عن `!` لو:**
+- ممكن تستخدم `??` أو `?.` بدله.
+- مش متأكد 100%.
+
+```dart
+// ❌ Risky
+String result = getApi()!;
+
+// ✅ Safe always
+String result = getApi() ?? 'fallback';
+```
+
+</details>
+
+<details>
+<summary><strong>Q4: إيه الفرق بين `??` و `?.`؟</strong></summary>
+
+- `??` = "لو القيمة null، استخدم القيمة البديلة دي" (returns a value).
+- `?.` = "لو القيمة null، وقف هنا ورجع null" (short-circuits the chain).
+
+```dart
+String? name;
+
+String display = name ?? 'Guest'; // 'Guest'  - ?? gives a fallback
+int?   len     = name?.length;    // null     - ?. short-circuits
+int    safe    = name?.length ?? 0; // 0     - combine both!
+```
+
+</details>
+
+<details>
+<summary><strong>Q5: إزاي تحذف الـ null values من list بطريقة نظيفة؟</strong></summary>
+
+```dart
+List<String?> items = ['a', null, 'b', null, 'c'];
+
+// Option 1 - whereType (cleanest)
+List<String> result1 = items.whereType<String>().toList();
+
+// Option 2 - where + !
+List<String> result2 = items.where((e) => e != null).map((e) => e!).toList();
+
+// Option 3 - nulls to empty, then filter
+List<String> result3 = items
+    .map((e) => e ?? '')
+    .where((e) => e.isNotEmpty)
+    .toList();
+
+// All give: [a, b, c]
+```
+
+</details>
+
+---
+
+## 🐛 Common Mistakes
+
+```dart
+// ❌ 1 - Chaining ! dangerously
+String name = user!.profile!.name!; // 3 potential crashes!
+// ✅
+String name = user?.profile?.name ?? 'Unknown';
+
+// ❌ 2 - Forgetting Map access is nullable
+Map<String, dynamic> json = {'age': 25};
+String email = json['email'];   // Error! 'email' might not exist
+// ✅
+String? email = json['email'] as String?;
+String display = email ?? 'No email';
+
+// ❌ 3 - Unnecessary null check on non-nullable
+void greet(String name) {
+  if (name != null) { /* Warning! name is never null */ }
+}
+
+// ❌ 4 - Using dynamic to escape null safety
+dynamic value = getResult(); // No null safety protection!
+// ✅
+String? value = getResult() as String?;
+```
+
+---
+
+<ExerciseBox title="🏋️ Exercise - No Classes Allowed!">
+
+اكتب `main()` function تعمل الآتي **بدون أي class**:
+
+1. عرّف هذه المتغيرات:
+   - `String? username` = null
+   - `String? city` = `'Alexandria'`
+   - `int? age` = 22
+   - `double? discount` = null
+
+2. استخدم `??` لطباعة: `"User: [username or 'Guest']"`.
+3. استخدم `?.` و `??` لطباعة: `"City length: [city length or 0]"`.
+4. استخدم `??=` لتعيين `username = 'Ahmed'` لو null.
+5. اكتب function: `String describe(String? name, int? age)` ترجع `"[name], age [age]"` أو قيمة بديلة لكل حاجة null.
+
+**Bonus**: اعمل `List<String?>` = `['Dart', null, 'Flutter', null, 'MVVM']` واستخدم `whereType<String>()` لطباعة القيم غير الـ null فقط.
+
+</ExerciseBox>
+
+---
+
+<SummaryBox title="📌 Lesson Summary">
+
+**Null Safety Basics:**
+- Dart Non-Nullable by default - الأقوى في الصناعة.
+- `String?` = might be null. `String` = never null - different types!
+
+**Operators:**
+
+| Operator | الاستخدام | مثال |
+|----------|-----------|------|
+| `?.` | Safe access | `email?.length` |
+| `??` | Fallback value | `name ?? 'Anonymous'` |
+| `??=` | Assign if null | `cache ??= fetch()` |
+| `!` | Force unwrap (risky) | `value!.trim()` |
+| `?.[]` | Safe index | `list?[0]` |
+| `...?` | Null-aware spread | `[...?nullableList]` |
+
+**Type Promotion**: بعد `if (x != null)` → الـ Dart يعامل `x` كـ non-nullable تلقائياً.
+
+> ⚠️ **Note:** لسه ما تعلمناش Classes - الأمثلة كلها في `main()` و top-level functions. Classes هتيجي في **Lesson 1.6**.
+
+</SummaryBox>

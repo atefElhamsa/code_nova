@@ -1,0 +1,109 @@
+﻿---
+id: dio-and-interceptors
+title: "5.1 Dio & Interceptors"
+sidebar_label: "5.1 Dio & Interceptors"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 5.1 الاتصالات الشبكية المتقدمة (Networking with Dio & Interceptors)
+
+عند بناء تطبيق Flutter يدعم خدمات خلفية (Backend APIs)، تكون مكتبة **Dio** الخيار المفضل والقياسي بين المطورين المحترفين لما توفره من إمكانيات متقدمة مثل إعداد مهلة الاتصال (Timeouts)، اعتراض الطلبات والترويسات عبر **Interceptors**، وإدارة التشفير وإلغاء الطلبات.
+
+---
+
+## 🎯 أهداف الدرس (Learning Objectives)
+
+1. فهم مزايا مكتبة Dio مقارنة بالمكتبة الأساسية `http`.
+2. إعداد العميل الشبكي الموحد `DioClient` بإعدادات `BaseOptions`.
+3. كتابة **Interceptors** مخصصة لطباعة السجلات (Logging) وإرفاق توكن المصادقة (Auth Token).
+4. تطبيق عزل إعدادات الاتصال داخل الطبقة القياسية `core/network/`.
+
+---
+
+## 📘 الشرح النظري (Theoretical Explanation)
+
+### ما هو الـ Interceptor (معترض الطلبات)؟
+الـ Interceptor هو وسيط برمجي يتم اعتراض الطلب أو الاستجابة أو الخطأ الشبكي من خلاله **قبل** وصوله للـ Repository أو الخادم.
+
+يستفاد منه في:
+* إضافة `Authorization: Bearer <token>` لكل الطلبات تلقائياً.
+* طباعة البيانات المدخلة والمخرجة في الـ Terminal لتسهيل التتبع والـ Debugging.
+* تحديث التوكن تلقائياً (Refresh Token) عند انتهاء صلاحيته (401 Unauthorized).
+
+---
+
+## 💻 التطبيق المعماري (MVVM & Clean Code)
+
+إعداد عميل Dio المركزي مع الترويسات والـ Interceptors داخل `lib/core/network/dio_client.dart`.
+
+```dart
+// ==========================================
+// File: lib/core/network/dio_client.dart
+// Description: العميل الشبكي الرئيسي المعتمد على Dio
+// Architecture Layer: Core Network
+// ==========================================
+
+import 'package:dio/dio.dart';
+
+class DioClient {
+  late final Dio _dio;
+
+  DioClient() {
+    _dio = Dio(
+      BaseOptions(
+        baseUrl: 'https://api.example.com/v1/',
+        connectTimeout: const Duration(seconds: 10),
+        receiveTimeout: const Duration(seconds: 10),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      ),
+    );
+
+    // إضافة معترضات الطلبات
+    _dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          // محاكاة إرفاق توكن مصادقة حقيقي
+          const token = 'YOUR_SECURE_AUTH_TOKEN';
+          options.headers['Authorization'] = 'Bearer $token';
+          print('🌐 [GET/POST Request] -> Path: ${options.path}');
+          return handler.next(options);
+        },
+        onResponse: (response, handler) {
+          print('✅ [API Response Success] -> Status: ${response.statusCode}');
+          return handler.next(response);
+        },
+        onError: (DioException error, handler) {
+          print('❌ [API Error] -> Message: ${error.message}');
+          return handler.next(error);
+        },
+      ),
+    );
+  }
+
+  Dio get instance => _dio;
+}
+```
+
+---
+
+<ExerciseBox title="جرب بنفسك 💻">
+
+1. أنشئ Interceptor مخصص يُسمى `PrettyLoggerInterceptor` يطبع عنوان الطلب والبيانات المرسلة فقط عندما نكون في وضع الديباج `kDebugMode`.
+2. اضبط `connectTimeout` ليكون 5 ثوانٍ، واكتب معالجة تعرض تنبيه "انتهت مهلة الاتصال بالشبكة" عند تجاوزها.
+
+</ExerciseBox>
+
+---
+
+<SummaryBox title="خلاصة الدرس 📌">
+
+- تمنحك مكتبة Dio تحكماً كاملاً ومتطوراً بطلبات الشبكة.
+- تُعتبر الـ Interceptors المكان النظيف والأنسب لإدارة توكنات الأمان وطباعة السجلات الشبكية دون تكرار الكود.
+- تجميع إعدادات Dio في `core/network/dio_client.dart` يحافظ على التزام المشروع بـ Clean Code.
+
+</SummaryBox>

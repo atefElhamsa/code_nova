@@ -1,0 +1,100 @@
+﻿---
+id: navigation-go-router
+title: "2.5 Navigation with go_router"
+sidebar_label: "2.5 Navigation with go_router"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 2.5 التنقل والتوجيه (Declarative Navigation with go_router)
+
+التنقل بين الشاشات في التطبيقات الكبيرة ينبغي أن يكون معلَناً وموحداً (Declarative). تمنحنا حزمة `go_router` الرسمية من فريق Flutter القدرة على إدارة المسارات، المعاملات (Path & Query Parameters)، والروابط العميقة (Deep Linking) بكفاءة عالية.
+
+---
+
+## 🎯 أهداف الدرس (Learning Objectives)
+
+1. فهم الفرق بين التنقل الإمراري (Imperative `Navigator.push`) والتنقل الإعلاني (Declarative `go_router`).
+2. إعداد شجرة المسارات المركزية داخل المجلد المعماري `core/router/`.
+3. التمرير الآمن للمتغيرات والمعاملات بين الشاشات (`pathParameters` & `extra`).
+4. تنفيذ إعادة التوجيه الشرطي (Redirect Guard) للتحقق من تسجيل الدخول.
+
+---
+
+## 📘 الشرح النظري (Theoretical Explanation)
+
+تتيح حزمة `go_router` تعريف المسارات في مكان واحد مركزي:
+
+* **`context.go('/details/101')`**: استبدال المسار الحالي وتحديث شجرة التنقل.
+* **`context.push('/details/101')`**: إضافة شاشة جديدة فوق الشاشة الحالية في كومات التنقل.
+* **`pathParameters`**: استخراج المتغيرات المضمنة في المسار مثل `/details/:id`.
+
+---
+
+## 💻 التطبيق المعماري (MVVM & Clean Code)
+
+ننشئ ملف إعدادات التوجيه المركزي في `lib/core/router/app_router.dart` ونربطه بالـ `MaterialApp.router`.
+
+```dart
+// ==========================================
+// File: lib/core/router/app_router.dart
+// Description: إعدادات التوجيه والمسارات المركزية للتطبيق
+// Architecture Layer: Core Router
+// ==========================================
+
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import '../../presentation/views/home_view.dart';
+import '../../presentation/views/product_details_view.dart';
+import '../../presentation/views/login_view.dart';
+
+class AppRouter {
+  // أسماء المسارات كـ الثوابت النصية لتجنب الأخطاء الإملائية
+  static const String homePath = '/';
+  static const String loginPath = '/login';
+  static const String productDetailsPath = '/product-details/:id';
+
+  static final GoRouter router = GoRouter(
+    initialLocation: homePath,
+    routes: [
+      GoRoute(
+        path: homePath,
+        builder: (context, state) => const HomeView(),
+      ),
+      GoRoute(
+        path: loginPath,
+        builder: (context, state) => const LoginView(),
+      ),
+      GoRoute(
+        path: productDetailsPath,
+        builder: (context, state) {
+          // استخراج المعامل الرقمي من المسار
+          final productId = state.pathParameters['id'] ?? '';
+          return ProductDetailsView(productId: productId);
+        },
+      ),
+    ],
+  );
+}
+```
+
+---
+
+<ExerciseBox title="جرب بنفسك 💻">
+
+1. أضف حزمة `go_router` إلى ملف `pubspec.yaml`.
+2. قم بتعويض `MaterialApp` بـ `MaterialApp.router` واستخدم `routerConfig: AppRouter.router`.
+3. جرب التنقل إلى شاشة تفاصيل المنتج بنقر زر: `context.go('/product-details/45');`.
+
+</ExerciseBox>
+
+---
+
+<SummaryBox title="خلاصة الدرس 📌">
+
+- تقدم حزمة `go_router` حلاً استثنائياً للتنقل المعلن ودعم الرابط العميق (Deep Links).
+- وضع المسارات في `core/router/` يفصل إعدادات التوجيه كلياً عن الـ Widgets.
+- نستخدم `state.pathParameters` للحصول على المعاملات الممررة عبر الرابط بأمان.
+
+</SummaryBox>

@@ -1,0 +1,103 @@
+﻿---
+id: viewmodel-lifecycle
+title: "4.3 ViewModel Lifecycle & dispose()"
+sidebar_label: "4.3 ViewModel Lifecycle & dispose()"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 4.3 دورة حياة الـ ViewModel والتنظيف (ViewModel Lifecycle & Cleanup)
+
+فهم دورة حياة الـ ViewModel وكيفية التخلص من الموارد عند إغلاق الشاشة يضمن حماية التطبيق من تسريبات الذاكرة (Memory Leaks) واستنزاف البطارية والمعالج.
+
+---
+
+## 🎯 أهداف الدرس (Learning Objectives)
+
+1. فهم المراحل الأساسية لدورة حياة الـ ViewModel: **Init**, **Update**, و **Dispose**.
+2. حماية الـ ViewModel من إرسال تنبيهات بعد إغلاقه تلافياً للخطأ الشهير `notifyListeners() called after dispose()`.
+3. إغلاق اشتراكات الـ Streams و الـ Timers في الدالة `dispose()`.
+4. إدارة استدعاء جلب البيانات الأولي بأمان عند فتح الشاشة.
+
+---
+
+## 📘 الشرح النظري (Theoretical Explanation)
+
+عند خروج المستخدم من شاشة في Flutter، يتم إلغاء وتدمير الـ `ChangeNotifierProvider` وتفعيل الدالة `dispose()` داخل الـ ViewModel المربوط بها.
+
+إذا حاولت الدالة غير التزامنية (`async`) استدعاء `notifyListeners()` بعد أن غادر المستخدم الشاشة وتدمر الـ ViewModel، سيحدث استثناء Crash في التطبيق.
+
+---
+
+## 💻 التطبيق المعماري (MVVM & Clean Code)
+
+نموذج آمن يمنع تسريب الذاكرة ويتحقق من حالة الصلاحية `isDisposed`.
+
+```dart
+// ==========================================
+// File: lib/presentation/viewmodels/timer_viewmodel.dart
+// Description: ViewModel يتولى إدارة مؤقت زمني مع حماية كاملة لدورة الحياة
+// Architecture Layer: Presentation (ViewModel)
+// ==========================================
+
+import 'dart:async';
+import 'package:flutter/foundation.dart';
+
+class TimerViewModel extends ChangeNotifier {
+  int _secondsLeft = 60;
+  Timer? _timer;
+  bool _isDisposed = false;
+
+  int get secondsLeft => _secondsLeft;
+
+  TimerViewModel() {
+    _startCountdown();
+  }
+
+  void _startCountdown() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_secondsLeft > 0) {
+        _secondsLeft--;
+        _safeNotifyListeners(); // استدعاء الإخطار الآمن
+      } else {
+        _timer?.cancel();
+      }
+    });
+  }
+
+  /// دالة إخطار آمنة تتحقق مما إذا كانت الفئة قد أُغلقت
+  void _safeNotifyListeners() {
+    if (!_isDisposed) {
+      notifyListeners();
+    }
+  }
+
+  @override
+  void dispose() {
+    _isDisposed = true;
+    _timer?.cancel(); // إلغاء المؤقت فور تدمير الـ ViewModel
+    super.dispose();
+  }
+}
+```
+
+---
+
+<ExerciseBox title="جرب بنفسك 💻">
+
+1. أنشئ فئة ViewModel تحتوي على اشتراك `StreamSubscription`.
+2. قم بإغلاق الاشتراك داخل دالة `dispose()` باستخدام `_subscription?.cancel()`.
+3. صمم طريقة آمنة لاستقبال نتائج الـ Stream دون حدوث Memory Leak.
+
+</ExerciseBox>
+
+---
+
+<SummaryBox title="خلاصة الدرس 📌">
+
+- يجب دائماً تنظيف وإلغاء المؤقتات والاشتراكات في دالة `dispose()`.
+- التحقق من عدم إغلاق الكائن ينقذ التطبيق من الانهيار (Crash) عند وصول نتائج الطلبات اللاتزامنية المتأخرة.
+- يتم التخلص من الـ ViewModel تلقائياً بواسطة `ChangeNotifierProvider` عند إغلاق الشاشة ذات الصلة.
+
+</SummaryBox>

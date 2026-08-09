@@ -1,0 +1,450 @@
+﻿---
+id: variables-and-data-types
+title: "1.1 Variables & Data Types"
+sidebar_label: "1.1 Variables & Data Types"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 1.1 Variables & Data Types
+
+في الدرس ده هتتعلم إزاي تخزن البيانات في Dart وتحدد نوعها. ده الأساس اللي كل حاجة تانية بتبني عليه. مش هنشوف Classes أو MVVM دلوقتي - ده هييجي في درس 1.6 لما نتعلم OOP.
+
+---
+
+## 🎯 Learning Objectives
+
+1. تعلن عن متغيرات بـ `var`، أنواع صريحة، `final`، `const`.
+2. تفرق بين `int`, `double`, `String`, `bool`, `num`.
+3. تفهم الفرق بين `final` و `const` وامتى تستخدم كل واحدة.
+4. تستخدم String interpolation صح.
+5. تجاوب على أسئلة الـ Interview المتعلقة بالموضوع.
+
+---
+
+## 1. What is a Variable?
+
+المتغير هو **اسم رمزي بيشير لمكان في الذاكرة (RAM)**. بتحط فيه بيانات وبتديه اسم عشان تلاقيه بسهولة.
+
+```dart
+// اسم المتغير = userAge
+// نوعه = int (أرقام صحيحة فقط)
+// قيمته = 25
+int userAge = 25;
+```
+
+---
+
+## 2. Type Inference with `var`
+
+الـ Dart يقدر يحدد نوع المتغير تلقائياً من القيمة:
+
+```dart
+var name      = 'Ahmed';   // Dart infers: String
+var age       = 25;        // Dart infers: int
+var gpa       = 3.8;       // Dart infers: double
+var isStudent = true;      // Dart infers: bool
+```
+
+**مهم:** بعد ما الـ Dart يحدد النوع، **مش ممكن يتغير**:
+
+```dart
+var score = 100;     // score is int
+score = 'excellent'; // ❌ Compile Error! Can't assign String to int
+```
+
+---
+
+## 3. Explicit Types - The Explicit Way
+
+لما بتكتب النوع صراحة، الكود بيوصف نفسه بنفسه:
+
+```dart
+int    itemCount     = 5;
+double price         = 49.99;
+String productName   = 'Flutter Course';
+bool   isAvailable   = true;
+```
+
+**الأنواع الأساسية في Dart:**
+
+| النوع    | الوصف | مثال |
+|---------|-------|------|
+| `int`   | أرقام صحيحة (64-bit) | `42`, `-7`, `0` |
+| `double`| أرقام عشرية (IEEE 754) | `3.14`, `-0.5` |
+| `String`| نصوص Unicode | `'Hello'`, `"مرحبا"` |
+| `bool`  | قيم منطقية | `true`, `false` |
+| `num`   | أب `int` و `double` | `num x = 3;` |
+
+> ✅ **Clean Code Rule:** استخدم الأنواع الصريحة لما الكود يتشارك مع team - أوضح وأسهل في الـ review.
+
+---
+
+## 4. `final` - Assign Once
+
+`final` بتقول للـ Dart: "المتغير ده هيتحدد مرة واحدة بس":
+
+```dart
+final String language    = 'Dart';
+final int    releaseYear = 2011;
+
+language = 'Python'; // ❌ Error: Can't reassign a final variable
+```
+
+**`final` بيقفل التعيين مش التعديل على المحتوى:**
+
+```dart
+final List<String> skills = ['Dart', 'Flutter'];
+
+skills.add('MVVM');   // ✅ Modifying the list content - allowed
+skills = ['Java'];    // ❌ Reassigning the variable - not allowed
+```
+
+**متى تستخدمها؟**
+لما القيمة بتيجي وقت التشغيل وما بتتغيرش بعد كده:
+
+```dart
+final String currentDate = DateTime.now().toString(); // Set at runtime, once
+```
+
+---
+
+## 5. `const` - Compile-Time Constants
+
+`const` أقوى من `final` - القيمة لازم تكون معروفة **قبل** ما التطبيق يشتغل خالص:
+
+```dart
+const String appName    = 'TaskFlow Pro';
+const double taxRate    = 0.14;
+const int    maxRetries = 3;
+const String apiVersion = 'v2';
+```
+
+**مش ممكن مع القيم اللي بتتحسب وقت التشغيل:**
+
+```dart
+const String now = DateTime.now().toString(); // ❌ Error! Not known at compile time
+final String now = DateTime.now().toString(); // ✅ Use final instead
+```
+
+**الفرق بين `final` و `const`:**
+
+| | `final` | `const` |
+|---|---|---|
+| وقت التحديد | Runtime (وقت التشغيل) | Compile-time (وقت البناء) |
+| الأداء | جيد | ⚡ أفضل |
+| مثال | `DateTime.now()` | `'AppName'`, `3.14` |
+
+---
+
+## 6. `num` - The Number Parent
+
+`num` هو الـ parent لـ `int` و `double` معاً. مفيد لما بتكتب function تقبل أي نوع رقمي:
+
+```dart
+// Without num - two functions needed
+void printInt(int n)       => print(n);
+void printDouble(double n) => print(n);
+
+// With num - one function handles both!
+void printNumber(num n) => print(n);
+
+printNumber(42);    // int ✅
+printNumber(3.14);  // double ✅
+```
+
+---
+
+## 7. String Interpolation
+
+أفضل طريقة تدمج متغيرات جوه نص:
+
+```dart
+String name  = 'Ahmed';
+int    age   = 25;
+double score = 98.5;
+
+// Simple variable - use $variable
+String greeting = 'Hello, $name!';
+
+// Expression - use ${expression}
+String report   = 'Score: ${score.toStringAsFixed(1)}%';
+String summary  = '$name is $age years old with score: ${score.toStringAsFixed(1)}%';
+
+print(greeting); // Hello, Ahmed!
+print(report);   // Score: 98.5%
+print(summary);  // Ahmed is 25 years old with score: 98.5%
+```
+
+**Multi-line strings:**
+
+```dart
+String message = '''
+Welcome to Dart!
+Version: 3.0
+Author: Ahmed
+''';
+```
+
+**Raw strings (بدون escape):**
+
+```dart
+String path    = r'C:\Users\Ahmed\Documents'; // \ treated literally
+String pattern = r'\d+\.\d+';                // Regex pattern
+```
+
+---
+
+## 8. Practical Example - Variables in Action
+
+مش هنعمل class دلوقتي (ده بيييجي في درس 1.6) - بس هنشوف ازاي المتغيرات بتشتغل مع بعض:
+
+```dart
+void main() {
+  // Product information - explicit types
+  String productName   = 'Flutter Course';
+  int    stockCount    = 150;
+  double price         = 299.99;
+  bool   isOnSale      = true;
+
+  // Constants - known at compile time
+  const double discountRate = 0.20;
+  const String currency     = 'EGP';
+
+  // final - computed once at runtime
+  final double discountAmount = price * discountRate;
+  final double salePrice      = price - discountAmount;
+
+  // String interpolation to display
+  print('Product: $productName');
+  print('Stock: $stockCount units');
+  print('Original Price: $price $currency');
+
+  if (isOnSale) {
+    print('SALE! Price after ${(discountRate * 100).toInt()}% off: $salePrice $currency');
+  }
+}
+```
+
+**Output:**
+```
+Product: Flutter Course
+Stock: 150 units
+Original Price: 299.99 EGP
+SALE! Price after 20% off: 239.99199999999998 EGP
+```
+
+> ⚠️ لاحظت `239.99199999999998`؟ ده مشكلة floating point - هتتعلم ازاي تتعامل معاها في قسم الـ Performance.
+
+---
+
+## ⚡ Performance Tips
+
+:::tip فضّل `const` على `final` دايماً لو ممكن
+الـ Dart بيعمل **canonicalization** للـ `const` values - يعني قيم `const` متطابقة بتشارك نفس المكان في الذاكرة بدل ما تنشأ مرتين:
+
+```dart
+const a = 'Flutter';
+const b = 'Flutter';
+print(identical(a, b)); // true ✅ - same object in memory!
+
+final x = 'Flutter';
+final y = 'Flutter';
+print(identical(x, y)); // might be false - two separate objects
+```
+:::
+
+:::tip String Interpolation أسرع من Concatenation
+```dart
+// ❌ Slow - creates intermediate String objects each time
+String result = 'Hello, ' + name + '! Age: ' + age.toString();
+
+// ✅ Fast - compiled to efficient StringBuffer internally
+String result = 'Hello, $name! Age: $age';
+```
+:::
+
+:::tip تجنب `double` للأموال
+```dart
+// ❌ Floating point trap!
+double total = 0.1 + 0.2;
+print(total);          // 0.30000000000000004
+print(total == 0.3);   // false!
+
+// ✅ Store money as integer cents
+int totalCents = 10 + 20; // 30 cents
+print(totalCents / 100);  // 0.3 - display only
+```
+:::
+
+---
+
+## 🎤 Interview Questions & Answers
+
+<details>
+<summary><strong>Q1: ما الفرق بين `var` و `dynamic` في Dart؟</strong></summary>
+
+| | `var` | `dynamic` |
+|---|---|---|
+| النوع | يتحدد وقت الـ compilation | يتحدد وقت التشغيل |
+| Type checking | Static ✅ | Runtime ⚠️ |
+| الأداء | ممتاز | أبطأ |
+| Type change | ❌ مستحيل بعد التحديد | ✅ ممكن في أي وقت |
+
+```dart
+var x = 'hello';
+x = 42;           // ❌ Compile Error
+
+dynamic y = 'hello';
+y = 42;           // ✅ Works at runtime - but risky!
+y.unknownMethod(); // ❌ Runtime Error - no compile-time check
+```
+
+**الإجابة المثالية**: "أفضل دايماً `var` أو أنواع صريحة عشان type safety. `dynamic` بيلغي كل مزايا الـ type system وبيزود احتمال الـ runtime errors."
+
+</details>
+
+<details>
+<summary><strong>Q2: إيه الفرق بين `final` و `const` وامتى تستخدم كل واحدة؟</strong></summary>
+
+- **`final`**: يتحدد مرة واحدة وقت التشغيل. مفيد لقيم من API أو `DateTime.now()`.
+- **`const`**: يتحدد وقت الـ compilation. أسرع وأكثر كفاءة. للثوابت المعروفة في الكود.
+
+**القاعدة**: ابدأ بـ `const` لو ممكن ← لو مش ممكن جرب `final` ← لو محتاج التغيير استخدم نوع عادي.
+
+</details>
+
+<details>
+<summary><strong>Q3: إيه هو `num` ومتى تستخدمه؟</strong></summary>
+
+`num` هو الـ abstract supertype لـ `int` و `double`. بتستخدمه لما محتاج function تقبل أي نوع رقمي بدون overloading.
+
+```dart
+num clamp(num value, num min, num max) {
+  if (value < min) return min;
+  if (value > max) return max;
+  return value;
+}
+
+print(clamp(5, 1, 10));     // int ✅
+print(clamp(5.5, 1.0, 10.0)); // double ✅
+```
+
+في الغالب، في variables عادية، أفضل تكتب `int` أو `double` صراحة لأوضح.
+
+</details>
+
+<details>
+<summary><strong>Q4: ليه بيطلع `0.30000000000000004` بدل `0.3` في حسابات الـ double؟</strong></summary>
+
+ده اسمه **Floating-Point Precision Problem**. الكمبيوتر بيخزن الأرقام العشرية في binary وبعض الأرقام زي `0.1` و `0.2` مش ممكن يتخزنوا بدقة 100% في binary representation.
+
+**الحل في Dart:**
+```dart
+double a = 0.1 + 0.2;
+print(a.toStringAsFixed(2)); // '0.30' - for display
+// OR
+int cents = 10 + 20; // Store as cents, convert for display
+```
+
+ده مش Dart bug - ده IEEE 754 standard مستخدم في كل اللغات تقريباً.
+
+</details>
+
+<details>
+<summary><strong>Q5: هل `String` في Dart مutable أم immutable؟</strong></summary>
+
+**Immutable** - لما بتعمل عملية على String زي `toUpperCase()` أو `trim()`، بيتنشأ **String جديد** مش بيتعدل الأصلي:
+
+```dart
+String name = 'ahmed';
+String upper = name.toUpperCase(); // Creates NEW string
+
+print(name);  // 'ahmed' - unchanged!
+print(upper); // 'AHMED' - new String object
+
+// For building strings incrementally, use StringBuffer (mutable)
+final buffer = StringBuffer();
+buffer.write('Hello');
+buffer.write(', ');
+buffer.write('World');
+String result = buffer.toString(); // 'Hello, World'
+```
+
+`StringBuffer` أسرع بكتير لما بتبني نصوص في loop لأن مش بيعمل intermediate objects.
+
+</details>
+
+---
+
+## 🐛 Common Mistakes to Avoid
+
+```dart
+// ❌ 1 - Using dynamic unnecessarily
+dynamic userId = 101; // Loses type safety!
+// ✅
+int userId = 101;
+
+// ❌ 2 - Using final when const is possible
+final double pi = 3.14159; // Compile-time value - use const!
+// ✅
+const double pi = 3.14159;
+
+// ❌ 3 - String concatenation in loops
+String result = '';
+for (var word in words) {
+  result += word; // Creates a NEW String every iteration - O(n²)!
+}
+// ✅
+final buffer = StringBuffer();
+for (var word in words) {
+  buffer.write(word); // O(n) - much faster
+}
+final result = buffer.toString();
+
+// ❌ 4 - Storing money as double
+double price = 0.1 + 0.2;
+print(price == 0.3); // false!
+// ✅
+int priceCents = 10 + 20; // Store as cents
+print(priceCents == 30);  // true ✅
+
+// ❌ 5 - Using var for ambiguous types
+var data = getApiResponse(); // What type is this?
+// ✅
+Map<String, dynamic> data = getApiResponse();
+```
+
+---
+
+<ExerciseBox title="🏋️ Exercise - Variables in Action">
+
+اكتب `main()` function تعمل الآتي:
+
+1. عرّف المتغيرات التالية بأنواع صريحة: اسم المنتج، السعر، الكمية في المخزن، وهل متاح أم لا.
+2. عرّف `const double vatRate = 0.14`.
+3. احسب `final double priceWithVat = price * (1 + vatRate)`.
+4. اطبع تقرير مرتب بالـ String interpolation يوضح كل المعلومات.
+5. لو الكمية أكبر من 100، اطبع "High Stock" وإلا "Low Stock".
+
+**Bonus**: استخدم `StringBuffer` لبناء التقرير بدل الـ interpolation المباشر.
+
+</ExerciseBox>
+
+---
+
+<SummaryBox title="📌 Lesson Summary">
+
+| Keyword | الاستخدام |
+|---------|-----------|
+| `var` | الـ Dart يستنتج النوع تلقائياً - fixed بعد التحديد |
+| `int`, `double`, `String`, `bool` | أنواع صريحة - أوضح وأكثر احترافية |
+| `num` | parent لـ `int` و `double` |
+| `final` | تتحدد مرة واحدة وقت التشغيل |
+| `const` | تتحدد وقت الـ compilation - أفضل أداءً |
+| `$var` / `${expr}` | String interpolation - أوضح وأسرع من `+` |
+
+> ⚠️ **Note:** لسه ما شفناش Classes أو OOP - ده هييجي في **Lesson 1.6: OOP Basics**. الأمثلة هنا كلها في `main()` function بس.
+
+</SummaryBox>

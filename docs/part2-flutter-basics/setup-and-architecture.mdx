@@ -1,0 +1,112 @@
+﻿---
+id: setup-and-architecture
+title: "2.1 Setup & Architecture"
+sidebar_label: "2.1 Setup & Architecture"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 2.1 بيئة العمل وهيكلية تطبيق Flutter (Setup & Architecture)
+
+مرحباً بك في الجزء الثاني! سننتقل الآن من أسس Dart إلى الإطار الثوري **Flutter**. ستتعلم كيف يعمل إطار عمل Flutter في الخفاء، ومفهوم شجرة الودجات (Widget Tree)، وإعداد هيكلية مشروع حقيقي منظم بأسلوب كود نظيف.
+
+---
+
+## 🎯 أهداف الدرس (Learning Objectives)
+
+1. فهم كيفية بناء وإعادة رسم واجهات Flutter عبر المحرك (Flutter Engine).
+2. استيعاب هيكلية ملف `pubspec.yaml` وإدارة الحزم والإصدارات.
+3. تفكيك الملف الرئيسي `lib/main.dart` وفهم نقطة الانطلاق `runApp()`.
+4. إعداد الهيكل الأولي لمجلدات المشروع طبقاً لـ Clean Code Architecture.
+
+---
+
+## 📘 الشرح النظري (Theoretical Explanation)
+
+### 1. كيف يعمل Flutter؟
+يتميز Flutter بكونه لا يستعين بودجات المنصة الأصلية (Native OS Widgets)، بل يرسم كل بكسل بنفسه على الشاشة باستخدام محرك الرسوميات العالي الأداء **Impeller** (أو Skia مسبقاً).
+
+```text
++-----------------------------------+
+|        Flutter Framework (Dart)   |  <- Widgets, Material, Cupertino, Animation
++-----------------------------------+
+|        Flutter Engine (C/C++)     |  <- Impeller/Skia, Text Layout, Dart VM
++-----------------------------------+
+|        Embedder (Platform Native) |  <- Android, iOS, Windows, Web Integrations
++-----------------------------------+
+```
+
+### 2. نقطة الانطلاق `main.dart`
+تبدأ دورة حياة أي تطبيق بلغة Dart بالدالة `main()`، ثم يتم تمرير الودجة الجذرية (Root Widget) إلى الدالة `runApp()`.
+
+---
+
+## 💻 التطبيق المعماري (MVVM & Clean Code)
+
+في مشروعنا المعماري القياسي، نقوم بفصل إعدادات التطبيق وتكوين الـ Providers عن الودجة الرئيسية.
+
+```dart
+// ==========================================
+// File: lib/main.dart
+// Description: نقطة الانطلاق النظيفة المتهيئة للممارسات المعمارية
+// Architecture Layer: Presentation (App Entrypoint)
+// ==========================================
+
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'presentation/views/home_view.dart';
+import 'presentation/viewmodels/counter_viewmodel.dart';
+
+void main() {
+  // 1. ضمان تهيئة خدمات Flutter الهيكلية قبل البدء
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // 2. تشغيل التطبيق مع تهيئة مزود الحالات الموحد
+  runApp(const CoreApp());
+}
+
+/// الودجة الجذرية للتطبيق المحمية بكونها const
+class CoreApp extends StatelessWidget {
+  const CoreApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => CounterViewModel()),
+      ],
+      child: MaterialApp(
+        title: 'Flutter Clean Architecture',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF0175C2)),
+          useMaterial3: true,
+        ),
+        home: const HomeView(),
+      ),
+    );
+  }
+}
+```
+
+---
+
+<ExerciseBox title="جرب بنفسك 💻">
+
+افتح مشروع Flutter الجديد وقم بالآتي:
+1. قم بتعديل عنوان التطبيق ليكون "تطبيق الكود النظيف".
+2. قم بتغيير اللون الرئيسي في `ColorScheme.fromSeed` إلى اللون العنابي البرمجي `#800020`.
+3. تأكد أن الخاصية `debugShowCheckedModeBanner` مضبوطة على `false`.
+
+</ExerciseBox>
+
+---
+
+<SummaryBox title="خلاصة الدرس 📌">
+
+- يقوم Flutter برسم واجهاته بنفسه على الشاشة لضمان أداء عالٍ (60/120 FPS) وتوافق تام بين المنصات.
+- الدالة `runApp()` هي المسؤولة عن ربط ودجة الجذر بالمحرك وإظهارها للمستخدم.
+- ملف `main.dart` النظيف يحتوي فقط على التهيئة وتحديد الـ Providers بدون تضمين أي ودجات شاشات ضخمة في نفس الملف.
+
+</SummaryBox>

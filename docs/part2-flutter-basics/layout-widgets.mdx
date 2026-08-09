@@ -1,0 +1,158 @@
+﻿---
+id: layout-widgets
+title: "2.3 Layout Widgets"
+sidebar_label: "2.3 Layout Widgets"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 2.3 ودجات التخطيط (Layout Widgets)
+
+بناء واجهات مستخدم مذهلة ومتجاوبة يتطلب إتقان ودجات التخطيط (Layout Widgets). يوفر Flutter مجموعة شاسعة من التخطيطات أحادية ومتعددة الأبناء مثل `Row`, `Column`, `Stack`, و `Expanded`.
+
+---
+
+## 🎯 أهداف الدرس (Learning Objectives)
+
+1. التحكم بالترتيب الأفقي والعمودي باستخدام `Row` و `Column`.
+2. فهم محاور التراصف: `MainAxisAlignment` و `CrossAxisAlignment`.
+3. استخدام `Stack` و `Positioned` لتراكب العناصر فوق بعضها البعض.
+4. توزيع المساحات بمرونة واستجابة باستخدام `Expanded`, `Flexible`, و `SizedBox`.
+5. تقطيع الواجهة المعقدة إلى ودجات صغيرة قابلة لإعادة الاستخدام (Extracted Widgets).
+
+---
+
+## 📘 الشرح النظري (Theoretical Explanation)
+
+### 1. التخطيطات الخطية (`Row` & `Column`)
+* **`Row`**: ترتب الأبناء أفقياً من اليسار لليمين (أو اليمين لليسار في RTL).
+* **`Column`**: ترتب الأبناء عمودياً من الأعلى للأسفل.
+
+### 2. التراصف والمرونة
+* **`MainAxisAlignment`**: محاذاة العناصر على المحور الرئيسي (أفقي للـ Row، عمودي للـ Column).
+* **`CrossAxisAlignment`**: محاذاة العناصر على المحور التقاطعي التعامدي.
+* **`Expanded`**: تجعل الودجة تتوسع لملء المساحة المتبقية داخل الـ Row أو Column لتجنب خطأ التجاوز (Pixel Overflow).
+
+---
+
+## 💻 التطبيق المعماري (MVVM & Clean Code)
+
+سنقوم بتصميم بطاقة معلومات مستخدم `UserProfileCard` مقسمة إلى ودجات صغيرة نظيفة داخل مجلد `lib/presentation/widgets/`.
+
+```dart
+// ==========================================
+// File: lib/presentation/widgets/user_profile_card.dart
+// Description: ودجة عرض مخصصة ومستخرجة بنظافة Clean Code
+// Architecture Layer: Presentation (Widget)
+// ==========================================
+
+import 'package:flutter/material.dart';
+
+class UserProfileCard extends StatelessWidget {
+  final String avatarUrl;
+  final String userName;
+  final String userRole;
+  final VoidCallback onProfileTap;
+
+  const UserProfileCard({
+    super.key,
+    required this.avatarUrl,
+    required this.userName,
+    required this.userRole,
+    required this.onProfileTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: InkWell(
+        onTap: onProfileTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              // 1. الصورة الشخصية مع التراكب للطلب عبر Stack
+              Stack(
+                children: [
+                  CircleAvatar(
+                    radius: 32,
+                    backgroundImage: NetworkImage(avatarUrl),
+                  ),
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: Container(
+                      width: 14,
+                      height: 14,
+                      decoration: BoxDecoration(
+                        color: Colors.green,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(width: 16),
+
+              // 2. تفاصيل النص ممددة بأمان لمنع الـ Overflow
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      userName,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      userRole,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // 3. أيقونة التعديل الجانبية
+              const Icon(Icons.arrow_forward_ios, size: 18, color: Colors.grey),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+---
+
+<ExerciseBox title="جرب بنفسك 💻">
+
+قم بإنشاء ودجة تخطيط باسم `StatCardWidget` تحتوي على:
+1. `Row` يضم أيقونة في اليسار، و `Column` يضم العنوان والقيمة العددية.
+2. استخدم `Expanded` لحماية النصوص من التجاوز.
+3. اضبط الهوامش الداخلية باستخدام `Padding(padding: EdgeInsets.symmetric(...))`.
+
+</ExerciseBox>
+
+---
+
+<SummaryBox title="خلاصة الدرس 📌">
+
+- الـ `Row` و `Column` هما أساس التخطيطات في Flutter وتأتي الـ `Expanded` لحل مشاكل التجاوز (Overflow).
+- نستخدم الـ `Stack` لوضع الودجات فوق بعضها بتنسيق أبعاد محدد عبر `Positioned`.
+- يستوجب الكود النظيف تقسيم الشاشات الضخمة إلى ودجات مستخرجة ذات أسماء واضحة ومسؤولية أحادية.
+
+</SummaryBox>

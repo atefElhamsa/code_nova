@@ -1,0 +1,105 @@
+﻿---
+id: async-programming
+title: "1.9 Async / Futures / Streams"
+sidebar_label: "1.9 Async / Futures / Streams"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 1.9 البرمجة غير التزامنية (Futures, Streams & Async/Await)
+
+تطبيقات الهاتف المحمول الحديثة تعتمد بشكل أساسي على البرمجة غير التزامنية (Asynchronous Programming) لجلب البيانات عبر الشبكة، القراءة من قواعد البيانات، وتلقي التحديثات دون تجميد واجهة المستخدم (UI Freeze).
+
+---
+
+## 🎯 أهداف الدرس (Learning Objectives)
+
+1. فهم كيفية عمل حلقة الأحداث (Event Loop) في Dart.
+2. التعامل مع الـ **Futures** والكلمات المفتاحية `async` و `await`.
+3. التقاط الأخطاء والتعامل مع الاستثناءات عبر `try-catch-finally`.
+4. التعامل مع التدفقات المستمرة للبيانات (**Streams**) و `StreamController`.
+5. إدارة العمليات اللاتزامنية بنظافة في الـ **ViewModel**.
+
+---
+
+## 📘 الشرح النظري (Theoretical Explanation)
+
+### 1. الـ Future
+يمثل قيمة مفرودة ستكون متاحة في المستقبل (نجاح أو فشل). يُشبه الوعد (Promise) في اللغات الأخرى.
+
+### 2. الكلمات المفتاحية `async` و `await`
+تمنحك إمكانية كتابة الكود غير التزامني ليبدو وكأنه كود تزامني مرتب متسلسل، مما يرفع مقروئية الكود بشكل استثنائي.
+
+### 3. الـ Streams
+تُمثل تدفقاً مستمراً من الأحداث أو البيانات عبر الزمن (مثل استلام رسائل محادثة مباشرة أو تحديثات الموقع المباشرة GPS).
+
+---
+
+## 💻 التطبيق المعماري (MVVM & Clean Code)
+
+في معمارية MVVM، نقوم بالتعامل مع العمليات غير التزامنية في الـ ViewModel مع إخطار الواجهة بالتغيرات قبل وبعد جلب البيانات.
+
+```dart
+// ==========================================
+// File: lib/presentation/viewmodels/news_viewmodel.dart
+// Description: ViewModel يتولى جلب الأخبار غير التزامنية بأمان
+// Architecture Layer: Presentation (ViewModel)
+// ==========================================
+
+import 'package:flutter/foundation.dart';
+
+class NewsViewModel extends ChangeNotifier {
+  bool _isLoading = false;
+  List<String> _articles = [];
+  String? _errorMessage;
+
+  bool get isLoading => _isLoading;
+  List<String> get articles => _articles;
+  String? get errorMessage => _errorMessage;
+
+  /// دالة جلب البيانات غير التزامنية
+  Future<void> fetchNewsArticles() async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners(); // إخطار الواجهة بعرض المؤشر الحركي Loading
+
+    try {
+      // محاكاة طلب شبكة يستغرق ثانيتين
+      await Future.delayed(const Duration(seconds: 2));
+
+      // بيانات وهمية ناجحة
+      _articles = [
+        'إطلاق الإصدار الجديد من Flutter بنجاح',
+        'شرح معمارية MVVM بأعلى معايير الجودة',
+        'ميزات Dart 3 الحبيبة في العمليات اللاتزامنية'
+      ];
+    } catch (e) {
+      _errorMessage = 'حدث خطأ أثناء تحميل البيانات: ${e.toString()}';
+    } finally {
+      _isLoading = false;
+      notifyListeners(); // إخطار الواجهة بانتهاء العملية وتعديل الشاشة
+    }
+  }
+}
+```
+
+---
+
+<ExerciseBox title="جرب بنفسك 💻">
+
+قم بإنشاء دالة ترجع `Stream<int>` تُسمى `countdownStream(int startFrom)`:
+1. تقوم بإرسال الأعداد تنازلياً من `startFrom` إلى `0` بفاصل ثانية واحدة بين كل رقم.
+2. استخدم الكلمات المفتاحية `async*` و `yield`.
+
+</ExerciseBox>
+
+---
+
+<SummaryBox title="خلاصة الدرس 📌">
+
+- الـ `Future` يتعامل مع عملية لاتزامنية تعيد قيمة واحدة، بينما يتعامل الـ `Stream` مع تدفق متعدد للبيانات.
+- نستخدم `async` و `await` لكتابة كود لاتزامني نظيف ومفهوم.
+- في معمارية **MVVM**، نضع دائماً التعديلات على حالات التحميل والأخطاء حول عمليات الـ `await` مع استدعاء `notifyListeners()`.
+
+</SummaryBox>

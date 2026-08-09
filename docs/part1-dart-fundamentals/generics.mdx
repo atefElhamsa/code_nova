@@ -1,0 +1,102 @@
+﻿---
+id: generics
+title: "1.8 Generics"
+sidebar_label: "1.8 Generics"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 1.8 الأنواع المعممة (Generics)
+
+الأنواع المعممة (Generics) تتيح لك كتابة فئات ودوال قادرة على التعامل مع أنواع بيانات مختلفة مع الحفاظ التام على أمان الأنواع (Type Safety) ومنع تكرار الكود.
+
+---
+
+## 🎯 أهداف الدرس (Learning Objectives)
+
+1. استيعاب مفهوم الرمز التجريدي `<T>` في الفئات والدوال.
+2. بناء فئات استجابة عامة (Generic API Response Wrappers).
+3. استخدام القيود على الأنواع المعممة (`<T extends BaseEntity>`).
+4. تطبيق Generics لتصميم مغلف استجابة مرن في طبقة `core/network/`.
+
+---
+
+## 📘 الشرح النظري (Theoretical Explanation)
+
+تمنحك Generics القدرة على إنشاء هيكل ينطبق على عدة أنواع. فبدلاً من إنشاء `StringResponse` و `UserResponse` و `ProductResponse` بشكل منفصل ومكرر، تقوم بإنشاء فئة واحدة عامة `ApiResponse<T>`.
+
+### قيود الأنواع (Type Bounding)
+يمكنك تقييد النوع المعمم بحيث يقبل فقط الفئات التي ترث من فئة معينة:
+```dart
+class Repository<T extends BaseModel> { ... }
+```
+
+---
+
+## 💻 التطبيق المعماري (MVVM & Clean Code)
+
+في معمارية Clean Code، تُستخدم Generics لتوحيد نمط استجابة الشبكة ونمط مغلف الأخطاء/النجاح `Resource<T>` عبر التطبيق بأكمله.
+
+```dart
+// ==========================================
+// File: lib/core/network/api_response.dart
+// Description: فئة معممة لتغليف نتائج استجابات API
+// Architecture Layer: Core Network
+// ==========================================
+
+/// مغلف استجابة عام مرن يقبل أي نوع بيانات T
+class ApiResponse<T> {
+  final bool isSuccess;
+  final T? data;
+  final String? errorMessage;
+  final int statusCode;
+
+  const ApiResponse._({
+    required this.isSuccess,
+    this.data,
+    this.errorMessage,
+    required this.statusCode,
+  });
+
+  /// بناء حالة النجاح
+  factory ApiResponse.success(T data, {int statusCode = 200}) {
+    return ApiResponse._(
+      isSuccess: true,
+      data: data,
+      statusCode: statusCode,
+    );
+  }
+
+  /// بناء حالة الفشل
+  factory ApiResponse.failure(String message, {int statusCode = 400}) {
+    return ApiResponse._(
+      isSuccess: false,
+      errorMessage: message,
+      statusCode: statusCode,
+    );
+  }
+}
+```
+
+---
+
+<ExerciseBox title="جرب بنفسك 💻">
+
+أنشئ فئة مجردة عامة `BaseRepository<T>` تمتلك الدوال التالية:
+1. `Future<List<T>> getAll();`
+2. `Future<T?> getById(String id);`
+3. `Future<bool> delete(String id);`
+ثم أنشئ فئة `ProductRepository` تنفذ هذه الواجهة باستخدام نموذج `ProductModel`.
+
+</ExerciseBox>
+
+---
+
+<SummaryBox title="خلاصة الدرس 📌">
+
+- توفر Generics إعادة استخدام عالية للكود مع الحفاظ الصارم على سلامة الأنواع (Type Safety).
+- تُعتبر الفئات المعممة مثل `ApiResponse<T>` العمود الفقري لتنظيم الاستجابات الشبكية في Clean Code.
+- استخدام القيود `<T extends Class>` يقيد العمليات بالأنواع المتوافقة مع معايير محددة فقط.
+
+</SummaryBox>

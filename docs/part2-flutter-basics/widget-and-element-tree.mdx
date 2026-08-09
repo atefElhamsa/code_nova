@@ -1,0 +1,114 @@
+﻿---
+id: widget-and-element-tree
+title: "2.2 Widget & Element Tree"
+sidebar_label: "2.2 Widget & Element Tree"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 2.2 شجرة الودجات وشجرة العناصر (Widget Tree & Element Tree)
+
+"كل شيء في Flutter هو Widget!" - عبارة مشهورة جداً، ولكن لكي تصبح محترفاً حقيقياً في Flutter، عليك فهم ما يحدث في الخفاء من خلال **الأشجار الثلاثة** (Widget Tree, Element Tree, RenderObject Tree).
+
+---
+
+## 🎯 أهداف الدرس (Learning Objectives)
+
+1. فهم الأشجار الثلاث في إطار Flutter والفرق بينها.
+2. التفريق بين `StatelessWidget` و `StatefulWidget`.
+3. فهم سبب تفضيل الـ `StatelessWidget` المحمية بـ MVVM بدلاً من الـ `setState` العشوائية.
+4. بناء الـ Views لتقتصر وظيفتها حكراً على العرض فقط.
+
+---
+
+## 📘 الشرح النظري (Theoretical Explanation)
+
+تتألف البنية الداخلية لإطار عمل Flutter من 3 أشجار تعمل بتناغم:
+
+1. **شجرة الودجات (Widget Tree):** المخطط الهندسي (Blueprint). وهي كائنات خفيفة الوزن للغاية وغير قابلة للتعديل (Immutable) يتم إنشاؤها وإعادة بنائها باستمرار.
+2. **شجرة العناصر (Element Tree):** الهيكل الوسيط والمدير المباشر. يربط بين الودجة الثابتة والعنصر الرسام التفاعلي. يحتفظ بالحالة (State) والموقع في الشجرة.
+3. **شجرة كائنات الرسم (RenderObject Tree):** المسؤولة الفعلية عن حساب الأحجام (Sizing)، التموضع (Positioning)، والرسم النهائي للبكسلات على الشاشة.
+
+---
+
+## 💻 التطبيق المعماري (MVVM & Clean Code)
+
+في معمارية MVVM الاحترافية، نتجنب استخدام `StatefulWidget` مع `setState()` لإدارة حالة العمل، ونستخدم بدلاً من ذلك `StatelessWidget` مع `Consumer` يقبل الحالة من الـ ViewModel.
+
+```dart
+// ==========================================
+// File: lib/presentation/views/counter_view.dart
+// Description: View خفيفة الوزن ونظيفة تعتمد StatelessWidget بالكامل
+// Architecture Layer: Presentation (View)
+// ==========================================
+
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../viewmodels/counter_viewmodel.dart';
+
+class CounterView extends StatelessWidget {
+  const CounterView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('عداد MVVM النظيف'),
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              'القيمة الحالية للعداد هي:',
+              style: TextStyle(fontSize: 18),
+            ),
+            const SizedBox(height: 12),
+            // استخدام Selector أو Consumer لتحديث هذا الجزء المحدد فقط عند التغير
+            Consumer<CounterViewModel>(
+              builder: (context, viewModel, child) {
+                return Text(
+                  '${viewModel.count}',
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF0175C2),
+                      ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        // استدعاء دالة ViewModel بدون كتابة أي منطق داخل الزر
+        onPressed: () => context.read<CounterViewModel>().increment(),
+        tooltip: 'زيادة',
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+}
+```
+
+---
+
+<ExerciseBox title="جرب بنفسك 💻">
+
+1. أنشئ الـ ViewModel المسمى `CounterViewModel` يرث من `ChangeNotifier`.
+2. أضف حقل خاص `_count = 0` و Getter عام `count`.
+3. أضف دالة `increment()` تقوم بزيادة العداد وإرسال `notifyListeners()`.
+4. اربط الشاشة بالـ ViewModel وتأكد أن الشاشة أصبحت `StatelessWidget`.
+
+</ExerciseBox>
+
+---
+
+<SummaryBox title="خلاصة الدرس 📌">
+
+- الـ Widgets خفيفة وغير قابلة للتعديل (Immutable)، بينما الـ Elements هي التي تحتفظ بالحالة في الشجرة.
+- شجرة RenderObjects هي من يتكفل بالرسم الفعلي للبكسلات وحساب المساحات.
+- في معمارية **MVVM**، نُبقي الـ Views على هيئة `StatelessWidget` بقدر الإمكان لتسهيل الاختبارات وتصفية تعقيدات دورة الحياة.
+
+</SummaryBox>

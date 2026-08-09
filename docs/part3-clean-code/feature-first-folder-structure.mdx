@@ -1,0 +1,119 @@
+﻿---
+id: feature-first-folder-structure
+title: "3.3 Feature-First Folder Structure"
+sidebar_label: "3.3 Feature-First Folder Structure"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 3.3 التقسيم المجمعي حسب الميزات (Feature-First Folder Structure)
+
+عندما ينوع مشروع Flutter وتتضاعف عدد شاشاته، يتأثر تنظيم الكود بشكل مباشر. تعتبر هيكلية **Feature-First** النمط القياسي الأكثر نجاحاً لتنظيم المشاريع الضخمة القابلة للتوسع.
+
+---
+
+## 🎯 أهداف الدرس (Learning Objectives)
+
+1. المقارنة بين التقسيم حسب الطبقات (Layer-First) والتقسيم حسب الميزات (Feature-First).
+2. بناء الهيكل الثلاثي الصارم لكل ميزة: `core/`, `data/`, `presentation/`.
+3. تنظيم مجلد `core/` الثابت لكامل التطبيق (Constants, Router, Theme, Network).
+4. تحسين سرعة التنقل والتطوير في الفرق البرمجية الكبيرة.
+
+---
+
+## 📘 الشرح النظري (Theoretical Explanation)
+
+### هيكلية Feature-First القياسية
+بدلاً من وضع جميع الـ ViewModels في مجلد واحد عملاق، يتم تقسيم التطبيق بناءً على الميزات الوظيفية (مثل: `auth`, `products`, `cart`, `profile`).
+
+تضم كل ميزة داخلها الطبقات الثلاث:
+
+```text
+lib/
+├── core/                        # العناصر المشتركة عبر التطبيق بأكمله
+│   ├── constants/               # الثوابت
+│   ├── errors/                  # الفشل والاستثناءات
+│   ├── network/                 # إعدادات Dio أو الشبكة
+│   ├── router/                  # المسارات بـ go_router
+│   ├── theme/                   # السمات والألوان
+│   └── utils/                   # الأدوات المساعدة
+│
+└── features/                    # الميزات المستقلة
+    ├── auth/                    # ميزة المصادقة
+    │   ├── data/                # Models, Datasources, Repositories
+    │   └── presentation/        # Views, ViewModels, Widgets
+    │
+    └── products/                # ميزة المنتجات
+        ├── data/
+        └── presentation/
+```
+
+---
+
+## 💻 التطبيق المعماري (MVVM & Clean Code)
+
+نستعرض نموذجاً عملياً لاستيراد الملفات عبر هذه الهيكلية المنظمة.
+
+```dart
+// ==========================================
+// File: lib/features/products/presentation/views/product_list_view.dart
+// Description: شاشة عرض المنتجات داخل مجلد الميزة المحدد
+// Architecture Layer: Presentation (View inside Feature)
+// ==========================================
+
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+// 1. استيراد من المجلد المباشر لنفس الميزة
+import '../viewmodels/product_list_viewmodel.dart';
+import '../widgets/product_item_widget.dart';
+
+// 2. استيراد العناصر العامة من مجلد core
+import '../../../../core/theme/app_theme.dart';
+
+class ProductListView extends StatelessWidget {
+  const ProductListView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('قائمة المنتجات'),
+        backgroundColor: AppTheme.primaryBlue,
+      ),
+      body: Consumer<ProductListViewModel>(
+        builder: (context, viewModel, child) {
+          return ListView.builder(
+            itemCount: viewModel.products.length,
+            itemBuilder: (context, index) {
+              return ProductItemWidget(product: viewModel.products[index]);
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+```
+
+---
+
+<ExerciseBox title="جرب بنفسك 💻">
+
+قم بتصميم شجرة المجلدات لميزة إدارة الملاحظات `notes`:
+1. أنشئ مجلد `lib/features/notes/`.
+2. أنشئ مجلدات `data/models`, `data/repositories`, `presentation/views`, `presentation/viewmodels`.
+3. وزع الملفات التشاركية العامة في `lib/core/`.
+
+</ExerciseBox>
+
+---
+
+<SummaryBox title="خلاصة الدرس 📌">
+
+- تضمن هيكلية Feature-First سهولة إضافة أو حذف أي ميزة دون التأثير على الميزات الأخرى.
+- المجلد `core/` يحتوي فقط على الخدمات والأدوات العامة التشاركية.
+- كل ميزة تحافظ على التقسيم المعماري الصارم: `data/` و `presentation/`.
+
+</SummaryBox>

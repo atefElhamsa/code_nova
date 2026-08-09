@@ -1,0 +1,103 @@
+﻿---
+id: error-handling-failures
+title: "5.3 Failure Objects & Error Handling"
+sidebar_label: "5.3 Failure Objects & Error Handling"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 5.3 معالجة الأخطاء وكائنات Failure (Error Handling & Failure Objects)
+
+إدارة الأخطاء بشكل عشوائي يؤدي إلى ظهور رسائل مبهمة للمستخدم مثل `DioException [bad response]: 500`. يوفر استخدام هرمية كائنات **Failure** طريقة موحدة لتحويل الأخطاء البرمجية إلى رسائل واضحة ومفهومة باللغة العربية.
+
+---
+
+## 🎯 أهداف الدرس (Learning Objectives)
+
+1. التمييز بين الاستثناءات البرمجية (**Exceptions**) وكائنات الفشل الواجهية (**Failures**).
+2. إنشاء هرمية كائنات الفشل القياسية في `core/errors/failures.dart`.
+3. تحويل أخطاء الشبكة الصعبة (404, 500, Timeout) إلى رسائل تفاعلية.
+4. عرض كائن الـ Failure بأسلوب أنيق داخل طبقة الـ View.
+
+---
+
+## 📘 الشرح النظري (Theoretical Explanation)
+
+### الفرق بين Exception و Failure
+* **Exception:** كائن خطأ تقني غير منظم يقع في طبقة البيانات (مثل `SocketException` أو `FormatException`).
+* **Failure:** كائن عمل موحد منظم يُرجع من طبقة البيانات للـ ViewModel ويحمل رسالة موجهة للمستخدم وعنوان الخطأ لتسهيل العرض المباشر.
+
+---
+
+## 💻 التطبيق المعماري (MVVM & Clean Code)
+
+تأسيس كائنات الفشل القياسية في `lib/core/errors/failures.dart` واستخدامها بالـ Repository.
+
+```dart
+// ==========================================
+// File: lib/core/errors/failures.dart
+// Description: هرمية كائنات الفشل المعمارية الموحدة
+// Architecture Layer: Core Errors
+// ==========================================
+
+abstract class Failure {
+  final String message;
+  const Failure(this.message);
+}
+
+/// فشل الاتصال الشبكي أو انقطاع الإنترنت
+class ServerFailure extends Failure {
+  const ServerFailure([super.message = 'تعذر الاتصال بالخادم. يرجى التحقق من الشبكة.']);
+}
+
+/// فشل انتهاء وقت الجلسة أو عدم التصريح
+class AuthFailure extends Failure {
+  const AuthFailure([super.message = 'انتهت صلاحية الجلسة. يرجى إعادة تسجيل الدخول.']);
+}
+
+/// فشل عدم وجود البيانات المطلوبة
+class NotFoundFailure extends Failure {
+  const NotFoundFailure([super.message = 'المحتوى المطلوب غير موجود.']);
+}
+
+// ==========================================
+// File: lib/presentation/viewmodels/auth_viewmodel.dart
+// Description: ViewModel يتلقى كائن Failure ويعرض رسالته للواجهة
+// Architecture Layer: Presentation (ViewModel)
+// ==========================================
+
+import 'package:flutter/foundation.dart';
+import '../../core/errors/failures.dart';
+
+class AuthViewModel extends ChangeNotifier {
+  String? _errorMessage;
+
+  String? get errorMessage => _errorMessage;
+
+  void handleFailure(Failure failure) {
+    // تعيين الرسالة العربية المخصصة القادمة من كائن الفشل
+    _errorMessage = failure.message;
+    notifyListeners();
+  }
+}
+```
+
+---
+
+<ExerciseBox title="جرب بنفسك 💻">
+
+1. أنشئ كائن فشل جديد باسم `CacheFailure` يحمل رسالة افتراضية: `"فشل في قراءة البيانات المحفوظة محلياً"`.
+2. اكتب دالة تحول `DioException` إلى كائن `ServerFailure` أو `AuthFailure` حسب رمز الحالة `statusCode`.
+
+</ExerciseBox>
+
+---
+
+<SummaryBox title="خلاصة الدرس 📌">
+
+- نحول الاستثناءات التقنية (`Exceptions`) في طبقة البيانات إلى كائنات فشل (`Failures`) موجهة للواجهة.
+- تضمن هرمية الفئات لـ Failure توحيد رسائل الأخطاء وتسهيل صيانتها بلغة عربية مفهومة للمستخدم.
+- لا تظهر تفاصيل الأخطاء التقنية المربكة في شاشات التطبيق أبداً.
+
+</SummaryBox>

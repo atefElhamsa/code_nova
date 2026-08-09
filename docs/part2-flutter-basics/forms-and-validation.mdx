@@ -1,0 +1,148 @@
+﻿---
+id: forms-and-validation
+title: "2.6 Forms & Validation"
+sidebar_label: "2.6 Forms & Validation"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 2.6 النماذج والتحقق من المدخلات (Forms & Input Validation)
+
+النماذج (Forms) هي وسيلة التفاعل الرئيسية لجمع المدخلات من المستخدمين. يتطلب بناء نموذج قوي الاستعانة بـ `Form`, `TextFormField`, وتطبيق دالّة تحقق (Validator) نظيفة ومفصولة داخل معمارية MVVM.
+
+---
+
+## 🎯 أهداف الدرس (Learning Objectives)
+
+1. فهم كيفية عمل `Form` ودور الـ `GlobalKey<FormState>`.
+2. استخدام `TextFormField` والتحكم بالتنسيق وقواعد إدخال البيانات.
+3. الت التزام بمبدأ فصل قواعد التحقق (Validation Logic) في الـ ViewModel أو Mixin.
+4. إرسال النموذج ومعالجة حالة الزر التفاعلي أثناء الإرسال.
+
+---
+
+## 📘 الشرح النظري (Theoretical Explanation)
+
+تتيح ودجة `Form` ربط عدة الحقول وتحقق صحتها دفعة واحدة باستخدام المفتاح العام `GlobalKey<FormState>` عبر استدعاء `.currentState!.validate()`.
+
+لكن في الكود النظيف، تكون دالة التحقق بسيطة وتستدعي المنطق الجاهز من الـ ViewModel لتبقى الـ View خالية تماماً من الشروط البرمجية.
+
+---
+
+## 💻 التطبيق المعماري (MVVM & Clean Code)
+
+نستعرض نموذج تسجيل الدخول المنظم بنظافة عالية.
+
+```dart
+// ==========================================
+// File: lib/presentation/views/login_view.dart
+// Description: شاشة نموذج تسجيل الدخول النظيفة
+// Architecture Layer: Presentation (View)
+// ==========================================
+
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../viewmodels/login_viewmodel.dart';
+
+class LoginView extends StatefulWidget {
+  const LoginView({super.key});
+
+  @override
+  State<LoginView> createState() => _LoginViewState();
+}
+
+class _LoginViewState extends State<LoginView> {
+  final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final viewModel = context.watch<LoginViewModel>();
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('تسجيل الدخول')),
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              TextFormField(
+                controller: _emailController,
+                keyboardType: TextInputType.emailAddress,
+                decoration: const InputDecoration(
+                  labelText: 'البريد الإلكتروني',
+                  prefixIcon: Icon(Icons.email),
+                  border: OutlineInputBorder(),
+                ),
+                validator: (val) => viewModel.validateEmail(val),
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _passwordController,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: 'كلمة المرور',
+                  prefixIcon: Icon(Icons.lock),
+                  border: OutlineInputBorder(),
+                ),
+                validator: (val) => viewModel.validatePassword(val),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: viewModel.isSubmitting
+                      ? null
+                      : () {
+                          if (_formKey.currentState!.validate()) {
+                            viewModel.submitLogin(
+                              _emailController.text,
+                              _passwordController.text,
+                            );
+                          }
+                        },
+                  child: viewModel.isSubmitting
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text('دخول'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+---
+
+<ExerciseBox title="جرب بنفسك 💻">
+
+أنشئ ViewModel باسم `LoginViewModel` يحتوي على:
+1. دالة `validateEmail(String? email)` ترجع نص الخطأ أو `null`.
+2. دالة `validatePassword(String? password)` تتيح التأكد أن كلمة المرور لا تقل عن 6 أحرف.
+3. دالة `submitLogin` التي تقوم بتعيين `isSubmitting = true` وإرسال إخطار التحديث.
+
+</ExerciseBox>
+
+---
+
+<SummaryBox title="خلاصة الدرس 📌">
+
+- نستخدم `TextEditingController` للتحكم في قيم الحقول ونتأكد دائماً من التخلص منها في `dispose()`.
+- التحقق من الصحة (Validation) يُنفذ عبر دوال مساعدة في الـ ViewModel لتأكيد قواعد العمل (Business Rules).
+- حماية الأزرار من الكبس المكرر أثناء الإرسال تتم عن طريق حالة `isSubmitting` القادمة من الـ ViewModel.
+
+</SummaryBox>

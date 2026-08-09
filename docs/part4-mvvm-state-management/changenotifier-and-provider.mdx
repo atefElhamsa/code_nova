@@ -1,0 +1,106 @@
+﻿---
+id: changenotifier-and-provider
+title: "4.2 ChangeNotifier & Provider"
+sidebar_label: "4.2 ChangeNotifier & Provider"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 4.2 إدارة الحالة باستخدام ChangeNotifier و Provider
+
+تعتبر مكتبة **Provider** المعززة بفئة **ChangeNotifier** الوسيلة الرسمية والأكثر استخداماً لإدارة الحالة وسحب التغييرات في تطبيق MVVM في Flutter.
+
+---
+
+## 🎯 أهداف الدرس (Learning Objectives)
+
+1. فهم كيفية إرسال التنبيهات من الـ ViewModel عبر `notifyListeners()`.
+2. ربط الـ Provider بأعلى الشجرة باستخدام `ChangeNotifierProvider`.
+3. الاستماع للتغييرات باستخدام `Consumer` و `Selector`.
+4. التفريق الدقيق بين `context.watch()` و `context.read()`.
+
+---
+
+## 📘 الشرح النظري (Theoretical Explanation)
+
+### الأدوات الأساسية في Provider:
+1. **`ChangeNotifier`**: الفئة الأصلية التي تمنح الـ ViewModel خاصية إخطار المستمعين بالتحديثات عبر `notifyListeners()`.
+2. **`ChangeNotifierProvider`**: الودجة التي توفر النسخة الخاصة بالـ ViewModel للودجات الابنة في شجرة العناصر.
+3. **`Consumer<T>`**: ودجة تعيد بناء كود محدد داخلها فقط عند استلام إخطار من الـ ViewModel `T`.
+4. **`Selector<A, S>`**: ودجة ذكية تقوم بإعادة البناء **فقط** إذا تغير جزء دقيق محدد من الحالة `S` لمنع إعادة البناء الزائدة (Rebuild Optimization).
+5. **`context.watch<T>()`**: للاستماع المباشر وإعادة بناء الـ Widget كاملة.
+6. **`context.read<T>()`**: للحصول على المرجع بدون استماع (تستخدم حصراً في دالة `onPressed` لإنعاش الأفعال).
+
+---
+
+## 💻 التطبيق المعماري (MVVM & Clean Code)
+
+شاشة تفاعلية تستخدم `Consumer` و `Selector` لتحسين الأداء ومنع إعادة البناء غير الضرورية.
+
+```dart
+// ==========================================
+// File: lib/presentation/views/optimized_user_view.dart
+// Description: View تستخدم Selector لتحسين كفاءة إعادة البناء
+// Architecture Layer: Presentation (View)
+// ==========================================
+
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../viewmodels/user_profile_viewmodel.dart';
+
+class OptimizedUserView extends StatelessWidget {
+  const OptimizedUserView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('الملف الشخصي المحسن')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // 1. Selector تستمع فقط للتغير في اسم المستخدم وتتجاهل بقية المتغيرات
+            Selector<UserProfileViewModel, String>(
+              selector: (context, vm) => vm.displayEmail,
+              builder: (context, email, child) {
+                return Text(
+                  'البريد: $email',
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                );
+              },
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              // 2. استخدام context.read بنظافة داخل onPressed
+              onPressed: () {
+                context.read<UserProfileViewModel>().refreshUserData();
+              },
+              child: const Text('تحديث البيانات'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+---
+
+<ExerciseBox title="جرب بنفسك 💻">
+
+1. ما الفرق الجوهري بين استدعاء `context.read<MyViewModel>().doAction()` واستدعاء `context.watch<MyViewModel>().doAction()`؟
+2. اكتب ودجة `Selector` تستمع فقط لمتغير `isLoading` البولياني دون أن تعيد البناء عند تغيير قائمة المنتجات.
+
+</ExerciseBox>
+
+---
+
+<SummaryBox title="خلاصة الدرس 📌">
+
+- نستخدم `context.read` للاستدعاء دون استماع (مثالي داخل دالة `onPressed`).
+- نستخدم `Consumer` للاستماع وإعادة بناء الجزئية المحددة.
+- نستخدم `Selector` لأعلى درجات تحسين الأداء عند الرغبة في التفاعل مع متغير واحد فقط من الـ ViewModel.
+
+</SummaryBox>

@@ -1,0 +1,151 @@
+---
+id: domain-data-layer
+title: "7.2 Data Layer - Models & Repositories"
+sidebar_label: "7.2 Data Layer - Models & Repositories"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 7.2 مشروع Capstone: طبقة البيانات والنماذج (Data Layer & Repository)
+
+في هذه الجلسة الثانية من مشروع Capstone، سنقوم ببناء **طبقة البيانات بالكامل (Data Layer)**، والتي تشمل نموذج البيانات DTO، مصادر البيانات الشبكية والمحلية، والتطبيق الفعلي لمستودع المهام الذكي.
+
+---
+
+## 🎯 أهداف الدرس (Learning Objectives)
+
+1. كتابة `TaskModel` المحمي والداعم لتسلسل بيانات الـ JSON.
+2. بناء `TaskRemoteDatasource` لإجراء طلبات الاتصال الشبكي بـ Dio.
+3. بناء `TaskLocalDatasource` للتخزين الاحتياطي التلقائي عند غياب الشبكة.
+4. دمج المصدرين داخل `TaskRepositoryImpl` واستخراج أخطاء `Failure`.
+
+---
+
+## 💻 التطبيق المعماري (MVVM & Clean Code)
+
+### 1. نموذج البيانات `TaskModel`
+
+```dart
+// ==========================================
+// File: lib/features/tasks/data/models/task_model.dart
+// Architecture Layer: Data (Model DTO)
+// ==========================================
+
+class TaskModel {
+  final String id;
+  final String title;
+  final String description;
+  final bool isCompleted;
+
+  const TaskModel({
+    required this.id,
+    required this.title,
+    required this.description,
+    this.isCompleted = false,
+  });
+
+  /// التحويل من وإلى JSON يدوياً أو تلقائياً
+  factory TaskModel.fromJson(Map<String, dynamic> json) {
+    return TaskModel(
+      id: json['id'] as String? ?? '',
+      title: json['title'] as String? ?? 'بدون عنوان',
+      description: json['description'] as String? ?? '',
+      isCompleted: json['completed'] as bool? ?? false,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'title': title,
+        'description': description,
+        'completed': isCompleted,
+      };
+
+  /// دالة النسخ مع التعديل النسبي (copyWith)
+  TaskModel copyWith({
+    String? id,
+    String? title,
+    String? description,
+    bool? isCompleted,
+  }) {
+    return TaskModel(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      isCompleted: isCompleted ?? this.isCompleted,
+    );
+  }
+}
+```
+
+### 2. التطبيق الفعلي للمستودع المنسق `TaskRepositoryImpl`
+
+```dart
+// ==========================================
+// File: lib/features/tasks/data/repositories/task_repository_impl.dart
+// Architecture Layer: Data (Repository Implementation)
+// ==========================================
+
+import '../models/task_model.dart';
+import '../../../../core/errors/failures.dart';
+
+abstract class BaseTaskRepository {
+  Future<List<TaskModel>> getTasks();
+  Future<void> addTask(TaskModel task);
+  Future<void> toggleTaskCompletion(String id);
+}
+
+class TaskRepositoryImpl implements BaseTaskRepository {
+  // محاكاة قواعد التخزين المحلية والشبكية
+  final List<TaskModel> _memoryTasksCache = [];
+
+  @override
+  Future<List<TaskModel>> getTasks() async {
+    try {
+      await Future.delayed(const Duration(milliseconds: 600));
+      if (_memoryTasksCache.isEmpty) {
+        _memoryTasksCache.addAll(const [
+          TaskModel(id: '1', title: 'مراجعة كورس Dart', description: 'إنهاء الجزء السابع'),
+          TaskModel(id: '2', title: 'تطبيق نمط MVVM', description: 'فصل الواجهة تماماً'),
+        ]);
+      }
+      return List.unmodifiable(_memoryTasksCache);
+    } catch (e) {
+      throw const ServerFailure('تعذر جلب المهام من الخادم');
+    }
+  }
+
+  @override
+  Future<void> addTask(TaskModel task) async {
+    _memoryTasksCache.add(task);
+  }
+
+  @override
+  Future<void> toggleTaskCompletion(String id) async {
+    final index = _memoryTasksCache.indexWhere((t) => t.id == id);
+    if (index != -1) {
+      final task = _memoryTasksCache[index];
+      _memoryTasksCache[index] = task.copyWith(isCompleted: !task.isCompleted);
+    }
+  }
+}
+```
+
+---
+
+<ExerciseBox title="جرب بنفسك 💻">
+
+1. أضف دالة حذف المهمة `deleteTask(String id)` في العقد والمستودع.
+2. أجرِ اختياراً أفقياً للتأكد أن `_memoryTasksCache` لا يتم تعديلها من الخارج بشكل مباشر.
+
+</ExerciseBox>
+
+---
+
+<SummaryBox title="خلاصة الدرس 📌">
+
+- تمثل طبقة البيانات الأساس الموثوق لتوليد البيانات وتغليف الاتصالات.
+- تمنح دالة `copyWith` القدرة على إنشاء نسخ محدثة غير قابلة للتعديل العشوائي لسلامة البيانات.
+
+</SummaryBox>

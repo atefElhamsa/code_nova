@@ -1,0 +1,95 @@
+﻿---
+id: testing-and-polish
+title: "7.5 Testing, Polish & Production"
+sidebar_label: "7.5 Testing, Polish & Production"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 7.5 مشروع Capstone: الاختبارات والتحسين النهائي (Testing, Polish & Production)
+
+تهانينا الحارة! نصل الآن إلى الجلسة الأخيرة من مشروع Capstone والدورة الشاملة. سنقوم بتأكيد جودة تطبيق **TaskFlow Pro** عبر كتابة الاختبارات الأحادية والتأكد من جاهزية التطبيق الكاملة للنشر والإنتاج (Production Readiness).
+
+---
+
+## 🎯 أهداف الدرس (Learning Objectives)
+
+1. كتابة Unit Test كامل لميزات `TaskListViewModel`.
+2. مراجعة ممارسات حماية الذاكرة ومنع التسريبات.
+3. التثبت من تطبيق معايير Clean Code و MVVM بنسبة 100% في جميع الشاشات.
+4. التحضير لنشر التطبيق وبناء النسخة النهائية (Production Build).
+
+---
+
+## 💻 التطبيق المعماري (MVVM & Clean Code)
+
+### 1. كتابة الاختبار النهائي للـ ViewModel
+
+```dart
+// ==========================================
+// File: test/features/tasks/presentation/viewmodels/task_list_viewmodel_test.dart
+// Description: اختبارات الشمولية والتصفية لمشروع Capstone
+// Architecture Layer: Unit Tests
+// ==========================================
+
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+
+import 'package:doc_flutter/features/tasks/data/models/task_model.dart';
+import 'package:doc_flutter/features/tasks/data/repositories/task_repository_impl.dart';
+import 'package:doc_flutter/features/tasks/presentation/viewmodels/task_list_viewmodel.dart';
+import 'package:doc_flutter/core/enums/view_status.dart';
+
+class MockTaskRepository extends Mock implements BaseTaskRepository {}
+
+void main() {
+  late TaskListViewModel viewModel;
+  late MockTaskRepository mockRepository;
+
+  setUp(() {
+    mockRepository = MockTaskRepository();
+    viewModel = TaskListViewModel(mockRepository);
+  });
+
+  const tTasksList = [
+    TaskModel(id: '1', title: 'مهمة 1', description: 'تطبيق MVVM', isCompleted: false),
+    TaskModel(id: '2', title: 'مهمة 2', description: 'كتابة الاختبارات', isCompleted: true),
+  ];
+
+  group('اختبارات TaskListViewModel الشاملة -', () {
+    test('يجب تصفية المهام المكتملة فقط عند اختيار TaskFilter.completed', () async {
+      // Arrange
+      when(() => mockRepository.getTasks()).thenAnswer((_) async => tTasksList);
+
+      // Act
+      await viewModel.fetchTasks();
+      viewModel.setFilter(TaskFilter.completed);
+
+      // Assert
+      expect(viewModel.status, ViewStatus.success);
+      expect(viewModel.filteredTasks.length, 1);
+      expect(viewModel.filteredTasks.first.id, '2');
+    });
+  });
+}
+```
+
+---
+
+<ExerciseBox title="جرب بنفسك 💻">
+
+1. شغّل أمر `flutter test` وتأكد من نجاح جميع اختبارات الدورة بنسبة 100%.
+2. افتح مبني الإنتاج عبر `flutter build apk --release` أو `flutter build web`.
+
+</ExerciseBox>
+
+---
+
+<SummaryBox title="خلاصة الدرس 📌">
+
+- يمثل تطبيق Capstone برهاناً عملياً على نجاح وقوة معمارية MVVM + Clean Code.
+- الفصل بين الطبقات يتيح اختبار الوظائف المعقدة وتعديل التحديثات بسلاسة وأمان تامين.
+- أنت الآن جاهز لبناء واستلام مشاريع Dart & Flutter احترافية حقيقية بالمعايير العالمية!
+
+</SummaryBox>

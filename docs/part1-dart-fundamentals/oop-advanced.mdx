@@ -1,0 +1,104 @@
+---
+id: oop-advanced
+title: "1.7 OOP Advanced - Mixins & Extensions"
+sidebar_label: "1.7 OOP Advanced - Mixins & Extensions"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 1.7 البرمجة الكائنية المتقدمة (Inheritance, Abstract, Mixins & Extensions)
+
+تصل قوة Dart في إدارتها للهندسة المعمارية عن طريق المفاهيم المتقدمة للـ OOP مثل **Abstract Classes** لتحديد العقود (Contracts)، و **Mixins** لإعادة استخدام المنطق، و **Extension Methods**.
+
+---
+
+## 🎯 أهداف الدرس (Learning Objectives)
+
+1. تطبيق مفهوم الوراثة (Inheritance) واستخدام الكلمة المفتاحية `super`.
+2. تصميم العقود البرمجية باستخدام الفئات المجردة (Abstract Classes) والواجهات (Interfaces).
+3. دمج السلوكيات المشتركة باستخدام الـ **Mixins** والكلمة المفتاحية `with`.
+4. توسيع الفئات القائمة باستخدام **Extension Methods**.
+
+---
+
+## 💻 الكود البرمجي أولاً (Code Example First)
+
+<span className="code-first-badge">⚡ Pure English Dart Code (Clean Code)</span>
+
+```dart
+// ==========================================
+// File: lib/core/extensions/string_extensions.dart
+// Description: Custom extension methods on String class
+// Architecture Layer: Core Extensions
+// ==========================================
+
+extension StringValidatorExtension on String {
+  /// Validates if string matches standard email regex format
+  bool get isValidEmail {
+    final emailRegExp = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    return emailRegExp.hasMatch(this);
+  }
+}
+
+// ==========================================
+// File: lib/data/repositories/base_auth_repository.dart
+// Description: Abstract repository contract interface
+// Architecture Layer: Data (Repository Contract)
+// ==========================================
+
+abstract class BaseAuthRepository {
+  Future<bool> login(String email, String password);
+  Future<void> logout();
+}
+
+// ==========================================
+// File: lib/core/mixins/validation_mixin.dart
+// Description: Input validation helper mixin
+// Architecture Layer: Core Mixins
+// ==========================================
+
+mixin ValidationMixin {
+  String? validateEmailInput(String? email) {
+    if (email == null || email.isEmpty) {
+      return 'Email is required';
+    }
+    if (!email.isValidEmail) {
+      return 'Invalid email format';
+    }
+    return null;
+  }
+}
+```
+
+---
+
+## 📘 الشرح التفصيلي للكود (Line-by-Line Technical Explanation)
+
+### 1. Abstract Classes & Contracts
+في `abstract class BaseAuthRepository`: الفئة المجردة كقالب يحدد الدوال التي يجب على المستودعات تنفيذها.
+
+### 2. Mixins
+في `mixin ValidationMixin`: تتيح تزويد الفئات بخصائص وسلوكيات معينة دون الحاجة للوراثة المباشرة.
+
+### 3. Extension Methods
+في `extension StringValidatorExtension on String`: تتيح تمديد الكائنات القياسية بوظائف جديدة.
+
+---
+
+<ExerciseBox title="جرب بنفسك 💻">
+
+1. أنشئ Extension على نوع `double` يحول السعر إلى صيغة عملة مثل: `150.0.toCurrency()` يرجع `"150.00 ر.س"`.
+2. أنشئ Mixin باسم `LoggerMixin` يمتلك دالة `logInfo(String message)` يطبع النص مسبوقاً بوقت التشغيل الحالي `DateTime.now()`.
+
+</ExerciseBox>
+
+---
+
+<SummaryBox title="خلاصة الدرس 📌">
+
+- الكود مكتوب بلغة إنجليزية نقية 100% جهة اليسار LTR.
+- الفئات المجردة هي الركيزة الأساسية لفصل العقود البرمجية وتطبيق مبدأ فصل الاهتمامات.
+- Extension Methods ترفع مقروءة الكود النظيف بتمديد الفئات القياسية.
+
+</SummaryBox>

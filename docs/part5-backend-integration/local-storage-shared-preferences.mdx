@@ -1,0 +1,100 @@
+---
+id: local-storage-shared-preferences
+title: "5.5 SharedPreferences - Local Storage"
+sidebar_label: "5.5 SharedPreferences - Local Storage"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 5.5 التخزين المحلي للبيانات (Local Persistence with SharedPreferences)
+
+حفظ بيانات التطبيق محلية على جهاز المستخدم أمر أساسي لإبقائه مسجلاً وتخزين تفضلاته (مثل لغة التطبيق وضع الثيم). تتيح مكتبة **SharedPreferences** تخزين الأزواج المفتاحية (Key-Value Pairs) ببساطة وكفاءة.
+
+---
+
+## 🎯 أهداف الدرس (Learning Objectives)
+
+1. فهم كيفية عمل التخزين المحلي الثابت (Persistent Storage) بالقيم المفتاحية.
+2. بناء فئة مغلفة مخصصة `AppPreferencesLocalDatasource` لحماية المفاتيح النصية.
+3. التخزين الآمن لتوكن الدخول (Auth Token) وتفضيلات الوضع الداكن.
+4. دمج التخزين المحلي مع حقن التبعيات بـ `get_it`.
+
+---
+
+## 📘 الشرح النظري (Theoretical Explanation)
+
+تتيح مكتبة `shared_preferences` حفظ أنواع البيانات الأساسية (`String`, `int`, `double`, `bool`, `List<String>`).
+
+لحماية الكود من تشتت المفاتيح النصية السحرية، نُنشئ فئة محلية خاصة بالبيانات (Local Datasource) تحت المجلد `data/datasources/` تحتوي على مفاتيح ثابتة محمية.
+
+---
+
+## 💻 التطبيق المعماري (MVVM & Clean Code)
+
+فئة التخزين المحلي المعمارية النظيفة.
+
+```dart
+// ==========================================
+// File: lib/data/datasources/app_preferences_local_datasource.dart
+// Description: فئة مغلفة لعمليات SharedPreferences النظيفة
+// Architecture Layer: Data (Local Datasource)
+// ==========================================
+
+import 'package:shared_preferences/shared_preferences.dart';
+
+class AppPreferencesLocalDatasource {
+  final SharedPreferences prefs;
+
+  AppPreferencesLocalDatasource(this.prefs);
+
+  // مفاتيح نصية ثابتة محمية من التكرار الإملائي الخاطئ
+  static const String _authTokenKey = 'KEY_AUTH_TOKEN';
+  static const String _isDarkModeKey = 'KEY_IS_DARK_MODE';
+
+  /// حفظ توكن الدخول
+  Future<bool> saveAuthToken(String token) async {
+    return await prefs.setString(_authTokenKey, token);
+  }
+
+  /// قراءة توكن الدخول (يرجع null إذا لم يكن موجوداً)
+  String? getAuthToken() {
+    return prefs.getString(_authTokenKey);
+  }
+
+  /// حذف التوكن عند تسجيل الخروج
+  Future<bool> clearAuthToken() async {
+    return await prefs.remove(_authTokenKey);
+  }
+
+  /// حفظ وضع التصفح الداكن
+  Future<bool> setDarkMode(bool isDark) async {
+    return await prefs.setBool(_isDarkModeKey, isDark);
+  }
+
+  /// جلب حالة وضع التصفح الداكن
+  bool getIsDarkMode() {
+    return prefs.getBool(_isDarkModeKey) ?? false;
+  }
+}
+```
+
+---
+
+<ExerciseBox title="جرب بنفسك 💻">
+
+1. أضف مكتبة `shared_preferences` في `pubspec.yaml`.
+2. قم بتسجيل `SharedPreferences.getInstance()` في `get_it` كـ Singleton عند بداية تشغيل التطبيق.
+3. أنشئ دالة في الـ ViewModel تقوم بحفظ اسم المستخدم محلياً واستعادته عند تشغيل التطبيق مجدداً.
+
+</ExerciseBox>
+
+---
+
+<SummaryBox title="خلاصة الدرس 📌">
+
+- نغلف دائماً مكتبة `SharedPreferences` داخل فئة Local Datasource لحماية المفاتيح ومنع انتشارها في التطبيق.
+- نستخدم المفاتيح الثابتة `static const String` لحماية البيانات من الأخطاء الإملائية.
+- تُعتبر بيانات الاعتماد والسمات والإعدادات من أهم الاستخدامات التخزينية المباشرة.
+
+</SummaryBox>

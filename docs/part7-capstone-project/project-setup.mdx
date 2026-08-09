@@ -1,0 +1,97 @@
+﻿---
+id: project-setup
+title: "7.1 Project Setup & Architecture"
+sidebar_label: "7.1 Project Setup & Architecture"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 7.1 مشروع Capstone: تهيئة النظام والمشروع (Project Setup & Architecture)
+
+مرحباً بك في الجزء السابع والأخير! سنقوم الآن ببناء مشروع كامل متكامل باسم **TaskFlow Pro** لتطبيق إدارة المهام التفاعلي، متبعاً بصرامة تامة معمارية **MVVM** ونظام المجلدات التقسيمي **Feature-First** وجميع المبادئ التي تعلمناها عبر الدورة.
+
+---
+
+## 🎯 أهداف الدرس (Learning Objectives)
+
+1. تحديد متطلبات ومشروع Capstone الشامل **TaskFlow Pro**.
+2. تجميع وتثبيت جميع الحزم اللازمة في ملف `pubspec.yaml`.
+3. إعداد شجرة المجلدات كاملة وتأسيس الوحدات الأساسية داخل مجلد `lib/core/`.
+4. تهيئة حقن التبعيات بـ `get_it` والمسارات بـ `go_router`.
+
+---
+
+## 📘 الشرح النظري والتوصيل المعماري
+
+يتكون تطبيق **TaskFlow Pro** من الميزات الأساسية التالية:
+1. **ميزة إدارة المهام (Task Management):** إضافة، تعديل، حذف، وتغيير حالة إنجاز المهام.
+2. **التكامل الشبكي (Network Sync):** الاتصال بـ API خارجي لجلب المهام وتزامنها.
+3. **التخزين المحلي (Local Persistence):** حفظ المهام محلياً عند انقطاع الإنترنت عبر `SharedPreferences`.
+
+---
+
+## 💻 التطبيق المعماري (MVVM & Clean Code)
+
+### 1. إعداد الحزم في `pubspec.yaml`
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  provider: ^6.1.2
+  go_router: ^14.2.0
+  dio: ^5.7.0
+  get_it: ^7.7.0
+  shared_preferences: ^2.3.2
+  json_annotation: ^4.9.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  build_runner: ^2.4.12
+  json_serializable: ^6.8.0
+  mocktail: ^1.0.4
+```
+
+### 2. الهيكلية المعمارية الصارمة للمشروع
+
+```text
+lib/
+├── core/
+│   ├── constants/app_constants.dart
+│   ├── di/injection_container.dart
+│   ├── errors/failures.dart
+│   ├── network/dio_client.dart
+│   ├── router/app_router.dart
+│   └── theme/app_theme.dart
+└── features/
+    └── tasks/
+        ├── data/
+        │   ├── datasources/task_remote_datasource.dart
+        │   ├── datasources/task_local_datasource.dart
+        │   ├── models/task_model.dart
+        │   └── repositories/task_repository_impl.dart
+        └── presentation/
+            ├── viewmodels/task_list_viewmodel.dart
+            ├── views/task_list_view.dart
+            └── widgets/task_item_card.dart
+```
+
+---
+
+<ExerciseBox title="جرب بنفسك 💻">
+
+1. أنشئ مجلدات الميزة كاملة في تطبيقك local: `lib/features/tasks/data` و `lib/features/tasks/presentation`.
+2. تأكد من استيراد `get_it` و `provider` ونظافة ملف `main.dart`.
+
+</ExerciseBox>
+
+---
+
+<SummaryBox title="خلاصة الدرس 📌">
+
+- مشروع Capstone يدمج كل ما تعلمناه من الدايركتوري والشبكات وإدارة الحالة والاختبارات.
+- التأسيس النظيف للمجلدات والحزم يبسط مرحلة التطوير اللاحقة ويضمن الاستقرار الهندسي.
+
+</SummaryBox>

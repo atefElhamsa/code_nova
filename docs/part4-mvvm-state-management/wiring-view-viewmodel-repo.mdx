@@ -1,0 +1,120 @@
+---
+id: wiring-view-viewmodel-repo
+title: "4.4 Wiring View - ViewModel - Repository"
+sidebar_label: "4.4 Wiring View - ViewModel - Repository"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 4.4 ربط الـ View بالـ ViewModel والـ Repository (Architecture Wiring)
+
+تكمن القوة الحقيقية لمعمارية MVVM في طريقة **توصيل التبعيات والربط بين الطبقات (Wiring)** دون أن يحدث تكديس مباشر أو اعتماد صلب بين الفئات.
+
+---
+
+## 🎯 أهداف الدرس (Learning Objectives)
+
+1. فهم سلسلة التغذية الراجعة وتأمين ربط الطبقات المتسلسلة.
+2. تتبع الرحلة الكاملة من النقر على زر في الـ View وصولاً إلى الـ Repository ثم العودة.
+3. التمديد المستقبلي واستبدال طبقة البيانات بالخدمات الوهمية (Mock Repositories) بسهولة.
+4. الالتزام الكامل بالهيكلية الصارمة في مشروع Flutter حقيقي.
+
+---
+
+## 📘 الشرح النظري (Theoretical Explanation)
+
+تتبع عملية الربط تسلسلاً خطياً متناسقاً:
+
+```text
+[User Interaction] -> View -> ViewModel -> Repository -> Datasource
+                                                             | (API Response)
+[UI Rebuild]       <- View <- ViewModel <- Repository <- Model (Parsed)
+```
+
+1. **الـ View** لا تتصل أبداً بالـ Datasource مباشرة.
+2. **الـ ViewModel** لا يعلم تفاصيل ما إذا كانت البيانات آتية من API أو كاش محلي، بل يعتمد على واجهة الـ Repository (`BaseRepository`).
+
+---
+
+## 💻 التطبيق المعماري (MVVM & Clean Code)
+
+دليل الربط الشامل من العقد المجرد حتى العرض البصري النهائي.
+
+```dart
+// ==========================================
+// 1. العقد المجرد للطبقة Data
+// File: lib/data/repositories/base_quote_repository.dart
+// Architecture Layer: Data (Contract)
+// ==========================================
+
+abstract class BaseQuoteRepository {
+  Future<String> getRandomQuote();
+}
+
+// ==========================================
+// 2. التطبيق الفعلي للمستودع
+// File: lib/data/repositories/quote_repository_impl.dart
+// Architecture Layer: Data (Implementation)
+// ==========================================
+
+import 'base_quote_repository.dart';
+
+class QuoteRepositoryImpl implements BaseQuoteRepository {
+  @override
+  Future<String> getRandomQuote() async {
+    await Future.delayed(const Duration(milliseconds: 800));
+    return 'الكود النظيف هو الكود الذي يمكن قراءته بسهولة كقصة مشوقة.';
+  }
+}
+
+// ==========================================
+// 3. طبقة الـ ViewModel المرتبطة بالعقد المجرد
+// File: lib/presentation/viewmodels/quote_viewmodel.dart
+// Architecture Layer: Presentation (ViewModel)
+// ==========================================
+
+import 'package:flutter/foundation.dart';
+import '../../data/repositories/base_quote_repository.dart';
+
+class QuoteViewModel extends ChangeNotifier {
+  final BaseQuoteRepository _repository;
+
+  QuoteViewModel(this._repository);
+
+  String _quoteText = 'انقر على الزر لجلب مقولة اليوم';
+  bool _isLoading = false;
+
+  String get quoteText => _quoteText;
+  bool get isLoading => _isLoading;
+
+  Future<void> fetchQuote() async {
+    _isLoading = true;
+    notifyListeners();
+
+    _quoteText = await _repository.getRandomQuote();
+
+    _isLoading = false;
+    notifyListeners();
+  }
+}
+```
+
+---
+
+<ExerciseBox title="جرب بنفسك 💻">
+
+1. أنشئ مستودعاً وهمياً جديداً `MockQuoteRepository` ينفذ `BaseQuoteRepository` ويرجع نصاً مختلفاً فورياً بدون تأخير شبكي.
+2. مرر الـ Mock إلى الـ ViewModel وتأكد أن الواجهة عملت بنفس النمط تماماً بدون تعديل سطر كود واحد في الـ View!
+
+</ExerciseBox>
+
+---
+
+<SummaryBox title="خلاصة الدرس 📌">
+
+- يعتمد الربط النظيف على الفئات المجردة (Abstract Contracts) لضمان عدم تكديس التبعيات.
+- تمكنك هذه المعمارية من استبدال السيرفر بنظام اختبار وهمي (Mocking) بأقل من دقيقة.
+- تبقى الـ View بعيدة تماماً عن تفاصيل الشبكة وقواعد البيانات.
+
+</SummaryBox>
