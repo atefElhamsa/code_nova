@@ -13,19 +13,6 @@ const config: Config = {
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
 
-  plugins: [
-    function fixNode24WebpackProgressPlugin() {
-      return {
-        name: 'fix-node24-webpack-progress-plugin',
-        configureWebpack(config) {
-          config.plugins = config.plugins?.filter(
-            (p) => p && p.constructor && p.constructor.name !== 'ProgressPlugin'
-          );
-          return {};
-        },
-      };
-    },
-  ],
 
   i18n: {
     defaultLocale: 'ar',
