@@ -1,4 +1,4 @@
-﻿---
+---
 id: null-safety
 title: "1.2 Sound Null Safety"
 sidebar_label: "1.2 Sound Null Safety"
@@ -7,70 +7,71 @@ sidebar_label: "1.2 Sound Null Safety"
 import ExerciseBox from '@site/src/components/ExerciseBox';
 import SummaryBox from '@site/src/components/SummaryBox';
 
-# 1.2 Sound Null Safety
+# 1.2 الأمان المطلق ضد القيم الخالية (Sound Null Safety)
 
-واحدة من أهم ميزات Dart: **Sound Null Safety**. بتمنع أشهر crash في البرمجة - الـ `NullPointerException`. هنتعلم في الدرس ده كل حاجة عن الـ null بدون أي Classes - دول هيجوا في درس 1.6.
-
----
-
-## 🎯 Learning Objectives
-
-1. تفهم معنى Null وليه خطير.
-2. تفرق بين Nullable (`?`) و Non-Nullable.
-3. تستخدم: `?.`, `??`, `??=`, `!`, `?.[]`, `...?`.
-4. تفهم Type Promotion.
-5. تجاوب على أسئلة الـ Interview.
+تُعتبر ميزة **Sound Null Safety** واحدة من أهم وأقوى الميزات في لغة Dart؛ حيث تمنع تماماً أشهر أسباب انهيار التطبيقات (Crashes) في عالم البرمجة، وهو خطأ استدعاء القيمة الخالية المشهور بـ `NullPointerException`. ستتعلم في هذا الدرس كل ما يتعلق بالتعامل مع القيم الخالية والأمان منها خطوة بخطوة.
 
 ---
 
-## 1. What is Null?
+## 🎯 الأهداف التعليمية
 
-`null` معناها "مفيش قيمة هنا". المشكلة لما بتحاول تستخدم متغير فاضي من غير ما تتأكد:
+1. فهم معنى القيمة الخالية (`Null`) ولماذا تُعتبر خطيرة إذا لم يتم التعامل معها بحذر.
+2. التمييز بين الأنواع القابلة للقيم الخالية (`Nullable`) وغير القابلة (`Non-Nullable`).
+3. إتقان استخدام معاملات الأمان: (`?.`, `??`, `??=`, `!`, `?.[]`, `...?`).
+4. فهم ميزة ترقية الأنواع التلقائية (`Type Promotion`) وكيف يوفرها مترجم Dart.
+5. الإجابة بنجاح على أسئلة المقابلات الشخصية (Interview Questions) المتعلقة بهذا الموضوع.
+
+---
+
+## 1. ما هو مفهوم الـ Null؟
+
+القيمة `null` تعني ببساطة "عدم وجود قيمة في هذا المتغير". تكمن المشكلة الكبرى عندما تحاول قراءة خصائص أو تنفيذ دوال على متغير لا يحمل قيمة:
 
 ```dart
-// In Java/JavaScript - this CRASHES at runtime!
+// في اللغات الأخرى (مثل Java أو JS القديمة) - هذا يتسبب في كراش فور تشغيل البرنامج!
 String name = null;
-print(name.length); // 💥 NullPointerException
+print(name.length); // 💥 خطأ استثناء: NullPointerException
 ```
 
-**Dart حل المشكلة من الجذور** - الـ compiler مش هيسمحلك تعمل ده أصلاً:
+**حل لغة Dart الجذري لهذه المشكلة:**
+يقوم مترجم لغة Dart (Compiler) بمنع هذا الخطأ أثناء كتابة الكود (Compile Time) ولا يسمح بتمرير الكود أصلاً:
 
 ```dart
-// Dart - COMPILE ERROR, not a runtime crash
-String name = null; // ❌ Error: A value of type 'Null' can't be assigned to 'String'
+// في لغة Dart - يظهر خطأ تجميع (Compile Error) فوري لمنع الأخطاء مستقبلاً
+String name = null; // ❌ خطأ: لا يمكن إسناد قيمة Null لمتغير غير قابل للقيم الخالية String
 ```
 
 ---
 
-## 2. Non-Nullable vs Nullable
+## 2. الأنواع غير القابلة للقيم الخالية مقابل القابلة لها (Non-Nullable vs Nullable)
 
-في Dart، **كل الأنواع non-nullable بشكل افتراضي**:
+في لغة Dart، **جميع أنواع البيانات غير قابلة للقيم الخالية (Non-Nullable) بشكل افتراضي**:
 
 ```dart
-// ✅ Non-Nullable - guaranteed to always have a value
+// ✅ Non-Nullable - مضمون دائماً وجود قيمة داخل المتغير
 String  city    = 'Cairo';
 int     age     = 25;
 double  score   = 98.5;
 bool    active  = true;
 
-// ❌ Can't assign null to non-nullable
-String  name    = null; // Compile Error!
+// ❌ لا يمكن إسناد null لمتغير افتراضي
+String  name    = null; // خطأ تجميع!
 ```
 
-لما البيانات ممكن فعلاً تكون فاضية، تضيف `?` بعد النوع:
+أما إذا كانت البيانات قد تكون خالية بالفعل (مثل اسم الشهرة أو الخصومات)، فنضيف علامة الاستفهام `?` بعد نوع المتغير:
 
 ```dart
-// ✅ Nullable - explicitly says "this might be null"
-String? nickname;      // User might not have a nickname
-int?    phoneExt;      // User might not have a phone extension
-double? discount;      // Product might not have a discount
+// ✅ Nullable - تحديد صريح بأن المتغير قد يحمل قيمة null
+String? nickname;      // قد لا يكون للمستخدم اسم شهرة
+int?    phoneExt;      // قد لا يوجد امتداد هاتف
+double? discount;      // قد لا يوجد خصم على المنتج
 
-print(nickname);       // null - no crash, it's declared nullable
+print(nickname);       // يطبع null بصورة آمنة دون كراش
 ```
 
 ---
 
-## 3. Null-Aware Operators
+## 3. معاملات التعامل مع القيم الخالية (Null-Aware Operators)
 
 ### `?.` - Safe Access
 
@@ -170,33 +171,33 @@ List<String> allItems = [
 
 ---
 
-## 4. Type Promotion - الترقية التلقائية
+## 4. الترقية التلقائية للأنواع (Type Promotion)
 
-الـ Dart compiler بيفهم الـ if-checks ويرقي النوع تلقائياً:
+يقوم مترجم لغة Dart بتتبع مسار فحص الشروط (`if-checks`) وترقية نوع المتغير تلقائياً إلى نوع غير قابل لـ null بمجرد التأكد من وجود قيمة:
 
 ```dart
 String? name = getUserName();
 
-// Here: name is String? - need ?. to access
+// هنا: نوع المتغير هو String? - يحتاج استخدام ?. للوصول للخصائص
 print(name?.length);
 
 if (name != null) {
-  // HERE: Dart PROMOTES name to String automatically!
-  // No ?. or ! needed inside this block
-  print(name.length);        // ✅ direct access
-  print(name.toUpperCase()); // ✅ all String methods available
+  // هنا: قام المترجم بترقية نوع المتغير إلى String تلقائياً!
+  // لا داعي لاستخدام ?. أو ! بداخل هذا البلوك
+  print(name.length);        // ✅ وصول مباشر وآمن
+  print(name.toUpperCase()); // ✅ جميع دوال النص أصبحت متاحة
 }
 
-// After the if: name is String? again
+// بعد الخروج من شرط if: يعود المتغير لنوعه الأصلي String?
 ```
 
-**Guard clause pattern - the professional way:**
+**نمط الحماية المبكرة (Guard Clause Pattern) - الأسلوب الاحترافي:**
 
 ```dart
 String processName(String? name) {
-  if (name == null) return 'Unknown'; // guard - exit early
-  // From this point, name is promoted to String
-  return name.trim().toUpperCase();   // no ! needed
+  if (name == null) return 'Unknown'; // الخروج المبكر في حالة عدم وجود قيمة
+  // بدءاً من هذه السلسلة، يتم ترقية name إلى String تلقائياً
+  return name.trim().toUpperCase();   // لا حاجة لاستخدام ! إطلاقاً
 }
 
 void main() {
@@ -207,7 +208,7 @@ void main() {
 
 ---
 
-## 5. Practical Example - No Classes!
+## 5. تطبيق عملي شامل (Practical Example)
 
 ```dart
 // Top-level functions only - no classes yet!
@@ -447,27 +448,73 @@ String? value = getResult() as String?;
 
 </ExerciseBox>
 
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي المشروح بالتعليقات (Solution Code)</strong></summary>
+
+```dart
+// دالة مساعدة لترجمة البيانات القابلة للإلغاء بأمان
+String describe(String? name, int? age) {
+  // استخدام التعبير ?? لتوفير قيم افتراضية عند وجود null
+  final safeName = name ?? 'Unknown User';
+  final safeAge = age != null ? '$age years old' : 'Age not provided';
+  return '$safeName, $safeAge';
+}
+
+void main() {
+  // 1. تعريف المتغيرات القابلة للإلغاء (Nullable Variables)
+  String? username = null;
+  String? city = 'Alexandria';
+  int? age = 22;
+  double? discount = null;
+
+  // 2. استخدام ?? لطباعة قيمة افتراضية للاسم
+  print("User: ${username ?? 'Guest'}"); // يطبع: User: Guest
+
+  // 3. استخدام ?. للاستدعاء الآمن ثم ?? للقيمة الافتراضية
+  print("City length: ${city?.length ?? 0}"); // يطبع: City length: 10
+
+  // 4. استخدام ??= لتعيين القيمة فقط إذا كان المتغير حالياً null
+  username ??= 'Ahmed';
+  print("Updated Username: $username"); // يطبع: Updated Username: Ahmed
+
+  // 5. استدعاء دالة describe المفحوصة ضد الـ null
+  print(describe(username, age)); // يطبع: Ahmed, 22 years old
+  print(describe(null, null));     // يطبع: Unknown User, Age not provided
+
+  // 6. البونص: تصفية القوائم الحاوية على null باستخدام whereType
+  List<String?> rawList = ['Dart', null, 'Flutter', null, 'MVVM'];
+  
+  // whereType<String>() تستخرج فقط العناصر النصية غير الـ null وتضمن أمان الأنواع
+  List<String> cleanList = rawList.whereType<String>().toList();
+  print("Clean List: $cleanList"); // يطبع: [Dart, Flutter, MVVM]
+}
+```
+
+</details>
+
+
 ---
 
-<SummaryBox title="📌 Lesson Summary">
+<SummaryBox title="📌 ملخص الدرس (Summary)">
 
-**Null Safety Basics:**
-- Dart Non-Nullable by default - الأقوى في الصناعة.
-- `String?` = might be null. `String` = never null - different types!
+### 1. القواعد الأساسية للأمان من القيم الخالية (Null Safety):
+- جميع أنواع البيانات في Dart **غير قابلة لـ `null` افتراضياً** (Non-Nullable) - مما يضمن أمان التطبيق واستقراره.
+- إضافة علامة الاستفهام `?` بعد نوع المتغير (مثل `String?`) تعني صراحةً أن المتغير قد يحمل قيمة `null`.
 
-**Operators:**
+### 2. أهم المعاملات (Operators):
 
-| Operator | الاستخدام | مثال |
-|----------|-----------|------|
-| `?.` | Safe access | `email?.length` |
-| `??` | Fallback value | `name ?? 'Anonymous'` |
-| `??=` | Assign if null | `cache ??= fetch()` |
-| `!` | Force unwrap (risky) | `value!.trim()` |
-| `?.[]` | Safe index | `list?[0]` |
-| `...?` | Null-aware spread | `[...?nullableList]` |
+| المعامل (Operator) | الوصف والاستخدام | مثال توضيحي |
+|:------------------:|:----------------:|:-----------:|
+| `?.` | الوصول الآمن (Safe Access) | `email?.length` |
+| `??` | إسناد قيمة بديلة (Fallback) | `name ?? 'مجهول'` |
+| `??=` | الإسناد في حالة الـ null فقط | `cache ??= fetchData()` |
+| `!` | التفكيك الإجباري (Force Unwrap) | `value!.trim()` |
+| `?.[]` | الوصول الآمن لعناصر القائمة (Safe Index) | `list?[0]` |
+| `...?` | النشر الآمن للقوائم (Null Spread) | `[...?nullableList]` |
 
-**Type Promotion**: بعد `if (x != null)` → الـ Dart يعامل `x` كـ non-nullable تلقائياً.
+### 3. الترقية التلقائية للأنواع (Type Promotion):
+عند فحص المتغير بشرط `if (x != null)`، يتيقن مترجم Dart من وجود القيمة ويرقي نوع المتغير `x` تلقائياً إلى نوع غير قابل لـ `null` داخل هذا البلوك دون الحاجة لاستخدام `!` أو `?.`.
 
-> ⚠️ **Note:** لسه ما تعلمناش Classes - الأمثلة كلها في `main()` و top-level functions. Classes هتيجي في **Lesson 1.6**.
+> ⚠️ **ملاحظة:** جميع الأمثلة في هذا الدرس منفذة بداخل دالة `main()` والدوال المستقلة. سنتناول موضوع الفئات والكلاسات (Classes) بالتفصيل في **درس 1.6**.
 
 </SummaryBox>

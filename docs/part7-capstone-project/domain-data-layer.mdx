@@ -1,151 +1,105 @@
 ---
 id: domain-data-layer
-title: "7.2 Data Layer - Models & Repositories"
-sidebar_label: "7.2 Data Layer - Models & Repositories"
+title: "7.2 Data & Domain Layer"
+sidebar_label: "7.2 Data & Domain Layer"
 ---
 
 import ExerciseBox from '@site/src/components/ExerciseBox';
 import SummaryBox from '@site/src/components/SummaryBox';
 
-# 7.2 مشروع Capstone: طبقة البيانات والنماذج (Data Layer & Repository)
+# 7.2 طبقة الكيانات والبيانات لمشروع TaskFlow Pro (Data & Domain)
 
-في هذه الجلسة الثانية من مشروع Capstone، سنقوم ببناء **طبقة البيانات بالكامل (Data Layer)**، والتي تشمل نموذج البيانات DTO، مصادر البيانات الشبكية والمحلية، والتطبيق الفعلي لمستودع المهام الذكي.
+بناء النواة النقية لمشروع TaskFlow Pro بتشديد العقود والموديلات والمستودعات.
 
 ---
 
 ## 🎯 أهداف الدرس (Learning Objectives)
 
-1. كتابة `TaskModel` المحمي والداعم لتسلسل بيانات الـ JSON.
-2. بناء `TaskRemoteDatasource` لإجراء طلبات الاتصال الشبكي بـ Dio.
-3. بناء `TaskLocalDatasource` للتخزين الاحتياطي التلقائي عند غياب الشبكة.
-4. دمج المصدرين داخل `TaskRepositoryImpl` واستخراج أخطاء `Failure`.
+1. بناء TaskModel ذو الحتمية.
+2. تعريف العقد BaseTaskRepository.
+3. تطبيق TaskRepositoryImpl التخزيني.
 
 ---
 
-## 💻 التطبيق المعماري (MVVM & Clean Code)
+## 1. موديل المهمة النظيف (TaskModel)
 
-### 1. نموذج البيانات `TaskModel`
+### 📘 الشرح النظري
+نعرف TaskModel مع حقول ثنائية الحتمية ودالة copyWith.
 
+### 💻 التطبيق العملي
 ```dart
-// ==========================================
-// File: lib/features/tasks/data/models/task_model.dart
-// Architecture Layer: Data (Model DTO)
-// ==========================================
-
 class TaskModel {
   final String id;
   final String title;
-  final String description;
   final bool isCompleted;
 
-  const TaskModel({
-    required this.id,
-    required this.title,
-    required this.description,
-    this.isCompleted = false,
-  });
+  const TaskModel({required this.id, required this.title, this.isCompleted = false});
 
-  /// التحويل من وإلى JSON يدوياً أو تلقائياً
-  factory TaskModel.fromJson(Map<String, dynamic> json) {
+  TaskModel copyWith({String? title, bool? isCompleted}) {
     return TaskModel(
-      id: json['id'] as String? ?? '',
-      title: json['title'] as String? ?? 'بدون عنوان',
-      description: json['description'] as String? ?? '',
-      isCompleted: json['completed'] as bool? ?? false,
-    );
-  }
-
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'title': title,
-        'description': description,
-        'completed': isCompleted,
-      };
-
-  /// دالة النسخ مع التعديل النسبي (copyWith)
-  TaskModel copyWith({
-    String? id,
-    String? title,
-    String? description,
-    bool? isCompleted,
-  }) {
-    return TaskModel(
-      id: id ?? this.id,
+      id: id,
       title: title ?? this.title,
-      description: description ?? this.description,
       isCompleted: isCompleted ?? this.isCompleted,
     );
   }
 }
 ```
 
-### 2. التطبيق الفعلي للمستودع المنسق `TaskRepositoryImpl`
+---
+
+## ⚡ نصائح الأداء والتحسين (Performance Tips)
+
+:::tip كائنات ثنائية الحتمية Immutable Models
+استخدام `copyWith` يمنع الطفرات غير المباشرة في الذاكرة.
+:::
+
+---
+
+## 🐛 أخطاء شائعة يجب تجنبها (Common Mistakes)
 
 ```dart
-// ==========================================
-// File: lib/features/tasks/data/repositories/task_repository_impl.dart
-// Architecture Layer: Data (Repository Implementation)
-// ==========================================
+// ❌ 1. التعديل المباشر على الحقول القابلة للتغيير داخل القوائم
+task.isCompleted = true; // 💥 طفرة مباشرة!
 
-import '../models/task_model.dart';
-import '../../../../core/errors/failures.dart';
+// ✅ الحل الصحيح
+final updated = task.copyWith(isCompleted: true);
 
-abstract class BaseTaskRepository {
-  Future<List<TaskModel>> getTasks();
-  Future<void> addTask(TaskModel task);
-  Future<void> toggleTaskCompletion(String id);
-}
-
-class TaskRepositoryImpl implements BaseTaskRepository {
-  // محاكاة قواعد التخزين المحلية والشبكية
-  final List<TaskModel> _memoryTasksCache = [];
-
-  @override
-  Future<List<TaskModel>> getTasks() async {
-    try {
-      await Future.delayed(const Duration(milliseconds: 600));
-      if (_memoryTasksCache.isEmpty) {
-        _memoryTasksCache.addAll(const [
-          TaskModel(id: '1', title: 'مراجعة كورس Dart', description: 'إنهاء الجزء السابع'),
-          TaskModel(id: '2', title: 'تطبيق نمط MVVM', description: 'فصل الواجهة تماماً'),
-        ]);
-      }
-      return List.unmodifiable(_memoryTasksCache);
-    } catch (e) {
-      throw const ServerFailure('تعذر جلب المهام من الخادم');
-    }
-  }
-
-  @override
-  Future<void> addTask(TaskModel task) async {
-    _memoryTasksCache.add(task);
-  }
-
-  @override
-  Future<void> toggleTaskCompletion(String id) async {
-    final index = _memoryTasksCache.indexWhere((t) => t.id == id);
-    if (index != -1) {
-      final task = _memoryTasksCache[index];
-      _memoryTasksCache[index] = task.copyWith(isCompleted: !task.isCompleted);
-    }
-  }
-}
 ```
 
 ---
 
-<ExerciseBox title="جرب بنفسك 💻">
+## 🎤 أسئلة وأجوبة المقابلات (Interview Q&A)
 
-1. أضف دالة حذف المهمة `deleteTask(String id)` في العقد والمستودع.
-2. أجرِ اختياراً أفقياً للتأكد أن `_memoryTasksCache` لا يتم تعديلها من الخارج بشكل مباشر.
+<details>
+<summary><strong>س1: ما فائدة دالة copyWith في الكائنات ثنائية الحتمية؟</strong></summary>
 
-</ExerciseBox>
+تتيح إنتاج نسخة جديدة من الكائن بقيم معدلة مع الحفاظ على ثبات بقية القيم الأصليين دون طفرات جانبية.
+
+</details>
 
 ---
 
-<SummaryBox title="خلاصة الدرس 📌">
+<ExerciseBox title="تمرين عملي - تطبيق copyWith 🏋️">
 
-- تمثل طبقة البيانات الأساس الموثوق لتوليد البيانات وتغليف الاتصالات.
-- تمنح دالة `copyWith` القدرة على إنشاء نسخ محدثة غير قابلة للتعديل العشوائي لسلامة البيانات.
+أنشئ TaskModel واكتب دالة copyWith لتغيير حالة الإنجاز.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي المشروح بالتعليقات (Solution Code)</strong></summary>
+
+```dart
+class Task { final String id; final bool done; const Task(this.id, this.done); Task toggle() => Task(id, !done); }
+```
+
+</details>
+
+---
+
+<SummaryBox title="ملخص الدرس 📌">
+
+- `TaskModel` ثنائي الحتمية.
+- `copyWith` لإنشاء النسخ المعدلة بأمان.
+- العقود التجريدية تفصل طبقة البيانات.
 
 </SummaryBox>

@@ -1,113 +1,111 @@
 ---
 id: state-handling-ui
-title: "4.5 UI State Handling - Loading / Success / Error"
-sidebar_label: "4.5 UI State Handling - Loading / Success / Error"
+title: "4.5 UI State Handling"
+sidebar_label: "4.5 UI State Handling"
 ---
 
 import ExerciseBox from '@site/src/components/ExerciseBox';
 import SummaryBox from '@site/src/components/SummaryBox';
 
-# 4.5 التعامل مع حالات واجهة المستخدم (State Handling: Loading, Error, Success)
+# 4.5 إدارة حالات الواجهة الاحترافية (UI State Handling)
 
-تعتبر التغذية البصرية الواضحة أساس تجربة المستخدم الناجحة (UX). ينبغي للواجهة أن تعكس الحالة الحالية للتطبيق بدقة متناهية: هل نحن في حالة **تحميل (Loading)**، أو **نجاح (Success)**، أو **فشل (Failure)**، أو **قائمة فارغة (Empty)**.
+تتعرض شاشات التطبيق لعدة حالات حتمية: التحميل، النجاح بالبيانات، الفشل برسالة خطأ، أو القائمة الفارغة.
 
 ---
 
 ## 🎯 أهداف الدرس (Learning Objectives)
 
-1. إدار حالات الواجهة باستخدام نمط الحالات المعمم `ViewState<T>` أو `Enum`.
-2. تصميم واجهة تكيفية تبني الودجة المناسبة بناءً على حالة الـ ViewModel.
-3. التخلص من التعقيدات والشروط المكررة في الـ Widgets.
-4. توفير إمكانية إعادة المحاولة (Retry Mechanism) بنظافة عند حدوث الأخطاء الشبكية.
+1. تعريف التعداد ViewStatus لحالات الواجهة.
+2. بناء شاشات تفاعلية تستجيب لكل حالة بـ Switch Expression.
+3. إدارة أزرار إعادة المحاولة (Retry Mechanism).
 
 ---
 
-## 📘 الشرح النظري (Theoretical Explanation)
+## 1. تعداد حالات الواجهة (ViewStatus Enum)
 
-بدلاً من استخدام عدة متغيرات بوليانية متفرقة مثل `bool isLoading`, `bool isError`, `bool isSuccess` (مما قد يوقع التطبيق في حالات متناقضة كـ `isLoading = true` و `isSuccess = true` في نفس الوقت)، نقوم بتجميع الحالات في نمط حالة موحد صريح (Exhaustive Enum State).
+### 📘 الشرح النظري
+نعرف Enum يحتوي على كافة الحالات المتوقعة للشاشة لمنع الاستخدام المربك للـ booleans المتعددة.
 
+### 💻 التطبيق العملي
 ```dart
 enum ViewStatus { initial, loading, success, failure, empty }
 ```
 
 ---
 
-## 💻 التطبيق المعماري (MVVM & Clean Code)
+## 2. استجابة الواجهة لحالات الـ ViewModel
 
-بناء ViewModel شمول يطبق نمط الحالات الموحد مع واجهة تتفاعل بسلاسة مع كل حالة.
+### 📘 الشرح النظري
+نستخدم تعبير `switch` داخل طريقة `build` لعرض الودجة المناسبة لكل حالة بنظافة تامة.
 
+### 💻 التطبيق العملي
 ```dart
-// ==========================================
-// File: lib/core/enums/view_status.dart
-// Description: حالات الواجهة العامة الموحدة
-// Architecture Layer: Core Enums
-// ==========================================
-
-enum ViewStatus { initial, loading, success, failure, empty }
-
-// ==========================================
-// File: lib/presentation/viewmodels/article_list_viewmodel.dart
-// Description: ViewModel يتولى تغيير حالات ViewStatus بنظافة
-// Architecture Layer: Presentation (ViewModel)
-// ==========================================
-
-import 'package:flutter/foundation.dart';
-import '../../core/enums/view_status.dart';
-
-class ArticleListViewModel extends ChangeNotifier {
-  ViewStatus _status = ViewStatus.initial;
-  List<String> _articles = [];
-  String _errorMessage = '';
-
-  ViewStatus get status => _status;
-  List<String> get articles => _articles;
-  String get errorMessage => _errorMessage;
-
-  Future<void> fetchArticles() async {
-    _status = ViewStatus.loading;
-    notifyListeners();
-
-    try {
-      await Future.delayed(const Duration(seconds: 1));
-      
-      // محاكاة استلام قائمة ناجحة
-      final fetchedData = ['الدرس الأول: Dart', 'الدرس الثاني: Flutter'];
-
-      if (fetchedData.isEmpty) {
-        _status = ViewStatus.empty;
-      } else {
-        _articles = fetchedData;
-        _status = ViewStatus.success;
-      }
-    } catch (e) {
-      _errorMessage = 'تعذر الاتصال بالخادم. يرجى التأكد من الإنترنت.';
-      _status = ViewStatus.failure;
-    } finally {
-      notifyListeners();
-    }
-  }
+Widget buildStateUI(ViewStatus status) {
+  return switch (status) {
+    ViewStatus.loading => const CircularProgressIndicator(),
+    ViewStatus.failure => const Text('حدث خطأ بالشبكة!'),
+    ViewStatus.empty   => const Text('لا توجد بيانات'),
+    ViewStatus.success => const Text('تم جلب البيانات بنجاح!'),
+    _                  => const SizedBox(),
+  };
 }
 ```
 
 ---
 
-<ExerciseBox title="جرب بنفسك 💻">
+## ⚡ نصائح الأداء والتحسين (Performance Tips)
 
-1. أنشئ ودجة الشاشة التي تستمع لـ `ArticleListViewModel`.
-2. استخدم تعبير `switch (viewModel.status)` لبناء:
-   - `ViewStatus.loading` -> `CircularProgressIndicator()`
-   - `ViewStatus.failure` -> نص الخطأ مع زر `ElevatedButton` لإعادة المحاولة.
-   - `ViewStatus.empty` -> رسمة أو نص "لا توجد بيانات".
-   - `ViewStatus.success` -> `ListView.builder`.
-
-</ExerciseBox>
+:::tip الشمول التام للحالات
+استخدام `switch` يضمن لك عدم نسيان عرض مؤشر التحميل أو رسالة الخطأ للمستخدم.
+:::
 
 ---
 
-<SummaryBox title="خلاصة الدرس 📌">
+## 🐛 أخطاء شائعة يجب تجنبها (Common Mistakes)
 
-- استخدام `ViewStatus` الصريح يضمن حماية الواجهة من الوصول إلى حالات متناقضة غير منطقية.
-- توفير زر إعادة المحاولة (Retry) في حالة الفشل يعتبر من أهم معايير جودة التطبيقات.
-- تظل الـ View بسيطة جداً وتقوم فقط بمطابقة حالة `ViewStatus` بالودجة المناسبة لها.
+```dart
+// ❌ 1. استخدام متقاطعات بولينية متعددة مثل isLoading & isError
+if (isLoading) ... else if (isError) ... // 💥 حالة ارتباك متقاطعة
+
+// ✅ الحل الصحيح
+switch (viewModel.status) { ... } // ✅ حالة محددة ناصعة
+
+```
+
+---
+
+## 🎤 أسئلة وأجوبة المقابلات (Interview Q&A)
+
+<details>
+<summary><strong>س1: لماذا يعتبر التعداد Enum أفضل من المتغيرات البولينية في التعبير عن حالة الشاشة؟</strong></summary>
+
+لأنه يمنع التعارضات الحتمية (مثل أن تكون isLoading=true و isError=true في نفس اللحظة).
+
+</details>
+
+---
+
+<ExerciseBox title="تمرين عملي - شاشة متعددة الحالات 🏋️">
+
+أنشئ ودجة تستجيب لـ ViewStatus وتسعرض CircularProgressIndicator في حالة التحميل.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي المشروح بالتعليقات (Solution Code)</strong></summary>
+
+```dart
+Widget buildUI(ViewStatus s) => s == ViewStatus.loading ? CircularProgressIndicator() : Text('Done');
+```
+
+</details>
+
+---
+
+<SummaryBox title="ملخص الدرس 📌">
+
+- `ViewStatus` لتمثيل حالات الواجهة النظيفة.
+- تعبير `switch` يضمن تغطية التحميل والأخطاء.
+- توفير زر إعادة المحاولة يعزز تجربة المستخدم.
 
 </SummaryBox>

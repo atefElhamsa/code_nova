@@ -1,4 +1,4 @@
-﻿---
+---
 id: generics
 title: "1.8 Generics"
 sidebar_label: "1.8 Generics"
@@ -9,43 +9,31 @@ import SummaryBox from '@site/src/components/SummaryBox';
 
 # 1.8 الأنواع المعممة (Generics)
 
-الأنواع المعممة (Generics) تتيح لك كتابة فئات ودوال قادرة على التعامل مع أنواع بيانات مختلفة مع الحفاظ التام على أمان الأنواع (Type Safety) ومنع تكرار الكود.
+تُعتبر الأنواع المعممة (Generics) واحدة من أكثر المزايا القوية في لغة Dart. تتيح لك الأنواع المعممة كتابة فئات، واجهات، ودوال مرنة قادرة على التعامل مع أي نوع من أنواع البيانات مع الحفاظ التام والكامل على أمان الأنواع (Type Safety) ومنع أخطاء زمن التشغيل (Runtime Exceptions).
 
 ---
 
 ## 🎯 أهداف الدرس (Learning Objectives)
 
-1. استيعاب مفهوم الرمز التجريدي `<T>` في الفئات والدوال.
-2. بناء فئات استجابة عامة (Generic API Response Wrappers).
-3. استخدام القيود على الأنواع المعممة (`<T extends BaseEntity>`).
-4. تطبيق Generics لتصميم مغلف استجابة مرن في طبقة `core/network/`.
+1. **فهم الرموز التجريدية للأنواع:** استيعاب رموز التجريد القياسية مثل `<T>` (Type) و `<K, V>` (Key, Value).
+2. **تطبيق قيود الأنواع (Type Constraints):** استخدام التقييد التجمعي `<T extends BaseEntity>` لضمان امتلاك البيانات لخصائص محددة.
+3. **تطبيق معمارية Clean Code:** بناء مغلفات الاستجابة الشبكية المعممة (`ApiResponse<T>`) والواجهات الموحدة (`BaseRepository<T>`).
+4. **فهم Reified Generics:** معرفة كيفية احتفاظ لغة Dart بمعلومات الأنواع المعممة أثناء زمن التشغيل (Runtime).
 
 ---
 
-## 📘 الشرح النظري (Theoretical Explanation)
+## 💻 الكود البرمجي أولاً (Code Example First)
 
-تمنحك Generics القدرة على إنشاء هيكل ينطبق على عدة أنواع. فبدلاً من إنشاء `StringResponse` و `UserResponse` و `ProductResponse` بشكل منفصل ومكرر، تقوم بإنشاء فئة واحدة عامة `ApiResponse<T>`.
-
-### قيود الأنواع (Type Bounding)
-يمكنك تقييد النوع المعمم بحيث يقبل فقط الفئات التي ترث من فئة معينة:
-```dart
-class Repository<T extends BaseModel> { ... }
-```
-
----
-
-## 💻 التطبيق المعماري (MVVM & Clean Code)
-
-في معمارية Clean Code، تُستخدم Generics لتوحيد نمط استجابة الشبكة ونمط مغلف الأخطاء/النجاح `Resource<T>` عبر التطبيق بأكمله.
+<span className="code-first-badge">⚡ Pure English Dart Code (MVVM & Clean Code)</span>
 
 ```dart
 // ==========================================
 // File: lib/core/network/api_response.dart
-// Description: فئة معممة لتغليف نتائج استجابات API
+// Description: Generic API Response wrapper handling typed payload or errors
 // Architecture Layer: Core Network
 // ==========================================
 
-/// مغلف استجابة عام مرن يقبل أي نوع بيانات T
+/// Standard Generic API Response Wrapper for Clean Architecture
 class ApiResponse<T> {
   final bool isSuccess;
   final T? data;
@@ -59,7 +47,7 @@ class ApiResponse<T> {
     required this.statusCode,
   });
 
-  /// بناء حالة النجاح
+  /// Factory constructor for successful response with payload T
   factory ApiResponse.success(T data, {int statusCode = 200}) {
     return ApiResponse._(
       isSuccess: true,
@@ -68,7 +56,7 @@ class ApiResponse<T> {
     );
   }
 
-  /// بناء حالة الفشل
+  /// Factory constructor for failure response with error details
   factory ApiResponse.failure(String message, {int statusCode = 400}) {
     return ApiResponse._(
       isSuccess: false,
@@ -77,26 +65,180 @@ class ApiResponse<T> {
     );
   }
 }
+
+// ==========================================
+// File: lib/domain/contracts/base_entity.dart
+// Description: Base Contract requiring unique ID constraint
+// Architecture Layer: Domain
+// ==========================================
+
+abstract class BaseEntity {
+  String get id;
+}
+
+// ==========================================
+// File: lib/domain/repositories/base_repository.dart
+// Description: Generic Repository Contract bounded to BaseEntity
+// Architecture Layer: Domain (Repository Contract)
+// ==========================================
+
+abstract class BaseRepository<T extends BaseEntity> {
+  Future<ApiResponse<List<T>>> getAll();
+  Future<ApiResponse<T>> getById(String id);
+  Future<ApiResponse<bool>> create(T entity);
+  Future<ApiResponse<bool>> delete(String id);
+}
 ```
 
 ---
 
-<ExerciseBox title="جرب بنفسك 💻">
+## 📘 الشرح التفصيلي للكود (Line-by-Line Technical Explanation)
 
-أنشئ فئة مجردة عامة `BaseRepository<T>` تمتلك الدوال التالية:
-1. `Future<List<T>> getAll();`
-2. `Future<T?> getById(String id);`
-3. `Future<bool> delete(String id);`
-ثم أنشئ فئة `ProductRepository` تنفذ هذه الواجهة باستخدام نموذج `ProductModel`.
+### 1. المغلف العام (`ApiResponse<T>`)
+* **`class ApiResponse<T>`**: الرمز `<T>` يمثل محتوى الاستجابة المسند وقت الاستدعاء. قد يكون `ApiResponse<UserModel>` عند جلب بيانات مستخدم، أو `ApiResponse<List<ProductModel>>` عند جلب قائمة منتجات. هذا يغنيك عن كتابة فئة استجابة مخصصة لكل موديل.
 
-</ExerciseBox>
+### 2. قيود الأنواع (`Type Bounding`)
+* **`abstract class BaseRepository<T extends BaseEntity>`**: الكلمة المفتاحية `extends` هنا تقيد المعامل `T` بحيث يجب أن يرث من `BaseEntity`. هذا يضمن داخل المستودع أن أي عنصر من النوع `T` سيمتلك الحقل `id` مؤكداً وقت التجميع.
+
+### 3. المصانع والأنواع الأحادية (Type-Safe Factory Constructors)
+* **`factory ApiResponse.success(T data)`**: تسمح للمستدعي بإعادة بيانات معالجة ومفحوصة بالكامل دون الحاجة لإجراء عملية تحويل أشكال النمط القسري (Casting) عند الاستلام.
 
 ---
 
-<SummaryBox title="خلاصة الدرس 📌">
+## ⚡ نصائح الأداء والتحسين (Performance Tips)
 
-- توفر Generics إعادة استخدام عالية للكود مع الحفاظ الصارم على سلامة الأنواع (Type Safety).
-- تُعتبر الفئات المعممة مثل `ApiResponse<T>` العمود الفقري لتنظيم الاستجابات الشبكية في Clean Code.
-- استخدام القيود `<T extends Class>` يقيد العمليات بالأنواع المتوافقة مع معايير محددة فقط.
+:::tip تجنب استخدام dynamic داخل Generics
+احذر من استخدام `ApiResponse<dynamic>` أو `List<dynamic>`. التخلي عن النوع الصريح يفقدك حماية المترجم وقت التجميع (Compile-time Type Checks) ويؤدي لأخطاء `NoSuchMethodError` أثناء زمن التشغيل.
+:::
+
+:::tip محول البيانات العام Generic Decoders
+عند التعامل مع JSON، مرر دالة تحويل عامة `T Function(Map<String, dynamic>)` للدوال المعممة لجلب وتحويل الأنماط دون استخدام Reflection المعطل لأداء الأجهزة المحمولة.
+:::
+
+---
+
+## 🐛 أخطاء شائعة يجب تجنبها (Common Mistakes)
+
+```dart
+// ❌ 1. محاولة إنشاء كائن جديد من التجريد T مباشرة
+class BadFactory<T> {
+  T createInstance() {
+    return T(); // 💥 خطأ تجميع: لا يمكن استدعاء constructor على المتغير التجريدي T!
+  }
+}
+
+// ✅ الحل الصحيح: تمرير دالة مصنعية (Factory Function) كمعامل
+class GoodFactory<T> {
+  T createInstance(T Function() creator) {
+    return creator();
+  }
+}
+
+
+// ❌ 2. نسيان تقييد الأنواع عند الاعتماد على خصائص محددة
+class BadStore<T> {
+  void printId(T item) {
+    print(item.id); // 💥 خطأ تجميع: T لا تضمن وجود الخاصية id!
+  }
+}
+
+// ✅ الحل الصحيح: تقييد النوع باستخدام extends
+class GoodStore<T extends BaseEntity> {
+  void printId(T item) {
+    print(item.id); // ✅ مضمون وجود id في التجميع
+  }
+}
+```
+
+---
+
+## 🎤 أسئلة وأجوبة المقابلات الشخصية (Interview Q&A)
+
+<details>
+<summary><strong>س1: ما هي Reified Generics وكيف تتميز لغة Dart عن Java في هذا المفهوم؟</strong></summary>
+
+في لغة Java، يتم حظر مسح الأنواع (`Type Erasure`) أثناء التجميع، مما يعني أن `List<String>` تصبح مجرد `List` في الذاكرة أثناء التشغيل. أما في لغة Dart، فإن الأنواع المعممة متواجدة حقيقةً أثناء زمن التشغيل (`Reified Generics`)؛ فيمكنك فحص النوع في الـ Runtime بثقة باستخدام `if (data is List<String>)`.
+
+</details>
+
+<details>
+<summary><strong>س2: كيف تفيد قيود الأنواع (`<T extends BaseEntity>`) في تحسين أمان الكود؟</strong></summary>
+
+تسمح لك قيود الأنواع بإجبار أي فئة يتم تمريرها إلى المعامل المعمم بأن تكون منفذة لخواص معينة (مثل امتلاك `id` أو `toJson`). هذا يمنع تمرير بيانات غير متوافقة ويسمح للمطور بالوصول لخصائص الفئة الأم داخل الكود العام بأمان.
+
+</details>
+
+<details>
+<summary><strong>س3: لماذا يُفضل استخدام `ApiResponse<T>` على إرجاع `Map<String, dynamic>` مباشرة من طبقة Repositories؟</strong></summary>
+
+لأن إرجاع `Map<String, dynamic>` ينقل مسؤولية التحقق وفك البيانات إلى طبقة الواجهة (UI) ويفتح المجال لأخطاء إملائية في أسماء المفاتيح (Keys). بينما `ApiResponse<T>` توفر بيئة مفحوصة الأنماط بالكامل (Strongly Typed) ومفصولة النطاق.
+
+</details>
+
+<details>
+<summary><strong>س4: هل يمكن كتابة دوال معممة (Generic Functions) مستقلة خارج الفئات؟</strong></summary>
+
+نعم! يمكنك كتابة دوال معممة مستقيمة في Dart لتأدية مهمة محددة على مختلف الأنواع، مثل:
+```dart
+T getFirstElement<T>(List<T> items) => items.first;
+```
+
+</details>
+
+---
+
+<ExerciseBox title="تمرين عملي - بناء CacheManager معمم 🏋️">
+
+قم بكتابة فئة معممة باسم `CacheManager<T>`:
+1. تمتلك الخريطة الخاصة `final Map<String, T> _cache = {};`.
+2. تحتوي على دالة `void save(String key, T value)` لتخزين العناصر.
+3. تحتوي على دالة `T? get(String key)` لاسترجاع العنصر المخزن.
+4. تحتوي على دالة `bool contains(String key)` للفحص.
+5. أضف دالة `void clear()` لتفريغ الذاكرة المؤقتة.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي المشروح بالتعليقات (Solution Code)</strong></summary>
+
+```dart
+// فئة الـ CacheManager المعممة المدارة كلياً بنوع T
+class CacheManager<T> {
+  // 1. خريطة الذاكرة المؤقتة الخاصة
+  final Map<String, T> _cache = {};
+
+  // 2. حفظ البيانات بالنوع T
+  void save(String key, T value) {
+    _cache[key] = value;
+  }
+
+  // 3. استرجاع القيمة بالنوع T أو null
+  T? get(String key) {
+    return _cache[key];
+  }
+
+  // 4. التحقق من وجود مفتاح
+  bool contains(String key) {
+    return _cache.containsKey(key);
+  }
+
+  // 5. مسح الذاكرة المؤقتة بالكامل
+  void clear() {
+    _cache.clear();
+  }
+}
+```
+
+</details>
+
+
+---
+
+<SummaryBox title="ملخص الدرس 📌">
+
+- الأنواع المعممة (Generics) تحقق التوازن المثالي بين إعادة استخدام الكود وأمان الأنواع الصارم (Type Safety).
+- توفر Dart خاصية **Reified Generics** حيث تُحفظ تفاصيل الأنواع حتى أثناء زمن التشغيل (Runtime).
+- تقييد الأنواع `<T extends BaseClass>` يُتيح التعامل مع خصائص محددة بثقة كاملة أثناء كتابة الدوال المعممة.
+- تصاميم مثل `ApiResponse<T>` و `BaseRepository<T>` هي الركائز الأساسية لبناء كود نظيف وقابل للتوسع في المعماريات الاحترافية.
 
 </SummaryBox>

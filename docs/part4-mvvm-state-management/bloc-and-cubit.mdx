@@ -1,0 +1,219 @@
+---
+id: bloc-and-cubit
+title: "4.6 BLoC & Cubit State Management"
+sidebar_label: "4.6 BLoC & Cubit"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 4.6 إدارة الحالة باستخدام BLoC & Cubit (BLoC Pattern)
+
+تُعتبر مكتبة **flutter_bloc** الهيكل المعماري الإداري الأكثر اعتماداً وانتشاراً في كبرى الشركات البرمجية لبناء تطبيقات Flutter الضخمة. تعتمد على فصل منطق الأعمال (Business Logic) كلياً عن طبقة العرض عبر تدفق الأحداث والحالات.
+
+---
+
+## 🎯 أهداف الدرس (Learning Objectives)
+
+1. التمييز بين نمط الأحداث (BLoC) ونمط الحالات المباشرة (Cubit).
+2. بناء الحالات المغلقة (Sealed States) لمعالجة التغيرات بـ `emit()`.
+3. التمييز العملي بين `BlocBuilder`, `BlocListener`, و `BlocConsumer`.
+4. تطبيق تحسينات الأداء عبر `buildWhen` و `listenWhen`.
+
+---
+
+## 1. نمط Cubit (إدارة الحالة البسيطة بالأوامر)
+
+### 📘 الشرح النظري
+الـ **Cubit** هو النسخة المبسطة والمباشرة من BLoC. يعتمد على استدعاء دوال مباشرة (Methods) وضخ الحالات الجديدة فوراً باستخدام الكلمة المفتاحية `emit()`.
+
+### 💻 التطبيق العملي
+```dart
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+// 1. تعريف حالات الـ Cubit المغلقة
+sealed class CounterState {}
+class CounterInitial extends CounterState {}
+class CounterValueChanged extends CounterState {
+  final int value;
+  CounterValueChanged(this.value);
+}
+
+// 2. فئة الـ Cubit المسؤولة عن ضخ الحالات
+class CounterCubit extends Cubit<CounterState> {
+  CounterCubit() : super(CounterInitial());
+
+  int _count = 0;
+
+  void increment() {
+    _count++;
+    // emit تُرسل الحالة الجديدة للواجهة فوراً
+    emit(CounterValueChanged(_count));
+  }
+}
+```
+
+---
+
+## 2. نمط BLoC الكامل (إدارة الحالة بالأحداث - Event Driven)
+
+### 📘 الشرح النظري
+يعتمد الـ **BLoC** الكامل على الأحداث (`Events`). تقوم الواجهة بإرسال حدث (`add(Event)`)، ويستمع الـ BLoC للحدث عبر `on<Event>()` ليقوم بمعالجته ثم ضخ الحالة المناسبة.
+
+### 💻 التطبيق العملي
+```dart
+// 1. تعريف الأحداث (Events)
+abstract class AuthEvent {}
+class LoginRequestedEvent extends AuthEvent {
+  final String email;
+  LoginRequestedEvent(this.email);
+}
+
+// 2. فئة الـ BLoC المستقبلة للأحداث والضات للحالات
+class AuthBloc extends Bloc<AuthEvent, AuthState> {
+  AuthBloc() : super(AuthInitialState()) {
+    // تسجيل مستمع للحدث
+    on<LoginRequestedEvent>((event, emit) async {
+      emit(AuthLoadingState());
+      await Future.delayed(const Duration(seconds: 1));
+      emit(AuthSuccessState(event.email));
+    });
+  }
+}
+```
+
+---
+
+## 3. ودجات الاستماع والرسم (BlocBuilder vs BlocListener vs BlocConsumer)
+
+### 📘 الشرح النظري
+تُوفر مكتبة `flutter_bloc` ثلاثة ودجات رئيسية للتكامل مع الشاشة:
+* **`BlocBuilder`**: لإعادة رسم الودجات فقط عند تغير الحالة.
+* **`BlocListener`**: لتنفيذ أفعال جانبيّة مرة واحدة (مثل إظهار SnackBar أو التنقل) دون إعادة الرسم.
+* **`BlocConsumer`**: تجمع بين الرسم والاستماع في ودجة واحدة.
+
+### 💻 التطبيق العملي
+```dart
+Widget buildBlocConsumer() {
+  return BlocConsumer<AuthBloc, AuthState>(
+    // listenWhen و buildWhen للتحكم الدقيق في الأداء
+    listenWhen: (previous, current) => current is AuthSuccessState,
+    listener: (context, state) {
+      // تنفيذ أمر جانبي مرة واحدة (تنبيه أو تنقل)
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Login Successful!')),
+      );
+    },
+    builder: (context, state) {
+      // رسم الودجات البصرية بحسب الحالة
+      if (state is AuthLoadingState) {
+        return const CircularProgressIndicator();
+      }
+      return const Text('Please Login');
+    },
+  );
+}
+```
+
+---
+
+## ⚡ نصائح الأداء والتحسين (Performance Tips)
+
+:::tip تحسين الأداء بـ buildWhen
+استخدم `buildWhen: (previous, current) => previous != current` لمنع إعادة بناء الشاشة إذا كانت الحالة الجديدة مطابقة للحالة السابقة تماماً.
+:::
+
+---
+
+## 🐛 أخطاء شائعة يجب تجنبها (Common Mistakes)
+
+```dart
+// ❌ 1. مناداة SnackBar أو التنقل داخل BlocBuilder المباشر
+BlocBuilder<AuthBloc, AuthState>(
+  builder: (context, state) {
+    if (state is AuthSuccessState) {
+      // 💥 خطأ: التنقل داخل builder يُستدعى مكرراً عند كل رسم ويسبب الكراش!
+      Navigator.push(...);
+    }
+    return Container();
+  },
+)
+
+// ✅ الحل الصحيح: استخدام BlocListener للأفعال الجانبية
+BlocListener<AuthBloc, AuthState>(
+  listener: (context, state) {
+    if (state is AuthSuccessState) Navigator.push(...);
+  },
+  child: Container(),
+)
+```
+
+---
+
+## 🎤 أسئلة وأجوبة المقابلات (Interview Q&A)
+
+<details>
+<summary><strong>س1: متى تستخدم Cubit ومتى تختار BLoC الكامل؟</strong></summary>
+
+نستخدم **Cubit** للشاشات البسيطة والمتوسطة التي تعتمد على استدعاءات مباشرة. بينما نفضل **BLoC** الكامل للشاشات المعقدة التي تحتاج تتبع تسلسل الأحداث (Event Tracing)، أو التحول للتصحيح وإلغاء الأحداث المكررة (Debouncing & Transformers).
+
+</details>
+
+<details>
+<summary><strong>س2: ما الفرق بين BlocBuilder و BlocListener؟</strong></summary>
+
+- **BlocBuilder:** يُرجع ودجات بصرية (`Widget`) وتُستدعى طريقة البناء عند كل تغير في الحالة.
+- **BlocListener:** تُنفذ دالة void عادية لا ترسم ودجات، وتُستخدم حكراً للأفعال الجانبية (Side-Effects) مثل إظهار الحوارات والتنقل.
+
+</details>
+
+---
+
+<ExerciseBox title="تمرين عملي - تطبيق Cubit لعداد 🏋️">
+
+قم بإنشاء `CounterCubit` يمتلك دالتين `increment` و `decrement`، واربطه بشرائح `BlocBuilder`.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي المشروح بالتعليقات (Solution Code)</strong></summary>
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+class CounterCubit extends Cubit<int> {
+  CounterCubit() : super(0);
+  void inc() => emit(state + 1);
+  void dec() => emit(state - 1);
+}
+
+class CounterView extends StatelessWidget {
+  const CounterView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => CounterCubit(),
+      child: Scaffold(
+        body: BlocBuilder<CounterCubit, int>(
+          builder: (ctx, count) => Center(child: Text('Count: $count')),
+        ),
+      ),
+    );
+  }
+}
+```
+
+</details>
+
+---
+
+<SummaryBox title="ملخص الدرس 📌">
+
+- **Cubit:** يعتمد على `emit()` والدوال المباشرة.
+- **BLoC:** يعتمد على استقبال الأحداث (`Events`) عبر `on<Event>()`.
+- **BlocBuilder:** للرسم، و **BlocListener:** للأفعال الجانبية (Side-effects).
+- **BlocConsumer:** يجمع بين الرسم والأفعال الجانبية معا.
+
+</SummaryBox>

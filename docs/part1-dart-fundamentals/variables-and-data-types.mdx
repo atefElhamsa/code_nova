@@ -1,4 +1,4 @@
-﻿---
+---
 id: variables-and-data-types
 title: "1.1 Variables & Data Types"
 sidebar_label: "1.1 Variables & Data Types"
@@ -7,25 +7,25 @@ sidebar_label: "1.1 Variables & Data Types"
 import ExerciseBox from '@site/src/components/ExerciseBox';
 import SummaryBox from '@site/src/components/SummaryBox';
 
-# 1.1 Variables & Data Types
+# 1.1 المتغيرات وأنواع البيانات (Variables & Data Types)
 
-في الدرس ده هتتعلم إزاي تخزن البيانات في Dart وتحدد نوعها. ده الأساس اللي كل حاجة تانية بتبني عليه. مش هنشوف Classes أو MVVM دلوقتي - ده هييجي في درس 1.6 لما نتعلم OOP.
-
----
-
-## 🎯 Learning Objectives
-
-1. تعلن عن متغيرات بـ `var`، أنواع صريحة، `final`، `const`.
-2. تفرق بين `int`, `double`, `String`, `bool`, `num`.
-3. تفهم الفرق بين `final` و `const` وامتى تستخدم كل واحدة.
-4. تستخدم String interpolation صح.
-5. تجاوب على أسئلة الـ Interview المتعلقة بالموضوع.
+في هذا الدرس، ستتعلم كيفية تخزين البيانات في لغة Dart وتحديد أنواعها المختلفة. هذا هو الأساس الجوهري الذي تُبنى عليه جميع المفاهيم البرمجية التالية.
 
 ---
 
-## 1. What is a Variable?
+## 🎯 الأهداف التعليمية
 
-المتغير هو **اسم رمزي بيشير لمكان في الذاكرة (RAM)**. بتحط فيه بيانات وبتديه اسم عشان تلاقيه بسهولة.
+1. الإعلان عن المتغيرات باستخدام الكلمات المفتاحية (`var`، `final`، `const`) أو الأنواع الصريحة.
+2. التمييز بين أنواع البيانات الأساسية: (`int`, `double`, `String`, `bool`, `num`).
+3. فهم الفرق الدقيق بين `final` و `const` ومتى تستخدم كل منهما.
+4. استخدام دمج النصوص (String Interpolation) بشكل صحيح.
+5. الإجابة على أسئلة المقابلات الشخصية (Interview Questions) المتعلقة بهذا الموضوع.
+
+---
+
+## 1. ما هو المتغير (Variable)؟
+
+المتغير هو **اسم رمزي يشير إلى موقع في ذاكرة الجهاز (RAM)**، تقوم بتخزين البيانات فيه وتعطيه اسماً لسهولة الاستدعاء والتعديل.
 
 ```dart
 // اسم المتغير = userAge
@@ -36,9 +36,9 @@ int userAge = 25;
 
 ---
 
-## 2. Type Inference with `var`
+## 2. استنتاج النوع تلقائياً (Type Inference) باستخدام `var`
 
-الـ Dart يقدر يحدد نوع المتغير تلقائياً من القيمة:
+تستطيع لغة Dart تحديد نوع المتغير تلقائياً بناءً على القيمة المسندة إليه:
 
 ```dart
 var name      = 'Ahmed';   // Dart infers: String
@@ -47,16 +47,16 @@ var gpa       = 3.8;       // Dart infers: double
 var isStudent = true;      // Dart infers: bool
 ```
 
-**مهم:** بعد ما الـ Dart يحدد النوع، **مش ممكن يتغير**:
+**تنبيه هام:** بمجرد أن تحدد لغة Dart نوع المتغير، **لا يمكن تغيير نوعه لاحقاً**:
 
 ```dart
 var score = 100;     // score is int
-score = 'excellent'; // ❌ Compile Error! Can't assign String to int
+score = 'excellent'; // ❌ خطأ في التجميع! لا يمكن إسناد نص String لمتغير من نوع أرقام int
 ```
 
 ---
 
-## 3. Explicit Types - The Explicit Way
+## 3. الأنواع الصريحة (Explicit Types)
 
 لما بتكتب النوع صراحة، الكود بيوصف نفسه بنفسه:
 
@@ -77,7 +77,7 @@ bool   isAvailable   = true;
 | `bool`  | قيم منطقية | `true`, `false` |
 | `num`   | أب `int` و `double` | `num x = 3;` |
 
-> ✅ **Clean Code Rule:** استخدم الأنواع الصريحة لما الكود يتشارك مع team - أوضح وأسهل في الـ review.
+> ✅ **قاعدة الكود النظيف (Clean Code):** يُفضل استخدام الأنواع الصريحة عند مشاركة الأكواد مع فريق العمل (Team)، لأنها تجعل الكود أوضح وأسهل بكثير أثناء مراجعة الأكواد (Code Review).
 
 ---
 
@@ -431,6 +431,47 @@ Map<String, dynamic> data = getApiResponse();
 **Bonus**: استخدم `StringBuffer` لبناء التقرير بدل الـ interpolation المباشر.
 
 </ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي المشروح بالتعليقات (Solution Code)</strong></summary>
+
+```dart
+void main() {
+  // 1. تعريف المتغيرات بأنواع صريحة (Explicit Typing)
+  String productName = 'Dart & Flutter Course'; // اسم المنتج (String)
+  double price = 250.0;                        // السعر الأساسي (double)
+  int stockQuantity = 150;                      // الكمية في المخزن (int)
+  bool isAvailable = true;                      // حالة التوفر (bool)
+
+  // 2. نسبة الضريبة كـ const لأنها ثابته وقت التجميع (Compile-time Constant)
+  const double vatRate = 0.14; // ضريبة 14%
+
+  // 3. السعر الإجمالي بعد الضريبة كـ final لأن حسابه يتم في الـ Runtime
+  final double priceWithVat = price * (1 + vatRate);
+
+  // 4. استخدام StringBuffer لبناء التقرير بكفاءة (Bonus)
+  final buffer = StringBuffer();
+  buffer.writeln('=== تقرير المنتج ===');
+  buffer.writeln('اسم المنتج: $productName');
+  buffer.writeln('السعر الأصلي: \${price.toStringAsFixed(2)}');
+  buffer.writeln('السعر شامل الضريبة (14%): \${priceWithVat.toStringAsFixed(2)}');
+  buffer.writeln('الكمية المتاحة: $stockQuantity');
+  buffer.writeln('متاح للبيع: ${isAvailable ? "نعم" : "لا"}');
+
+  // 5. طباعة حالة المخزن بناءً على الشرط
+  if (stockQuantity > 100) {
+    buffer.writeln('حالة المخزن: High Stock');
+  } else {
+    buffer.writeln('حالة المخزن: Low Stock');
+  }
+
+  // طباعة النص المجمع بالكامل
+  print(buffer.toString());
+}
+```
+
+</details>
+
 
 ---
 

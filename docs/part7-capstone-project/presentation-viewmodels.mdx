@@ -1,127 +1,100 @@
 ---
 id: presentation-viewmodels
-title: "7.3 Presentation Layer - ViewModels"
-sidebar_label: "7.3 Presentation Layer - ViewModels"
+title: "7.3 Presentation ViewModels"
+sidebar_label: "7.3 Presentation ViewModels"
 ---
 
 import ExerciseBox from '@site/src/components/ExerciseBox';
 import SummaryBox from '@site/src/components/SummaryBox';
 
-# 7.3 مشروع Capstone: طبقة العرض والـ ViewModel (TaskListViewModel)
+# 7.3 طبقة العرض والـ ViewModel المشغلة لـ TaskFlow Pro
 
-في الجلسة الثالثة، سنبني **الـ ViewModel الرئيسي لميزة المهام (TaskListViewModel)**، والذي سيتولى إدارة جميع حالات الشاشة (Loading, Success, Failure)، تصفية القوائم (All, Active, Completed)، ومعالجة إضافة وتعديل المهام.
+بناء الـ ViewModel الرئيسي الذي يدير إضافة، حذف، وتغيير حالة المهام وحساب نسبة الإنجاز المئوية.
 
 ---
 
 ## 🎯 أهداف الدرس (Learning Objectives)
 
-1. بناء `TaskListViewModel` الممتد من `ChangeNotifier`.
-2. تزويد الواجهة بالقوائم المصفاة بناءً على الفلتر الحالي النشط.
-3. معالجة العمليات غير التزامنية مع إرسال إخطارات التحديث `notifyListeners()`.
-4. التحقق من سلامة البيانات المدخلة قبل تسليمها إلى المستودع.
+1. إدارة قائمة المهام في TaskListViewModel.
+2. حساب نسبة الإنجاز باستخدام fold.
+3. إدارة حالات التصفية (TaskFilter).
 
 ---
 
-## 💻 التطبيق المعماري (MVVM & Clean Code)
+## 1. حاسبة نسبة الإنجاز المئوية بالـ fold
 
+### 📘 الشرح النظري
+نحسب عدد المهام المكتملة مقسوماً على الإجمالي باستخدام دالة `fold` عالية الأداء.
+
+### 💻 التطبيق العملي
 ```dart
-// ==========================================
-// File: lib/features/tasks/presentation/viewmodels/task_list_viewmodel.dart
-// Architecture Layer: Presentation (ViewModel)
-// ==========================================
-
-import 'package:flutter/foundation.dart';
-import '../../data/models/task_model.dart';
-import '../../data/repositories/task_repository_impl.dart';
-import '../../../../core/enums/view_status.dart';
-
-enum TaskFilter { all, active, completed }
-
 class TaskListViewModel extends ChangeNotifier {
-  final BaseTaskRepository _repository;
+  final List<TaskModel> _tasks = [];
+  List<TaskModel> get tasks => List.unmodifiable(_tasks);
 
-  TaskListViewModel(this._repository);
-
-  ViewStatus _status = ViewStatus.initial;
-  List<TaskModel> _tasks = [];
-  TaskFilter _activeFilter = TaskFilter.all;
-  String? _errorMessage;
-
-  ViewStatus get status => _status;
-  TaskFilter get activeFilter => _activeFilter;
-  String? get errorMessage => _errorMessage;
-
-  /// القائمة المصفاة التكيفية المعروضة للواجهة
-  List<TaskModel> get filteredTasks {
-    switch (_activeFilter) {
-      case TaskFilter.active:
-        return _tasks.where((t) => !t.isCompleted).toList();
-      case TaskFilter.completed:
-        return _tasks.where((t) => t.isCompleted).toList();
-      case TaskFilter.all:
-      default:
-        return _tasks;
-    }
-  }
-
-  /// جلب المهام الأولي
-  Future<void> fetchTasks() async {
-    _status = ViewStatus.loading;
-    notifyListeners();
-
-    try {
-      _tasks = await _repository.getTasks();
-      _status = _tasks.isEmpty ? ViewStatus.empty : ViewStatus.success;
-    } catch (e) {
-      _errorMessage = e.toString();
-      _status = ViewStatus.failure;
-    } finally {
-      notifyListeners();
-    }
-  }
-
-  /// إضافة مهمة جديدة
-  Future<void> addNewTask(String title, String description) async {
-    if (title.trim().isEmpty) return;
-
-    final newTask = TaskModel(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      title: title,
-      description: description,
-    );
-
-    await _repository.addTask(newTask);
-    await fetchTasks(); // إنعاش القائمة بعد الإضافة
-  }
-
-  /// تغيير حالة إنجاز المهمة
-  Future<void> toggleTask(String id) async {
-    await _repository.toggleTaskCompletion(id);
-    await fetchTasks();
-  }
-
-  /// تغيير الفلتر الحالي
-  void setFilter(TaskFilter filter) {
-    _activeFilter = filter;
-    notifyListeners();
+  double get completionPercentage {
+    if (_tasks.isEmpty) return 0.0;
+    final completed = _tasks.fold(0, (sum, item) => item.isCompleted ? sum + 1 : sum);
+    return (completed / _tasks.length) * 100.0;
   }
 }
 ```
 
 ---
 
-<ExerciseBox title="جرب بنفسك 💻">
+## ⚡ نصائح الأداء والتحسين (Performance Tips)
 
-1. أضف خاصية حساب نسبة الإنجاز المئوية بالـ ViewModel: `double get completionPercentage`.
-2. استخدم `fold` لحساب عدد المهام المكتملة مقسوماً على الإجمالي الكلي وضرب النتيجة في 100.
-
-</ExerciseBox>
+:::tip حماية القوائم بـ List.unmodifiable
+يمنع التعديل المباشر على القوائم من خارج الـ ViewModel.
+:::
 
 ---
 
-<SummaryBox title="خلاصة الدرس 📌">
+## 🐛 أخطاء شائعة يجب تجنبها (Common Mistakes)
 
-- يتكفل الـ ViewModel بتحويل البيانات الخام إلى حالة تفاعلية ومصفاة جاهزة للعرض المباشر.
-- إدارة جميع أساليب التصفية (Filtering) تتم وظيفياً داخل الـ ViewModel لتبقى الـ View نظيفة ومجردة.
+```dart
+// ❌ 1. إتاحة القائمة الرئيسية التعديل المباشر بـ list.add() من الواجهة
+List<Task> get tasks => _tasks; // 💥 يمكن استدعاء tasks.add() من الـ UI!
+
+// ✅ الحل الصحيح
+List<Task> get tasks => List.unmodifiable(_tasks);
+
+```
+
+---
+
+## 🎤 أسئلة وأجوبة المقابلات (Interview Q&A)
+
+<details>
+<summary><strong>س1: كيف تمنع الـ View من تعديل القوائم الموجودة داخل الـ ViewModel بشكل مباشر؟</strong></summary>
+
+بإرجاع `List.unmodifiable(_tasks)` حماية للقائمة الخاصة.
+
+</details>
+
+---
+
+<ExerciseBox title="تمرين عملي - نسبة الإنجاز المئوية 🏋️">
+
+اكتب حاسبة نسبة الإنجاز المئوية للمهام بالـ fold.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي المشروح بالتعليقات (Solution Code)</strong></summary>
+
+```dart
+double percent(List<Task> list) => list.isEmpty ? 0 : (list.where((t)=>t.done).length / list.length)*100;
+```
+
+</details>
+
+---
+
+<SummaryBox title="ملخص الدرس 📌">
+
+- إدارة حالة المهام والتصفية.
+- حساب النسب المئوية بـ `fold`.
+- حماية البيانات بـ `List.unmodifiable`.
 
 </SummaryBox>

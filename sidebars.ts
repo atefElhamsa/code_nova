@@ -53,6 +53,8 @@ const sidebars: SidebarsConfig = {
         { type: 'doc', id: 'part4-mvvm-state-management/viewmodel-lifecycle', label: '4.3 ViewModel Lifecycle & dispose()' },
         { type: 'doc', id: 'part4-mvvm-state-management/wiring-view-viewmodel-repo', label: '4.4 Wiring View - ViewModel - Repository' },
         { type: 'doc', id: 'part4-mvvm-state-management/state-handling-ui', label: '4.5 UI State Handling - Loading / Success / Error' },
+        { type: 'doc', id: 'part4-mvvm-state-management/bloc-and-cubit', label: '4.6 BLoC & Cubit State Management' },
+        { type: 'doc', id: 'part4-mvvm-state-management/getx-state-management', label: '4.7 GetX State Management' },
       ],
     },
     {

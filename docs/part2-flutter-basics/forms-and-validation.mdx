@@ -1,4 +1,4 @@
-﻿---
+---
 id: forms-and-validation
 title: "2.6 Forms & Validation"
 sidebar_label: "2.6 Forms & Validation"
@@ -7,142 +7,130 @@ sidebar_label: "2.6 Forms & Validation"
 import ExerciseBox from '@site/src/components/ExerciseBox';
 import SummaryBox from '@site/src/components/SummaryBox';
 
-# 2.6 النماذج والتحقق من المدخلات (Forms & Input Validation)
+# 2.6 النماذج والتحقق من صحة المدخلات (Forms & Validation)
 
-النماذج (Forms) هي وسيلة التفاعل الرئيسية لجمع المدخلات من المستخدمين. يتطلب بناء نموذج قوي الاستعانة بـ `Form`, `TextFormField`, وتطبيق دالّة تحقق (Validator) نظيفة ومفصولة داخل معمارية MVVM.
+إدارة استمارات الإدخال والتحقق من صحة البيانات هي جزء جوهري في تطبيقات التعامل مع المستخدمين.
 
 ---
 
 ## 🎯 أهداف الدرس (Learning Objectives)
 
-1. فهم كيفية عمل `Form` ودور الـ `GlobalKey<FormState>`.
-2. استخدام `TextFormField` والتحكم بالتنسيق وقواعد إدخال البيانات.
-3. الت التزام بمبدأ فصل قواعد التحقق (Validation Logic) في الـ ViewModel أو Mixin.
-4. إرسال النموذج ومعالجة حالة الزر التفاعلي أثناء الإرسال.
+1. استخدام Form و `GlobalKey<FormState>`.
+2. بناء حقول TextFormField مع واجهات التحقق (Validator).
+3. استدعاء FormState.validate() وتفريغ الحقول.
 
 ---
 
-## 📘 الشرح النظري (Theoretical Explanation)
+## 1. مفتاح الفورم التجمعي (`GlobalKey<FormState>`)
 
-تتيح ودجة `Form` ربط عدة الحقول وتحقق صحتها دفعة واحدة باستخدام المفتاح العام `GlobalKey<FormState>` عبر استدعاء `.currentState!.validate()`.
+### 📘 الشرح النظري
+يُستخدم `GlobalKey<FormState>` لإدارة حالة النموذج ككل والتحقق من صحة جميع الحقول الفرعية بضغطة زر واحدة.
 
-لكن في الكود النظيف، تكون دالة التحقق بسيطة وتستدعي المنطق الجاهز من الـ ViewModel لتبقى الـ View خالية تماماً من الشروط البرمجية.
-
----
-
-## 💻 التطبيق المعماري (MVVM & Clean Code)
-
-نستعرض نموذج تسجيل الدخول المنظم بنظافة عالية.
-
+### 💻 التطبيق العملي
 ```dart
-// ==========================================
-// File: lib/presentation/views/login_view.dart
-// Description: شاشة نموذج تسجيل الدخول النظيفة
-// Architecture Layer: Presentation (View)
-// ==========================================
-
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../viewmodels/login_viewmodel.dart';
-
-class LoginView extends StatefulWidget {
-  const LoginView({super.key});
-
-  @override
-  State<LoginView> createState() => _LoginViewState();
+class FormStateExample {
+  // مفتاح التحكم بالحالة العامة للاستمارة
+  final formKey = `GlobalKey<FormState>`();
 }
+```
 
-class _LoginViewState extends State<LoginView> {
-  final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
+---
 
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
+## 2. حقول النص المفحوصة (TextFormField & Validator)
 
-  @override
-  Widget build(BuildContext context) {
-    final viewModel = context.watch<LoginViewModel>();
+### 📘 الشرح النظري
+تتميز `TextFormField` بامتلاكها دالة `validator` تُرجع `null` إذا كان المدخل صالحاً، أو ترجع نص الخطأ التنبيهي إذا كان المدخل غير صالح.
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('تسجيل الدخول')),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              TextFormField(
-                controller: _emailController,
-                keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
-                  labelText: 'البريد الإلكتروني',
-                  prefixIcon: Icon(Icons.email),
-                  border: OutlineInputBorder(),
-                ),
-                validator: (val) => viewModel.validateEmail(val),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _passwordController,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'كلمة المرور',
-                  prefixIcon: Icon(Icons.lock),
-                  border: OutlineInputBorder(),
-                ),
-                validator: (val) => viewModel.validatePassword(val),
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: ElevatedButton(
-                  onPressed: viewModel.isSubmitting
-                      ? null
-                      : () {
-                          if (_formKey.currentState!.validate()) {
-                            viewModel.submitLogin(
-                              _emailController.text,
-                              _passwordController.text,
-                            );
-                          }
-                        },
-                  child: viewModel.isSubmitting
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text('دخول'),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+### 💻 التطبيق العملي
+```dart
+TextFormField(
+  decoration: const InputDecoration(labelText: 'Email'),
+  validator: (value) {
+    if (value == null || value.isEmpty) return 'البريد مطلوب';
+    if (!value.contains('@')) return 'بريد غير صالح';
+    return null; // مدخل صحيح 100%
+  },
+);
+```
+
+---
+
+## 3. استدعاء التحقق والاعتماد (Form Validation Submission)
+
+### 📘 الشرح النظري
+عند استدعاء `_formKey.currentState!.validate()`. تقوم كافة الحقول المفحوصة بإظهار الرسائل التنبيهية التلقائية إذا كانت هناك أخطاء.
+
+### 💻 التطبيق العملي
+```dart
+void submit(`GlobalKey<FormState>` key) {
+  if (key.currentState!.validate()) {
+    print('Form is 100% valid! Submitting to server...');
   }
 }
 ```
 
 ---
 
-<ExerciseBox title="جرب بنفسك 💻">
+## ⚡ نصائح الأداء والتحسين (Performance Tips)
 
-أنشئ ViewModel باسم `LoginViewModel` يحتوي على:
-1. دالة `validateEmail(String? email)` ترجع نص الخطأ أو `null`.
-2. دالة `validatePassword(String? password)` تتيح التأكد أن كلمة المرور لا تقل عن 6 أحرف.
-3. دالة `submitLogin` التي تقوم بتعيين `isSubmitting = true` وإرسال إخطار التحديث.
-
-</ExerciseBox>
+:::tip تغليف الاستمارة بـ Form لتوفير مجهود الفحص
+استدعاء دالة `validate()` واحدة يفحص كافة الحقول دفعة واحدة بدلاً من الفحص اليدوي المكرر.
+:::
 
 ---
 
-<SummaryBox title="خلاصة الدرس 📌">
+## 🐛 أخطاء شائعة يجب تجنبها (Common Mistakes)
 
-- نستخدم `TextEditingController` للتحكم في قيم الحقول ونتأكد دائماً من التخلص منها في `dispose()`.
-- التحقق من الصحة (Validation) يُنفذ عبر دوال مساعدة في الـ ViewModel لتأكيد قواعد العمل (Business Rules).
-- حماية الأزرار من الكبس المكرر أثناء الإرسال تتم عن طريق حالة `isSubmitting` القادمة من الـ ViewModel.
+```dart
+// ❌ 1. إغفال التخلص من كائنات TextEditingController في dispose
+final controller = TextEditingController(); // بدون dispose
+
+// ✅ الحل الصحيح
+@override void dispose() { controller.dispose(); super.dispose(); }
+
+```
+
+---
+
+## 🎤 أسئلة وأجوبة المقابلات (Interview Q&A)
+
+<details>
+<summary><strong>س1: كيف تعمل دالة validator في TextFormField؟</strong></summary>
+
+تُرجع null إذا كان المدخل سليماً، أو تُرجع String يحتوي على رسالة الخطأ المراد إظهارها تحت الحقل.
+
+</details>
+
+---
+
+<ExerciseBox title="تمرين عملي - نموذج تسجيل دخول 🏋️">
+
+أنشئ استمارة تحتوي على حقل بريد إلكتروني مفحوص بـ GlobalKey ورسائل تنبيهية.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي المشروح بالتعليقات (Solution Code)</strong></summary>
+
+```dart
+Widget buildForm(`GlobalKey<FormState>` key) {
+  return Form(
+    key: key,
+    child: TextFormField(
+      validator: (v) => (v == null || v.isEmpty) ? 'مطلوب' : null,
+    ),
+  );
+}
+```
+
+</details>
+
+---
+
+<SummaryBox title="ملخص الدرس 📌">
+
+- `GlobalKey<FormState>` يتحكم بحالة الفورم ككل.
+- `validator` يُرجع `null` للمدخل الصحيح أو نص الخطأ.
+- `validate()` يفحص كافة الحقول دفعة واحدة.
 
 </SummaryBox>

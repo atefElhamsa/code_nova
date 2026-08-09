@@ -1,4 +1,4 @@
-﻿---
+---
 id: control-flow
 title: "1.3 Control Flow & Pattern Matching"
 sidebar_label: "1.3 Control Flow & Pattern Matching"
@@ -7,25 +7,25 @@ sidebar_label: "1.3 Control Flow & Pattern Matching"
 import ExerciseBox from '@site/src/components/ExerciseBox';
 import SummaryBox from '@site/src/components/SummaryBox';
 
-# 1.3 Control Flow & Pattern Matching
+# 1.3 التحكم في مسار التنفيذ ومطابقة الأنماط (Control Flow & Pattern Matching)
 
-في الدرس ده هنتعلم إزاي نتحكم في مسار الكود (Control Flow) - إزاي ناخد قرارات، ونكرر عمليات. ومع إضافة **Pattern Matching** و **Switch Expressions** في Dart 3، الكود بقى أقصر وأنظف بكتير. كل ده هنتعلمه بدون ما نلمس أي Classes لسه!
-
----
-
-## 🎯 Learning Objectives
-
-1. استخدام الشروط التقليدية `if-else` والـ Ternary Operator `? :`.
-2. تكرار العمليات باستخدام `for`, `for-in`, `while`.
-3. استخدام ميزات Dart 3 القوية: **Switch Expressions** و **Pattern Matching**.
-4. التعامل مع الـ Enums في اتخاذ القرارات.
-5. الإجابة على أسئلة الـ Interview الشائعة في هذا الموضوع.
+في هذا الدرس، ستتعلم كيفية التحكم في مسار تنفيذ الأكواد البرمجية (Control Flow)، من خلال اتخاذ القرارات وتكرار العمليات. ومع تقديم ميزات **Pattern Matching** و **Switch Expressions** الحديثة في إصدار Dart 3، أصبح الكود أكثر اختصاراً ونظافة بشكل كبير.
 
 ---
 
-## 1. If-Else Statements
+## 🎯 الأهداف التعليمية
 
-الطريقة الأساسية لاتخاذ القرارات. لو الشرط `true`، نفذ الكود ده، وإلا نفذ التاني.
+1. استخدام عبارات الشرط التقليدية `if-else` والمعامل الشرطي الثلاثي (Ternary Operator `? :`).
+2. تكرار العمليات بكفاءة باستخدام حلقات التكرار: `for`, `for-in`, `while`.
+3. استغلال ميزات Dart 3 الحديثة: تعبيرات `Switch Expressions` ومطابقة الأنماط `Pattern Matching`.
+4. استخدام التعدادات (Enums) لاتخاذ القرارات بطريقة آمنة ومريحة.
+5. الإجابة على أسئلة المقابلات الشخصية (Interview Questions) المتعلقة بالتحكم في مسار التكويد.
+
+---
+
+## 1. عبارات الشرط (If-Else Statements)
+
+تُعتبر الطريقة الأساسية لاتخاذ القرارات في البرمجة: إذا تحقق الشرط (`true`)، ينفذ المترجم كوداً معيناً، وإلا ينفذ كوداً بديلة:
 
 ```dart
 void checkScore(int score) {
@@ -39,57 +39,20 @@ void checkScore(int score) {
 }
 ```
 
-> 💡 **Clean Code Tip:** تجنب الـ nested if-else (if جوه if جوه if) لأنها بتصعب القراءة. استخدم الـ **Guard Clauses** (early return).
+> 💡 **نصيحة الكود النظيف (Clean Code):** تجنب الشروط المتداخلة المعقدة (Nested if-else) لأنها تصعب القراءة وتزيد من الأخطاء. استخدم بدلاً منها **شروط الحماية المبكرة (Guard Clauses)** لتسهيل القراءة ا�## 3. حلقات التكرار (Loops)
 
-**مثال بالـ Guard Clause:**
-```dart
-void processOrder(double? amount) {
-  // Guard clauses
-  if (amount == null) return;
-  if (amount <= 0) return;
+تُستخدم حلقات التكرار لتنفيذ جزء معين من الكود عدة مرات دون الحاجة لتكرار كتابته:
 
-  // Main logic
-  print('Processing amount: $amount');
-}
-```
-
----
-
-## 2. Ternary Operator (`? :`)
-
-طريقة مختصرة جداً لـ if-else لما تكون عايز ترجع قيمة بناءً على شرط (Expression وليس Statement).
-
-```dart
-int age = 20;
-
-// ❌ Verbose if-else
-String status1;
-if (age >= 18) {
-  status1 = 'Adult';
-} else {
-  status1 = 'Minor';
-}
-
-// ✅ Concise Ternary Operator
-String status2 = age >= 18 ? 'Adult' : 'Minor';
-```
-
----
-
-## 3. Loops (التكرار)
-
-عشان تنفذ كود أكتر من مرة.
-
-### `for` Loop (التقليدي)
-لو عارف هتبدأ منين وهتقف فين.
+### `for` Loop (التكرار المحسوب التقليدي)
+يُستخدم عندما تكون نقطة البداية ونقطة النهاية وعدد المرات معروفاً مسبقاً.
 ```dart
 for (int i = 1; i <= 5; i++) {
   print('Iteration $i');
 }
 ```
 
-### `for-in` Loop (الأفضل للمجموعات)
-الطريقة الأنظف للتعامل مع الـ Lists.
+### `for-in` Loop (التكرار على القوائم والمجموعات)
+الطريقة الأنظف والأحدث للتعامل مع القوائم (Lists) والمجموعات (Collections).
 ```dart
 List<String> fruits = ['Apple', 'Banana', 'Mango'];
 
@@ -99,7 +62,7 @@ for (String fruit in fruits) {
 ```
 
 ### `while` & `do-while` Loops
-لو التكرار معتمد على شرط ومش عارف عدد المرات بالضبط.
+يُستخدم التكرار الشرطي عندما يكون التكرار معتمداً على شرط معين دون معرفة عدد المرات المسبق بالظبط.
 ```dart
 int count = 3;
 
@@ -107,14 +70,14 @@ while (count > 0) {
   print('Countdown: $count');
   count--;
 }
-// Outputs: 3, 2, 1
+// المخرجات: 3, 2, 1
 ```
 
 ---
 
-## 4. Enums
+## 4. التعدادات (Enums)
 
-الـ Enums بتستخدم لتعريف مجموعة ثابتة من القيم. مفيدة جداً عشان تمنع الأخطاء الإملائية.
+تُستخدم التعدادات (Enums) لتعريف مجموعة مسبقة وثابتة من القيم لخيارات محددة، وهي مفيدة جداً لمنع الأخطاء الإملائية وتنظيم الكود:
 
 ```dart
 // تعريف الـ Enum
@@ -129,9 +92,9 @@ void printStatusMessage(OrderStatus status) {
 
 ---
 
-## 5. Switch Statements (الطريقة القديمة)
+## 5. عبارات Switch التقليدية (Traditional Switch Statements)
 
-استخدام الـ Switch القديم بيحتاج `case` و `break` كتير.
+كانت طريقة `switch` القديمة تتطلب كتابة كلمات `case` و `break` مكررة لكل حالة:
 
 ```dart
 void handleStatus(OrderStatus status) {
@@ -150,9 +113,9 @@ void handleStatus(OrderStatus status) {
 
 ---
 
-## 6. Dart 3: Switch Expressions (الطريقة الحديثة 🔥)
+## 6. ميزة Dart 3: تعبيرات Switch الحديثة (Switch Expressions)
 
-الـ Switch Expressions بتخليك ترجع قيمة مباشرة بسطر واحد لكل حالة، بدون `case` ولا `break`.
+تسمح لك تعبيرات `Switch Expressions` في إصدار Dart 3 بإرجاع قيمة مباشرة بسطر واحد لكل حالة، دون الحاجة لكتابة `case` أو `break`:
 
 ```dart
 String getStatusMessage(OrderStatus status) {
@@ -166,21 +129,21 @@ String getStatusMessage(OrderStatus status) {
 }
 ```
 
-**ميزة قوية:** الـ Dart compiler هيجبرك تغطي كل الحالات (Exhaustiveness checking). لو نسيت `OrderStatus.cancelled`، هيديك Compile Error!
+**ميزة الأمان الشامل (Exhaustiveness checking):** يقوم مترجم Dart بإجبارك على تغطية جميع الحالات الممكنة للـ Enum. إذا نسيت إضافة حالة `OrderStatus.cancelled` مثلاً، سيظهر خطأ تجميع فوري لمنع الأخطاء!
 
 ---
 
-## 7. Dart 3: Pattern Matching
+## 7. ميزة Dart 3: مطابقة الأنماط (Pattern Matching)
 
-الـ Pattern Matching بيخليك تفكك وتختبر البيانات المعقدة بسهولة جداً.
+تسمح ميزة مطابقة الأنماط بفك واختبار هيكل البيانات المعقدة باختصار وسلاسة:
 
-**مثال مع Lists:**
+**مثال مع القوائم (Lists):**
 ```dart
 void checkList(List<int> numbers) {
   switch (numbers) {
     case [1, 2]:
       print('List has 1 and 2 exactly');
-    case [1, 2, ...]: // Spread pattern
+    case [1, 2, ...]: // نمط الانتشار
       print('List starts with 1 and 2');
     case [_, _, _]:
       print('List has exactly 3 elements of any value');
@@ -190,82 +153,133 @@ void checkList(List<int> numbers) {
 }
 ```
 
-**مثال مع Records (متغيرات مجمعة):**
+---
+
+## ⚡ نصائح الأداء والتحسين (Performance Tips)
+
+:::tip الكلمات المفتاحية Break و Continue
+استخدم `break` للخروج من حلقة التكرار مبكراً فور العثور على القيمة المطلوبة، واستخدم `continue` لتخطي التكرار الحالي والانتقال للعنصر التالي. هذا يقلل من استهلاك دورات المعالج (CPU cycles).
+:::
+
+:::tip التعبيرات الشاملة Exhaustive Switch
+استخدام `Switch Expressions` مع التعدادات `Enums` يضمن لك كوداً أسرع في التنفيذ ومضمون الأمان وقت التجميع (Compile Time) مقارنة بالشروط المتعددة `if-else`.
+:::
+
+---
+
+## 🎤 أسئلة وأجوبة المقابلات الشخصية (Interview Q&A)
+
+<details>
+<summary><strong>س1: ما الفرق بين عبارة If-Else والتعبير الثلاثي (Ternary Operator)؟</strong></summary>
+
+- **عبارة `if-else`:** تُعتبر Statement، تنفذ منطقاً برمجياً ولا ترجع قيمة بشكل مباشر. تُستخدم مع الشروط المعقدة.
+- **التعبير الثلاثي `? :`:** يُعتبر Expression، يرجع قيمة مباشرة وتستخدمه لإسناد قيمة لمتغير بناءً على شرط مختصر.
+
+</details>
+
+<details>
+<summary><strong>س2: ما هي ميزة Switch Expressions المضافة في إصدار Dart 3؟</strong></summary>
+
+1. **الإيجاز (Conciseness):** عدم الحاجة لكتابة `case` أو `break` أو `return` مكررة.
+2. **الفحص الشامل (Exhaustiveness):** يتأكد المترجم من تغطية كافة الحالات الممكنة.
+3. **إرجاع قيم مباشرة:** ترجع قيمة كـ Expression مما يتيح إسنادها لمتغير في سطر واحد.
+
+</details>
+
+---
+
+## 🐛 أخطاء شائعة يجب تجنبها (Common Mistakes)
+
 ```dart
-void checkCoordinates((int, int) point) {
-  switch (point) {
-    case (0, 0):
-      print('At the origin');
-    case (int x, 0):
-      print('On the X axis at $x');
-    case (0, int y):
-      print('On the Y axis at $y');
-    case (int x, int y) when x == y: // Guard clause inside switch
-      print('On the diagonal');
-    default:
-      print('Somewhere else');
+// ❌ 1 - الشروط الثلاثية المتداخلة الصعبة القراءة
+String result = score > 90 ? 'A' : score > 80 ? 'B' : 'C';
+
+// ✅ البديل الأفضل والأوضح:
+String result;
+if (score > 90) result = 'A';
+else if (score > 80) result = 'B';
+else result = 'C';
+
+
+// ❌ 2 - التعديل على القائمة أثناء التكرار باستخدام for-in
+for (var item in items) {
+  if (item.isBad) items.remove(item); // 💥 خطأ تعديل متزامن (ConcurrentModificationError)
+}
+
+// ✅ الحل الصحيح:
+items.removeWhere((item) => item.isBad);
+```
+
+---
+
+<ExerciseBox title="🏋️ تمرين عملي - تطبيق التحكم في مسار التكويد">
+
+قم بكتابة دالة `main()` لتطبيق الآتي:
+
+1. عرّف تعداداً باسم `enum UserRole { admin, editor, viewer, guest }`.
+2. عرّف متغير القيمة الحالية: `UserRole currentUser = UserRole.editor;`.
+3. استخدم **Switch Expression** لإنشاء متغير نصي `permissions` يحدد الصلاحية بحسب النوع:
+   - `admin`: "Full Access"
+   - `editor`: "Edit Access"
+   - `viewer`: "Read Only"
+   - `guest`: "Limited Access"
+4. اطبع نص الصلاحية المسندة `permissions`.
+5. انشئ قائمة أرقام: `List<int> numbers = [10, 15, 20, 25, 30];`.
+6. استخدم حلقة `for-in` للمرور على الأرقام، واطبع الأرقام الزوجية فقط باستخدام فحص الشرط `number % 2 == 0`.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي المشروح بالتعليقات (Solution Code)</strong></summary>
+
+```dart
+// 1. تعريف التعداد (Enum) للوظائف
+enum UserRole { admin, editor, viewer, guest }
+
+void main() {
+  // 2. تحديد المتغير الحالي
+  UserRole currentUser = UserRole.editor;
+
+  // 3. استخدام Switch Expression (Dart 3) لإرجاع النص مباشرة بناءً على الـ Enum
+  String permissions = switch (currentUser) {
+    UserRole.admin => 'Full Access',
+    UserRole.editor => 'Edit Access',
+    UserRole.viewer => 'Read Only',
+    UserRole.guest => 'Limited Access',
+  };
+
+  // 4. طباعة الصلاحية
+  print('Current Role: $currentUser -> Permissions: $permissions');
+
+  // 5. إنشاء قائمة الأرقام
+  List<int> numbers = [10, 15, 20, 25, 30];
+
+  // 6. المرور بحلقة for-in وطباعة الأرقام الزوجية فقط
+  print('Even numbers in list:');
+  for (final number in numbers) {
+    // فحص باقي القسمة على 2
+    if (number % 2 == 0) {
+      print('- $number');
+    }
   }
 }
 ```
 
----
+</details>
 
-## ⚡ Performance Tips
-
-:::tip Break and Continue
-استخدم `break` للخروج من الـ loop مبكراً لو لقيت اللي بتدور عليه، و `continue` لتخطي الـ iteration الحالية لو مش محتاجها. ده بيوفر وقت معالجة (CPU cycles).
-```dart
-for (int i = 0; i < 1000; i++) {
-  if (i == 5) continue; // Skip 5
-  if (i == 10) break;   // Stop entirely at 10
-  print(i);
-}
-```
-:::
-
-:::tip Exhaustive Switch
-استخدام الـ Switch Expressions مع الـ Enums أفضل من if-else لأنه بيضمن إنك مغطي كل الحالات وقت الـ Compilation، وبيكون أسرع في التنفيذ (O(1) غالباً) مقارنة بـ if-else (O(n)).
-:::
 
 ---
 
-## 🎤 Interview Questions & Answers
+<SummaryBox title="📌 ملخص الدرس (Summary)">
 
-<details>
-<summary><strong>Q1: إيه الفرق بين If-Else و Ternary Operator؟</strong></summary>
+### 1. ملخص التحكم في المسارات (Control Flow Summary):
+- **عبارات الشرط (`if-else` / `? :`)**: تتيح اتخاذ القرارات وإعادة القيم الشرطية.
+- **حلقات التكرار (`for`, `for-in`, `while`)**: تُستخدم لتكرار تنفيذ الأكواد بكفاءة.
+- **التعدادات (`Enums`)**: لتعريف مجموعة خيارات ثابتة ومضمونة الأمان.
+- **تعبيرات `Switch Expressions`**: الطريقة الأحدث والأنظف لاتخاذ القرارات وإرجاع القيم في Dart 3.
+- **مطابقة الأنماط (`Pattern Matching`)**: قوة جديدة لاختبار وتفكيك هيكل البيانات المعقدة بسهولة.
 
-- `if-else`: هو Statement، يعني بينفذ كود، لكن مش بيرجع قيمة. بتستخدمه للمنطق المعقد أو لما يكون عندك سطور كود كتير.
-- `? :`: هو Expression، يعني بيرجع قيمة. بتستخدمه لتعيين قيمة لمتغير بناءً على شرط بسيط، وبيخلي الكود أقصر.
-
-```dart
-// Statement
-if (isTrue) { doSomething(); } else { doSomethingElse(); }
-
-// Expression
-var value = isTrue ? 'Yes' : 'No';
-```
-</details>
-
-<details>
-<summary><strong>Q2: إيه ميزة Switch Expressions المضافة في Dart 3؟</strong></summary>
-
-1. **الإيجاز (Conciseness):** مفيش `case` ولا `break` ولا `return` متكررة.
-2. **Exhaustiveness:** الـ Compiler بيتأكد إنك غطيت كل الـ Enum values المحتملة.
-3. **Values directly:** بترجع قيمة كـ Expression، فتقدر تعينها لمتغير مباشرة أو تعملها return بسهولة.
-</details>
-
-<details>
-<summary><strong>Q3: متى أستخدم for-in بدلاً من for التقليدي؟</strong></summary>
-
-استخدم `for-in` لما تكون عايز تمر على كل العناصر في List أو Set ومش مهتم بالـ Index (الترتيب الرقمي) بتاع العنصر. الـ `for-in` أنظف وأقل عرضة لأخطاء الـ (Off-by-one errors).
-استخدم `for` التقليدي لو محتاج الـ Index عشان تعدل في الـ List أو تقارن عناصر ببعض.
-</details>
-
-<details>
-<summary><strong>Q4: إيه هو الـ Pattern Matching في Dart؟</strong></summary>
-
-هو طريقة مختصرة وقوية لاختبار وتفكيك (Destructuring) البيانات. بيسمحلك تتأكد إن الـ data متطابقة مع شكل معين (Pattern)، ولو متطابقة، تقدر تستخرج منها قيم فرعية في خطوة واحدة، زي ما بنعمل مع الـ Records والـ Lists جوه الـ Switch.
-</details>
+</SummaryBox>
 
 ---
 

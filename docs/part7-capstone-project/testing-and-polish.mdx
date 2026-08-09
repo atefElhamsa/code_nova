@@ -1,4 +1,4 @@
-﻿---
+---
 id: testing-and-polish
 title: "7.5 Testing, Polish & Production"
 sidebar_label: "7.5 Testing, Polish & Production"
@@ -7,89 +7,94 @@ sidebar_label: "7.5 Testing, Polish & Production"
 import ExerciseBox from '@site/src/components/ExerciseBox';
 import SummaryBox from '@site/src/components/SummaryBox';
 
-# 7.5 مشروع Capstone: الاختبارات والتحسين النهائي (Testing, Polish & Production)
+# 7.5 الفحص الشامل وتوليد النسخة النهائية (Testing & Release)
 
-تهانينا الحارة! نصل الآن إلى الجلسة الأخيرة من مشروع Capstone والدورة الشاملة. سنقوم بتأكيد جودة تطبيق **TaskFlow Pro** عبر كتابة الاختبارات الأحادية والتأكد من جاهزية التطبيق الكاملة للنشر والإنتاج (Production Readiness).
+الفحص الختامي الشامل وإجراء اختبارات التجمع وتوليد النسخة الإنتاجية المجهزة للتسليم.
 
 ---
 
 ## 🎯 أهداف الدرس (Learning Objectives)
 
-1. كتابة Unit Test كامل لميزات `TaskListViewModel`.
-2. مراجعة ممارسات حماية الذاكرة ومنع التسريبات.
-3. التثبت من تطبيق معايير Clean Code و MVVM بنسبة 100% في جميع الشاشات.
-4. التحضير لنشر التطبيق وبناء النسخة النهائية (Production Build).
+1. تشغيل كافة الاختبارات عبر flutter test.
+2. توليد النسخة النهائية APK و Web.
+3. المراجعة النهائية لمعايير Clean Architecture.
 
 ---
 
-## 💻 التطبيق المعماري (MVVM & Clean Code)
+## 1. أوامر التجميع والإنتاج النهائي
 
-### 1. كتابة الاختبار النهائي للـ ViewModel
+### 📘 الشرح النظري
+نستخدم أوامر Flutter CLI لبناء الحزم الإنتاجية المعالجة ضد الضغط والهندسة العكسية.
 
+### 💻 التطبيق العملي
 ```dart
-// ==========================================
-// File: test/features/tasks/presentation/viewmodels/task_list_viewmodel_test.dart
-// Description: اختبارات الشمولية والتصفية لمشروع Capstone
-// Architecture Layer: Unit Tests
-// ==========================================
+/*
+# تشغيل كامل بنك الاختبارات
+flutter test
 
-import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
+# بناء تطبيق الإنتاج لأندرويد
+flutter build apk --release
 
-import 'package:doc_flutter/features/tasks/data/models/task_model.dart';
-import 'package:doc_flutter/features/tasks/data/repositories/task_repository_impl.dart';
-import 'package:doc_flutter/features/tasks/presentation/viewmodels/task_list_viewmodel.dart';
-import 'package:doc_flutter/core/enums/view_status.dart';
-
-class MockTaskRepository extends Mock implements BaseTaskRepository {}
-
-void main() {
-  late TaskListViewModel viewModel;
-  late MockTaskRepository mockRepository;
-
-  setUp(() {
-    mockRepository = MockTaskRepository();
-    viewModel = TaskListViewModel(mockRepository);
-  });
-
-  const tTasksList = [
-    TaskModel(id: '1', title: 'مهمة 1', description: 'تطبيق MVVM', isCompleted: false),
-    TaskModel(id: '2', title: 'مهمة 2', description: 'كتابة الاختبارات', isCompleted: true),
-  ];
-
-  group('اختبارات TaskListViewModel الشاملة -', () {
-    test('يجب تصفية المهام المكتملة فقط عند اختيار TaskFilter.completed', () async {
-      // Arrange
-      when(() => mockRepository.getTasks()).thenAnswer((_) async => tTasksList);
-
-      // Act
-      await viewModel.fetchTasks();
-      viewModel.setFilter(TaskFilter.completed);
-
-      // Assert
-      expect(viewModel.status, ViewStatus.success);
-      expect(viewModel.filteredTasks.length, 1);
-      expect(viewModel.filteredTasks.first.id, '2');
-    });
-  });
-}
+# بناء نسخة الويب
+flutter build web --release
+*/
 ```
 
 ---
 
-<ExerciseBox title="جرب بنفسك 💻">
+## ⚡ نصائح الأداء والتحسين (Performance Tips)
 
-1. شغّل أمر `flutter test` وتأكد من نجاح جميع اختبارات الدورة بنسبة 100%.
-2. افتح مبني الإنتاج عبر `flutter build apk --release` أو `flutter build web`.
-
-</ExerciseBox>
+:::tip الفحص الختامي الشامل
+تأكد من خلو المشروع من أي تحذيرات أداء (Linter Warnings) قبل التصدير.
+:::
 
 ---
 
-<SummaryBox title="خلاصة الدرس 📌">
+## 🐛 أخطاء شائعة يجب تجنبها (Common Mistakes)
 
-- يمثل تطبيق Capstone برهاناً عملياً على نجاح وقوة معمارية MVVM + Clean Code.
-- الفصل بين الطبقات يتيح اختبار الوظائف المعقدة وتعديل التحديثات بسلاسة وأمان تامين.
-- أنت الآن جاهز لبناء واستلام مشاريع Dart & Flutter احترافية حقيقية بالمعايير العالمية!
+```dart
+// ❌ 1. تصدير تطبيق الإنتاج بوضع Debug Mode
+flutter build apk --debug
+
+// ✅ الحل الصحيح
+flutter build apk --release
+
+```
+
+---
+
+## 🎤 أسئلة وأجوبة المقابلات (Interview Q&A)
+
+<details>
+<summary><strong>س1: ما الفرق بين debug build و release build في Flutter؟</strong></summary>
+
+الـ Release build يحذف أدوات التنقيح ويقوم بضغط وترجمة الأكواد مسبقاً (AOT Compilation) لسرعة قياسية.
+
+</details>
+
+---
+
+<ExerciseBox title="تمرين عملي - البناء النهائي 🏋️">
+
+قم بتشغيل أمر flutter test وتصرف عند وجود أي أخطاء.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي المشروح بالتعليقات (Solution Code)</strong></summary>
+
+```dart
+flutter test && flutter build apk --release
+```
+
+</details>
+
+---
+
+<SummaryBox title="ملخص الدرس 📌">
+
+- الفحص الأخير بـ `flutter test`.
+- تصدير النسخة النهائية بـ `--release`.
+- تسليم مشروع متكامل أعلى معايير الجودة.
 
 </SummaryBox>

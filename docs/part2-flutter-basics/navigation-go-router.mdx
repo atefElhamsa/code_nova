@@ -1,4 +1,4 @@
-﻿---
+---
 id: navigation-go-router
 title: "2.5 Navigation with go_router"
 sidebar_label: "2.5 Navigation with go_router"
@@ -7,94 +7,133 @@ sidebar_label: "2.5 Navigation with go_router"
 import ExerciseBox from '@site/src/components/ExerciseBox';
 import SummaryBox from '@site/src/components/SummaryBox';
 
-# 2.5 التنقل والتوجيه (Declarative Navigation with go_router)
+# 2.5 التنقل وإدارة المسارات (go_router Navigation)
 
-التنقل بين الشاشات في التطبيقات الكبيرة ينبغي أن يكون معلَناً وموحداً (Declarative). تمنحنا حزمة `go_router` الرسمية من فريق Flutter القدرة على إدارة المسارات، المعاملات (Path & Query Parameters)، والروابط العميقة (Deep Linking) بكفاءة عالية.
+يُعتبر إطار `go_router` الحل القياسي الموصى به من فريق Flutter لإدارة التوجيه المساري (Declarative Routing) لدعم التمرير الديناميكي والويب.
 
 ---
 
 ## 🎯 أهداف الدرس (Learning Objectives)
 
-1. فهم الفرق بين التنقل الإمراري (Imperative `Navigator.push`) والتنقل الإعلاني (Declarative `go_router`).
-2. إعداد شجرة المسارات المركزية داخل المجلد المعماري `core/router/`.
-3. التمرير الآمن للمتغيرات والمعاملات بين الشاشات (`pathParameters` & `extra`).
-4. تنفيذ إعادة التوجيه الشرطي (Redirect Guard) للتحقق من تسجيل الدخول.
+1. تهيئة كائن GoRouter وتحديد المسارات.
+2. تمرير المعاملات الديناميكية (Path Parameters).
+3. إدارة المسارات المجهولة عبر errorBuilder.
 
 ---
 
-## 📘 الشرح النظري (Theoretical Explanation)
+## 1. إعداد كائن التوجيه (GoRouter Configuration)
 
-تتيح حزمة `go_router` تعريف المسارات في مكان واحد مركزي:
+### 📘 الشرح النظري
+يقوم كائن `GoRouter` بتعريف قائمة المسارات (`routes`) والصفحة الرئيسية المبدئية (`initialLocation`).
 
-* **`context.go('/details/101')`**: استبدال المسار الحالي وتحديث شجرة التنقل.
-* **`context.push('/details/101')`**: إضافة شاشة جديدة فوق الشاشة الحالية في كومات التنقل.
-* **`pathParameters`**: استخراج المتغيرات المضمنة في المسار مثل `/details/:id`.
-
----
-
-## 💻 التطبيق المعماري (MVVM & Clean Code)
-
-ننشئ ملف إعدادات التوجيه المركزي في `lib/core/router/app_router.dart` ونربطه بالـ `MaterialApp.router`.
-
+### 💻 التطبيق العملي
 ```dart
-// ==========================================
-// File: lib/core/router/app_router.dart
-// Description: إعدادات التوجيه والمسارات المركزية للتطبيق
-// Architecture Layer: Core Router
-// ==========================================
+final GoRouter router = GoRouter(
+  initialLocation: '/',
+  routes: [
+    GoRoute(
+      path: '/',
+      builder: (context, state) => const HomeScreen(),
+    ),
+  ],
+);
+```
 
-import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import '../../presentation/views/home_view.dart';
-import '../../presentation/views/product_details_view.dart';
-import '../../presentation/views/login_view.dart';
+---
 
-class AppRouter {
-  // أسماء المسارات كـ الثوابت النصية لتجنب الأخطاء الإملائية
-  static const String homePath = '/';
-  static const String loginPath = '/login';
-  static const String productDetailsPath = '/product-details/:id';
+## 2. المسارات الديناميكية وتمرير البيانات (Path Parameters)
 
-  static final GoRouter router = GoRouter(
-    initialLocation: homePath,
-    routes: [
-      GoRoute(
-        path: homePath,
-        builder: (context, state) => const HomeView(),
-      ),
-      GoRoute(
-        path: loginPath,
-        builder: (context, state) => const LoginView(),
-      ),
-      GoRoute(
-        path: productDetailsPath,
-        builder: (context, state) {
-          // استخراج المعامل الرقمي من المسار
-          final productId = state.pathParameters['id'] ?? '';
-          return ProductDetailsView(productId: productId);
-        },
-      ),
-    ],
-  );
+### 📘 الشرح النظري
+تُستخدم النقطتان `:param` لتعريف متغيرات في عنوان الرابط (URL) وقراءتها بسهولة من كائن `state.pathParameters`.
+
+### 💻 التطبيق العملي
+```dart
+GoRoute(
+  path: '/details/:id',
+  builder: (context, state) {
+    final id = state.pathParameters['id'] ?? '0';
+    return DetailsScreen(id: id);
+  },
+);
+```
+
+---
+
+## 3. أوامر التنقل المباشر (context.go vs context.push)
+
+### 📘 الشرح النظري
+استخدم `context.go()` للتنقل المعرف الذي يغير عنوان الرابط، واستخدم `context.push()` لإضافة صفحة فوق الـ Stack.
+
+### 💻 التطبيق العملي
+```dart
+void navigateToDetails(BuildContext context, String productId) {
+  // التنقل المعرف السلس
+  context.go('/details/$productId');
 }
 ```
 
 ---
 
-<ExerciseBox title="جرب بنفسك 💻">
+## ⚡ نصائح الأداء والتحسين (Performance Tips)
 
-1. أضف حزمة `go_router` إلى ملف `pubspec.yaml`.
-2. قم بتعويض `MaterialApp` بـ `MaterialApp.router` واستخدم `routerConfig: AppRouter.router`.
-3. جرب التنقل إلى شاشة تفاصيل المنتج بنقر زر: `context.go('/product-details/45');`.
-
-</ExerciseBox>
+:::tip استخدام context.go() للتنقلات الرئيسية
+يضمن `context.go` تحديث الرابط على الويب ومتوافق مع النمط المعرف.
+:::
 
 ---
 
-<SummaryBox title="خلاصة الدرس 📌">
+## 🐛 أخطاء شائعة يجب تجنبها (Common Mistakes)
 
-- تقدم حزمة `go_router` حلاً استثنائياً للتنقل المعلن ودعم الرابط العميق (Deep Links).
-- وضع المسارات في `core/router/` يفصل إعدادات التوجيه كلياً عن الـ Widgets.
-- نستخدم `state.pathParameters` للحصول على المعاملات الممررة عبر الرابط بأمان.
+```dart
+// ❌ 1. استخدام Navigator 1.0 القديم في مشاريع كبيرة
+Navigator.push(context, MaterialPageRoute(...))
+
+// ✅ الحل الصحيح
+context.go('/details/123')
+
+```
+
+---
+
+## 🎤 أسئلة وأجوبة المقابلات (Interview Q&A)
+
+<details>
+<summary><strong>س1: ما الفرق بين context.go و context.push في go_router؟</strong></summary>
+
+`context.go` تنقل معرف يغير شجرة المسارات، بينما `context.push` تضيف صفحة فوق الـ Stack الحالية.
+
+</details>
+
+---
+
+<ExerciseBox title="تمرين عملي - إعداد مسار تفاصيل المنتجات 🏋️">
+
+قم بتهيئة مسار `/product/:id` يستقبل الرقم المعرف ويستعرضه في شاشة التفاصيل.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي المشروح بالتعليقات (Solution Code)</strong></summary>
+
+```dart
+final router = GoRouter(
+  routes: [
+    GoRoute(
+      path: '/product/:id',
+      builder: (ctx, state) => Text('ID: ${state.pathParameters['id']}'),
+    ),
+  ],
+);
+```
+
+</details>
+
+---
+
+<SummaryBox title="ملخص الدرس 📌">
+
+- `go_router` هو الحل المعياري الرسمي للتنقل.
+- تمرير المعاملات يتم عبر `:param` و `state.pathParameters`.
+- `context.go()` للتنقل المعرف الأنيق.
 
 </SummaryBox>

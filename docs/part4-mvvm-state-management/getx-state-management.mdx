@@ -1,0 +1,188 @@
+---
+id: getx-state-management
+title: "4.7 GetX State Management"
+sidebar_label: "4.7 GetX State Management"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 4.7 إدارة الحالة بـ GetX (GetX State Management)
+
+تُعتبر إطار عمل **GetX** حزمة شاملة توفر إدارة الحالة (State Management)، التبعيات (Dependency Injection)، والتنقل بدون السياق (Context-less Navigation) بخفة عالية وأداء متميز.
+
+---
+
+## 🎯 أهداف الدرس (Learning Objectives)
+
+1. التمييز بين إدارة الحالة التفاعلية (Reactive Rx) والعادية (Simple GetBuilder).
+2. استخدام المتغيرات التفاعلية (`.obs`) والاستماع عبر `Obx()`.
+3. إدارة التبعيات عبر `Get.put()` و `Get.find()`.
+4. التنقل بدون الحاجة لـ `BuildContext`.
+
+---
+
+## 1. إدارة الحالة التفاعلية (Reactive State Management - Rx & Obx)
+
+### 📘 الشرح النظري
+في إدارة الحالة التفاعلية، نضيف الملحق `.obs` لأي متغير لجعله تفاعلياً (`RxString`, `RxInt`). ونغلف الودجة المراد تحديثها بـ `Obx()`. تعيد `Obx()` رسم نفسها تلقائياً وبسرعة فائقة فور تغيير قيمة المتغير دون الحاجة لمناداة أي دالة تحديث!
+
+### 💻 التطبيق العملي
+```dart
+import 'package:get/get.dart';
+
+// 1. فئة المتحكم من GetX
+class ReactiveCounterController extends GetxController {
+  // .obs تجعل المتغير تفاعلياً تلقائياً
+  var count = 0.obs;
+
+  void increment() {
+    count++; // التحديث يتم تلقائياً دون الحاجة لـ notifyListeners
+  }
+}
+
+// 2. استخدام Obx في الواجهة
+class ReactiveCounterView extends StatelessWidget {
+  const ReactiveCounterView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = Get.put(ReactiveCounterController());
+
+    return Scaffold(
+      body: Center(
+        child: Obx(() => Text('Count: ${controller.count}')), // تحديث تفاعلي تلقائي
+      ),
+    );
+  }
+}
+```
+
+---
+
+## 2. إدارة الحالة البسيطة (Simple State Management - GetBuilder)
+
+### 📘 الشرح النظري
+إذا كنت تبحث عن أداء خفيف جداً واستئثار أقل في الذاكرة للودجات الضخمة، استخدم `GetBuilder` مع استدعاء دالة `update()` داخل المتحكم يدويًا.
+
+### 💻 التطبيق العملي
+```dart
+class SimpleCounterController extends GetxController {
+  int count = 0;
+
+  void increment() {
+    count++;
+    update(); // تحديث يدوي مخصص لودجات GetBuilder فقط
+  }
+}
+
+class SimpleCounterView extends StatelessWidget {
+  const SimpleCounterView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return GetBuilder<SimpleCounterController>(
+      init: SimpleCounterController(),
+      builder: (controller) => Text('Count: ${controller.count}'),
+    );
+  }
+}
+```
+
+---
+
+## 3. إحقاق التبعيات والتنقل بدون السياق (Get.put & Context-less Navigation)
+
+### 📘 الشرح النظري
+يسمح GetX بحقن واستعادة المتحكمات في أي مكان عبر `Get.put()` و `Get.find()`. كما يتيح التنقل والتنبيهات بدون تمرير `BuildContext`.
+
+### 💻 التطبيق العملي
+```dart
+void showGetXDialogAndNavigate() {
+  // 1. التنقل بدون Context
+  Get.to(() => const ReactiveCounterView());
+
+  // 2. إظهار شريط تنبيهي بدون Context
+  Get.snackbar('Success', 'Navigated successfully!');
+}
+```
+
+---
+
+## ⚡ نصائح الأداء والتحسين (Performance Tips)
+
+:::tip التمييز بين Obx و GetBuilder
+استخدم `Obx` للمتغيرات التفاعلية السريعة في الواجهات الفرعية. واستخدم `GetBuilder` للقوائم الشاسعة للحد الأدنى المطلق من استهلاك الذاكرة.
+:::
+
+---
+
+## 🐛 أخطاء شائعة يجب تجنبها (Common Mistakes)
+
+```dart
+// ❌ 1. استخدام Obx دون وضع متغيرات .obs بداخلها
+Obx(() => Text('Static Text')); // 💥 كراش: Obx تتطلب وجود متغير .obs تفاعلي داخلها!
+
+// ✅ الحل الصحيح
+Obx(() => Text('${controller.reactiveCount}'));
+```
+
+---
+
+## 🎤 أسئلة وأجوبة المقابلات (Interview Q&A)
+
+<details>
+<summary><strong>س1: ما هو الفرق الجوهري بين Obx و GetBuilder في GetX؟</strong></summary>
+
+- **Obx:** تفاعلي (Reactive)، يحتاج متغيرات `.obs` ويعيد الرسم تلقائياً عند تغيير القيمة بدون مناداة أي دالة.
+- **GetBuilder:** عالي الأداء ومنخفض الذاكرة (Simple)، يتطلب استدعاء دالة `update()` يدوياً من المتحكم لتحديث الواجهة.
+
+</details>
+
+---
+
+<ExerciseBox title="تمرين عملي - متحكم GetX تفاعلي 🏋️">
+
+قم بكتابة `GetxController` يمتلك متغير اسم تفاعلي `name.obs` ودالة لتغييره، واربطه بـ `Obx()`.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي المشروح بالتعليقات (Solution Code)</strong></summary>
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+class UserController extends GetxController {
+  var name = 'Ahmed'.obs;
+  void changeName(String newName) => name.value = newName;
+}
+
+class UserView extends StatelessWidget {
+  const UserView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = Get.put(UserController());
+    return Scaffold(
+      body: Center(
+        child: Obx(() => Text('User: ${c.name}')),
+      ),
+    );
+  }
+}
+```
+
+</details>
+
+---
+
+<SummaryBox title="ملخص الدرس 📌">
+
+- **`.obs` & `Obx()`**: لإدارة الحالة التفاعلية السريعة تلقائياً.
+- **`GetBuilder` & `update()`**: لإدارة الحالة البسيطة الأقل استهلاكاً للذاكرة.
+- **`Get.put()` & `Get.find()`**: لحقن واستعادة التبعيات.
+- **GetX Navigation**: للتنقل دون الحاجة لـ `BuildContext`.
+
+</SummaryBox>

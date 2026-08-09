@@ -1,4 +1,4 @@
-﻿---
+---
 id: widget-and-element-tree
 title: "2.2 Widget & Element Tree"
 sidebar_label: "2.2 Widget & Element Tree"
@@ -7,108 +7,171 @@ sidebar_label: "2.2 Widget & Element Tree"
 import ExerciseBox from '@site/src/components/ExerciseBox';
 import SummaryBox from '@site/src/components/SummaryBox';
 
-# 2.2 شجرة الودجات وشجرة العناصر (Widget Tree & Element Tree)
+# 2.2 شجرة الودجات وشجرة العناصر (Widget & Element Tree)
 
-"كل شيء في Flutter هو Widget!" - عبارة مشهورة جداً، ولكن لكي تصبح محترفاً حقيقياً في Flutter، عليك فهم ما يحدث في الخفاء من خلال **الأشجار الثلاثة** (Widget Tree, Element Tree, RenderObject Tree).
+تعتمد لغة Flutter على ثلاث أشجار رئيسية في معالجة الرسوميات: **Widget Tree**, **Element Tree**, و **RenderObject Tree**. فهم العلاقة بين هذه الأشجار هو المفتاح الأساسي لكتابة أداء عالي وسلس بـ 60/120 إطاراً في الثانية.
 
 ---
 
 ## 🎯 أهداف الدرس (Learning Objectives)
 
-1. فهم الأشجار الثلاث في إطار Flutter والفرق بينها.
-2. التفريق بين `StatelessWidget` و `StatefulWidget`.
-3. فهم سبب تفضيل الـ `StatelessWidget` المحمية بـ MVVM بدلاً من الـ `setState` العشوائية.
-4. بناء الـ Views لتقتصر وظيفتها حكراً على العرض فقط.
+1. التمييز بين StatelessWidget و StatefulWidget.
+2. فهم دور شجرة العناصر (Element Tree) كوسطاء إدارة الحالة.
+3. استيعاب دورة حياة الـ State (initState, didChangeDependencies, build, dispose).
 
 ---
 
-## 📘 الشرح النظري (Theoretical Explanation)
+## 1. الودجات غير ذات الحالة (StatelessWidget)
 
-تتألف البنية الداخلية لإطار عمل Flutter من 3 أشجار تعمل بتناغم:
+### 📘 الشرح النظري
+تُعتبر `StatelessWidget` ودجة غير ثنائية الحالة (Immutable)، تُستخدم لعرض بيانات ثابتة لا تتغير مع مرور الوقت بناءً على المدخلات التي تستقبلها في البناء.
 
-1. **شجرة الودجات (Widget Tree):** المخطط الهندسي (Blueprint). وهي كائنات خفيفة الوزن للغاية وغير قابلة للتعديل (Immutable) يتم إنشاؤها وإعادة بنائها باستمرار.
-2. **شجرة العناصر (Element Tree):** الهيكل الوسيط والمدير المباشر. يربط بين الودجة الثابتة والعنصر الرسام التفاعلي. يحتفظ بالحالة (State) والموقع في الشجرة.
-3. **شجرة كائنات الرسم (RenderObject Tree):** المسؤولة الفعلية عن حساب الأحجام (Sizing)، التموضع (Positioning)، والرسم النهائي للبكسلات على الشاشة.
-
----
-
-## 💻 التطبيق المعماري (MVVM & Clean Code)
-
-في معمارية MVVM الاحترافية، نتجنب استخدام `StatefulWidget` مع `setState()` لإدارة حالة العمل، ونستخدم بدلاً من ذلك `StatelessWidget` مع `Consumer` يقبل الحالة من الـ ViewModel.
-
+### 💻 التطبيق العملي
 ```dart
-// ==========================================
-// File: lib/presentation/views/counter_view.dart
-// Description: View خفيفة الوزن ونظيفة تعتمد StatelessWidget بالكامل
-// Architecture Layer: Presentation (View)
-// ==========================================
-
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../viewmodels/counter_viewmodel.dart';
 
-class CounterView extends StatelessWidget {
-  const CounterView({super.key});
+class UserHeaderWidget extends StatelessWidget {
+  final String userName;
+  const UserHeaderWidget({super.key, required this.userName});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('عداد MVVM النظيف'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              'القيمة الحالية للعداد هي:',
-              style: TextStyle(fontSize: 18),
-            ),
-            const SizedBox(height: 12),
-            // استخدام Selector أو Consumer لتحديث هذا الجزء المحدد فقط عند التغير
-            Consumer<CounterViewModel>(
-              builder: (context, viewModel, child) {
-                return Text(
-                  '${viewModel.count}',
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF0175C2),
-                      ),
-                );
-              },
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        // استدعاء دالة ViewModel بدون كتابة أي منطق داخل الزر
-        onPressed: () => context.read<CounterViewModel>().increment(),
-        tooltip: 'زيادة',
-        child: const Icon(Icons.add),
-      ),
-    );
+    // ودجة خفيفة غير ثنائية القيمة تُبنى بسرعة عالية
+    return Text('Welcome back, $userName!', style: const TextStyle(fontSize: 18));
   }
 }
 ```
 
 ---
 
-<ExerciseBox title="جرب بنفسك 💻">
+## 2. الودجات ذات الحالة ودورة الحياة (StatefulWidget Lifecycle)
 
-1. أنشئ الـ ViewModel المسمى `CounterViewModel` يرث من `ChangeNotifier`.
-2. أضف حقل خاص `_count = 0` و Getter عام `count`.
-3. أضف دالة `increment()` تقوم بزيادة العداد وإرسال `notifyListeners()`.
-4. اربط الشاشة بالـ ViewModel وتأكد أن الشاشة أصبحت `StatelessWidget`.
+### 📘 الشرح النظري
+تُستخدم `StatefulWidget` عندما تتغير بيانات الشاشة أثناء تشغيل التطبيق (مثل العدادات والتنقلات). ترتبط هذه الودجة بكائن `State` يُدار في شجرة العناصر (`Element Tree`).
 
-</ExerciseBox>
+### 💻 التطبيق العملي
+```dart
+class CounterWidget extends StatefulWidget {
+  const CounterWidget({super.key});
+
+  @override
+  State<CounterWidget> createState() => _CounterWidgetState();
+}
+
+class _CounterWidgetState extends State<CounterWidget> {
+  int _count = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    // 1. يُستدعى مرة واحدة فقط عند إنشاء الـ Element في الشجرة
+    print('initState: Component mounted.');
+  }
+
+  void _increment() {
+    // 2. setState تُعلم الـ Element Tree بإعادة استدعاء build()
+    setState(() => _count++);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      onPressed: _increment,
+      child: Text('Count: $_count'),
+    );
+  }
+
+  @override
+  void dispose() {
+    // 3. يُستدعى عند حذف الودجة نهائياً وتنظيف الذاكرة
+    print('dispose: Cleaning memory.');
+    super.dispose();
+  }
+}
+```
 
 ---
 
-<SummaryBox title="خلاصة الدرس 📌">
+## ⚡ نصائح الأداء والتحسين (Performance Tips)
 
-- الـ Widgets خفيفة وغير قابلة للتعديل (Immutable)، بينما الـ Elements هي التي تحتفظ بالحالة في الشجرة.
-- شجرة RenderObjects هي من يتكفل بالرسم الفعلي للبكسلات وحساب المساحات.
-- في معمارية **MVVM**، نُبقي الـ Views على هيئة `StatelessWidget` بقدر الإمكان لتسهيل الاختبارات وتصفية تعقيدات دورة الحياة.
+:::tip البناء الصغير المصغر (Small Granular Widgets)
+قسم شاشتك إلى ودجات صغيرة مستقلة. عندما تتغير حالة ودجة صغيرة، تُعاد دعوة `build()` للودجة الصغرى فقط دون إعادة رسم الصفحة بالكامل.
+:::
+
+---
+
+## 🐛 أخطاء شائعة يجب تجنبها (Common Mistakes)
+
+```dart
+// ❌ 1. مناداة setState داخل دالة build()
+@override
+Widget build(BuildContext context) {
+  // 💥 خطأ كارثي: يسبب Infinite Re-build Loop!
+  setState(() { _count++; });
+  return Container();
+}
+```
+
+---
+
+## 🎤 أسئلة وأجوبة المقابلات (Interview Q&A)
+
+<details>
+<summary><strong>س1: ما هو الفرق الجوهري بين Widget Tree و Element Tree؟</strong></summary>
+
+الـ **Widget Tree** هي مجرد تجميعة وصفية خفيفة الوزن (Blueprint) ثنائية الحتمية. بينما الـ **Element Tree** هي الكائنات الفعلية المدارة في الذاكرة والتي تربط بين الوصف والرسم الفعلي في الشاشة.
+
+</details>
+
+---
+
+<ExerciseBox title="تمرين عملي - دورة حياة الـ State 🏋️">
+
+أنشئ ودجة ذات حالة تطبع في الكونسول رسائل توضيحية عند `initState` و `dispose`.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي المشروح بالتعليقات (Solution Code)</strong></summary>
+
+```dart
+import 'package:flutter/material.dart';
+
+class LifecycleDemo extends StatefulWidget {
+  const LifecycleDemo({super.key});
+
+  @override
+  State<LifecycleDemo> createState() => _LifecycleDemoState();
+}
+
+class _LifecycleDemoState extends State<LifecycleDemo> {
+  @override
+  void initState() {
+    super.initState();
+    print('LifecycleDemo mounted.');
+  }
+
+  @override
+  void dispose() {
+    print('LifecycleDemo unmounted.');
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(child: Text('Lifecycle Demo'));
+  }
+}
+```
+
+</details>
+
+---
+
+<SummaryBox title="ملخص الدرس 📌">
+
+- `StatelessWidget` للواجهات الثابتة و `StatefulWidget` للواجهات المتغيرة.
+- `initState` تُنفذ مرة واحدة، و `dispose` تُنفذ لتنظيف الذاكرة.
+- الـ Element Tree هي العقل المدبر الذي يقلل من عمليات الرسم المكررة.
 
 </SummaryBox>

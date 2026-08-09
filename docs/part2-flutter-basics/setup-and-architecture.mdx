@@ -1,4 +1,4 @@
-﻿---
+---
 id: setup-and-architecture
 title: "2.1 Setup & Architecture"
 sidebar_label: "2.1 Setup & Architecture"
@@ -7,83 +7,83 @@ sidebar_label: "2.1 Setup & Architecture"
 import ExerciseBox from '@site/src/components/ExerciseBox';
 import SummaryBox from '@site/src/components/SummaryBox';
 
-# 2.1 بيئة العمل وهيكلية تطبيق Flutter (Setup & Architecture)
+# 2.1 إعداد بيئة العمل والمعمارية الأساسية (Setup & Architecture)
 
-مرحباً بك في الجزء الثاني! سننتقل الآن من أسس Dart إلى الإطار الثوري **Flutter**. ستتعلم كيف يعمل إطار عمل Flutter في الخفاء، ومفهوم شجرة الودجات (Widget Tree)، وإعداد هيكلية مشروع حقيقي منظم بأسلوب كود نظيف.
+في هذا الدرس، ستتعلم كيفية إعداد بيئة عمل Flutter بشكل احترافي، وفهم الهيكل الأساسي لمشروع Flutter، وكيفية ربط الدالة الرئيسية `main()` بالمكونات الجذرية للتطبيق مع اتّباع أفضل المعايير المعمارية.
 
 ---
 
 ## 🎯 أهداف الدرس (Learning Objectives)
 
-1. فهم كيفية بناء وإعادة رسم واجهات Flutter عبر المحرك (Flutter Engine).
-2. استيعاب هيكلية ملف `pubspec.yaml` وإدارة الحزم والإصدارات.
-3. تفكيك الملف الرئيسي `lib/main.dart` وفهم نقطة الانطلاق `runApp()`.
-4. إعداد الهيكل الأولي لمجلدات المشروع طبقاً لـ Clean Code Architecture.
+1. فهم دور الدالة الرئيسية `main()` والودجة الجذرية `MaterialApp`.
+2. استيعاب دور `WidgetsFlutterBinding.ensureInitialized()`.
+3. تنظيم الهيكل البرمجي الأساسي للمشروع ونقاط الانطلاق.
 
 ---
 
-## 📘 الشرح النظري (Theoretical Explanation)
+## 1. الدالة الرئيسية وحقن المحرك (Main Function & Binding)
 
-### 1. كيف يعمل Flutter؟
-يتميز Flutter بكونه لا يستعين بودجات المنصة الأصلية (Native OS Widgets)، بل يرسم كل بكسل بنفسه على الشاشة باستخدام محرك الرسوميات العالي الأداء **Impeller** (أو Skia مسبقاً).
+### 📘 الشرح النظري
+تبدأ حياة أي تطبيق Flutter من الدالة `main()`. قبل استدعاء `runApp()`. يُنصح دائماً باستدعاء `WidgetsFlutterBinding.ensureInitialized()` لضمان ربط محرك Flutter الاصطناعي (Flutter Engine) بأربطة الإطار الحركي قبل تنفيذ أي عمليات تهيئة أو اتصالات شبكية.
 
-```text
-+-----------------------------------+
-|        Flutter Framework (Dart)   |  <- Widgets, Material, Cupertino, Animation
-+-----------------------------------+
-|        Flutter Engine (C/C++)     |  <- Impeller/Skia, Text Layout, Dart VM
-+-----------------------------------+
-|        Embedder (Platform Native) |  <- Android, iOS, Windows, Web Integrations
-+-----------------------------------+
-```
-
-### 2. نقطة الانطلاق `main.dart`
-تبدأ دورة حياة أي تطبيق بلغة Dart بالدالة `main()`، ثم يتم تمرير الودجة الجذرية (Root Widget) إلى الدالة `runApp()`.
-
----
-
-## 💻 التطبيق المعماري (MVVM & Clean Code)
-
-في مشروعنا المعماري القياسي، نقوم بفصل إعدادات التطبيق وتكوين الـ Providers عن الودجة الرئيسية.
-
+### 💻 التطبيق العملي
 ```dart
-// ==========================================
-// File: lib/main.dart
-// Description: نقطة الانطلاق النظيفة المتهيئة للممارسات المعمارية
-// Architecture Layer: Presentation (App Entrypoint)
-// ==========================================
-
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'presentation/views/home_view.dart';
-import 'presentation/viewmodels/counter_viewmodel.dart';
 
 void main() {
-  // 1. ضمان تهيئة خدمات Flutter الهيكلية قبل البدء
+  // 1. التأكد من تهيئة أربطة المحرك الأساسية قبل تشغيل التطبيق
   WidgetsFlutterBinding.ensureInitialized();
-
-  // 2. تشغيل التطبيق مع تهيئة مزود الحالات الموحد
-  runApp(const CoreApp());
+  
+  // 2. تشغيل الودجة الجذرية للتطبيق
+  runApp(const RootApp());
 }
+```
 
-/// الودجة الجذرية للتطبيق المحمية بكونها const
-class CoreApp extends StatelessWidget {
-  const CoreApp({super.key});
+---
+
+## 2. الودجة الجذرية للمظهر والشاشات (MaterialApp Configuration)
+
+### 📘 الشرح النظري
+تُعتبر `MaterialApp` الودجة المسؤولة عن توفير السمات العامة (Themes)، موجه الصفحات (Router)، ونظام النصوص والتنقل لجميع الشاشات التابعة لها في تطبيقك.
+
+### 💻 التطبيق العملي
+```dart
+class RootApp extends StatelessWidget {
+  const RootApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => CounterViewModel()),
-      ],
-      child: MaterialApp(
-        title: 'Flutter Clean Architecture',
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF0175C2)),
-          useMaterial3: true,
-        ),
-        home: const HomeView(),
+    return MaterialApp(
+      title: 'Flutter Architecture Baseline',
+      debugShowCheckedModeBanner: false, // إخفاء شارة الديباج
+      theme: ThemeData.dark(useMaterial3: true), // تفعيل Material 3
+      home: const HomeScreen(),
+    );
+  }
+}
+```
+
+---
+
+## 3. الهيكل الأساسي للشاشة (Scaffold Baseline)
+
+### 📘 الشرح النظري
+تُوفر ودجة `Scaffold` الهيكل البصري القياسي لشاشات Material Design، مثل شريط العنوان (`AppBar`)، منطقة المحتوى (`body`)، وزر العمليات العائم (`FloatingActionButton`).
+
+### 💻 التطبيق العملي
+```dart
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Architecture Baseline'),
+        centerTitle: true,
+      ),
+      body: const Center(
+        child: Text('Flutter Architecture Ready! 🚀'),
       ),
     );
   }
@@ -92,21 +92,84 @@ class CoreApp extends StatelessWidget {
 
 ---
 
-<ExerciseBox title="جرب بنفسك 💻">
+## ⚡ نصائح الأداء والتحسين (Performance Tips)
 
-افتح مشروع Flutter الجديد وقم بالآتي:
-1. قم بتعديل عنوان التطبيق ليكون "تطبيق الكود النظيف".
-2. قم بتغيير اللون الرئيسي في `ColorScheme.fromSeed` إلى اللون العنابي البرمجي `#800020`.
-3. تأكد أن الخاصية `debugShowCheckedModeBanner` مضبوطة على `false`.
-
-</ExerciseBox>
+:::tip تجنب وضع العمليات الثقيلة داخل main()
+احرص على ألا تحتوي الدالة `main()` على حسابات معقدة أو اتصالات شبكية بطيئة تتجاوز ثوانٍ معدودة، حتى لا يتعطل ظهور شاشة البدء (Splash Screen) أمام المستخدم.
+:::
 
 ---
 
-<SummaryBox title="خلاصة الدرس 📌">
+## 🐛 أخطاء شائعة يجب تجنبها (Common Mistakes)
 
-- يقوم Flutter برسم واجهاته بنفسه على الشاشة لضمان أداء عالٍ (60/120 FPS) وتوافق تام بين المنصات.
-- الدالة `runApp()` هي المسؤولة عن ربط ودجة الجذر بالمحرك وإظهارها للمستخدم.
-- ملف `main.dart` النظيف يحتوي فقط على التهيئة وتحديد الـ Providers بدون تضمين أي ودجات شاشات ضخمة في نفس الملف.
+```dart
+// ❌ 1. نسيان ensureInitialized قبل تهيئة المكتبات
+void main() {
+  // 💥 خطأ: استخدام خدمات محلية قبل تهيئة الأربطة يؤدي لكراش!
+  runApp(const MyApp());
+}
+
+// ✅ الحل الصحيح
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(const MyApp());
+}
+```
+
+---
+
+## 🎤 أسئلة وأجوبة المقابلات (Interview Q&A)
+
+<details>
+<summary><strong>س1: ما فائدة استخدام WidgetsFlutterBinding.ensureInitialized()؟</strong></summary>
+
+تضمن هذه الدالة ربط طبقة الإطار الحركي (Flutter Framework) بمحرك التظليل والرسوم (Flutter Engine) قبل تنفيذ أي أكواد مخصصة مثل تهيئة قواعد البيانات أو الإشعارات.
+
+</details>
+
+---
+
+<ExerciseBox title="تمرين عملي - إعداد البنية الأساسية 🏋️">
+
+قم بإنشاء دالة `main()` وودجة جذرية باسم `BaselineApp` تضبط العنوان والمظهر الداكن وشاشة البداية.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي المشروح بالتعليقات (Solution Code)</strong></summary>
+
+```dart
+import 'package:flutter/material.dart';
+
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(const BaselineApp());
+}
+
+class BaselineApp extends StatelessWidget {
+  const BaselineApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Baseline Setup',
+      theme: ThemeData.dark(useMaterial3: true),
+      home: const Scaffold(
+        body: Center(child: Text('Setup Complete!')),
+      ),
+    );
+  }
+}
+```
+
+</details>
+
+---
+
+<SummaryBox title="ملخص الدرس 📌">
+
+- تنطلق جميع تطبيقات Flutter من الدالة `main()`.
+- ودجة `MaterialApp` تُدار منها إعدادات المظهر الموحد والمسارات.
+- ودجة `Scaffold` تُمثل البنية الهيكلية لصفحات الماتيريال.
 
 </SummaryBox>

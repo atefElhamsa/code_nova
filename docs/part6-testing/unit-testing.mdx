@@ -1,117 +1,108 @@
 ---
 id: unit-testing
-title: "6.1 Unit Testing - ViewModels & Repositories"
-sidebar_label: "6.1 Unit Testing - ViewModels & Repositories"
+title: "6.1 Unit Testing"
+sidebar_label: "6.1 Unit Testing"
 ---
 
 import ExerciseBox from '@site/src/components/ExerciseBox';
 import SummaryBox from '@site/src/components/SummaryBox';
 
-# 6.1 الاختبارات الأحادية للـ ViewModels والـ Repositories (Unit Testing)
+# 6.1 الاختبارات الأحادية (Unit Testing)
 
-ضمان استقرار التطبيق وثبات وظائفه عند إضافة ميزات جديدة يتطلب كتابة **اختبارات أحادية (Unit Tests)**. لكون معمارية MVVM تقوم بفصل المنطق عن الواجهة، فإن كتابة Unit Tests للـ ViewModels يصبح في غاية السهولة والمباشرة.
+تضمن الاختبارات الأحادية صحة وسلامة المنطق البرمجي للـ ViewModels والـ Repositories مع كل تعديل كود جديد.
 
 ---
 
 ## 🎯 أهداف الدرس (Learning Objectives)
 
-1. فهم مفهوم وتأثير الاختبارات الأحادية (Unit Testing).
-2. تطبيق نمط **AAA (Arrange, Act, Assert)** المعتمد عالمياً.
-3. إنشاء الخدمات الوهمية لطبقة البيانات باستخدام مكتبة **`mocktail`**.
-4. اختراع سيناريوهات نجاح وفشل جلب البيانات والتأكد من إخطار الواجهة بالتغيير.
+1. فهم هيكل الاختبار (Arrange, Act, Assert).
+2. كتابة اختبارات لـ ViewModel.
+3. استخدام expect و equals.
 
 ---
 
-## 📘 الشرح النظري (Theoretical Explanation)
+## 1. هيكل الاختبار الأحادي (Triple-A Pattern)
 
-### نمط AAA لكتابة الاختبارات:
-1. **Arrange (التهيئة):** إعداد التبعيات والكائنات الوهمية وتجهيز الحالة الأولية.
-2. **Act (التنفيذ):** استدعاء الدالة المراد اختبارها بالـ ViewModel.
-3. **Assert (التحقق):** التأكد من أن النتيجة الحاصلة تنطبق 100% مع التوقع المطلوب (Expect).
+### 📘 الشرح النظري
+يتكون كل اختبار من 3 خطوات: Arrange (تجهيز التبعيات)، Act (تنفيذ الدالة)، و Assert (التأكد من النتيجة).
 
----
-
-## 💻 التطبيق المعماري (MVVM & Clean Code)
-
-اختبار أحادي متكامل داخل مجلد `test/presentation/viewmodels/user_viewmodel_test.dart`.
-
+### 💻 التطبيق العملي
 ```dart
-// ==========================================
-// File: test/presentation/viewmodels/user_viewmodel_test.dart
-// Description: اختبار أحادي شامل لـ UserDetailsViewModel
-// Architecture Layer: Unit Tests
-// ==========================================
-
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
-
-// استيراد الطبقات الحقيقية
-import 'package:doc_flutter/data/models/user_model.dart';
-import 'package:doc_flutter/data/repositories/user_repository_impl.dart';
-import 'package:doc_flutter/presentation/viewmodels/user_details_viewmodel.dart';
-
-// 1. إنشاء فئة وهمية للمستودع باستخدام mocktail
-class MockUserRepository extends Mock implements UserRepositoryImpl {}
 
 void main() {
-  late UserDetailsViewModel viewModel;
-  late MockUserRepository mockRepository;
-
-  // يتم تنفيذها قبل كل دالة اختبار فردية
-  setUp(() {
-    mockRepository = MockUserRepository();
-    viewModel = UserDetailsViewModel(mockRepository);
-  });
-
-  group('اختبارات UserDetailsViewModel -', () {
-    const tUser = UserModel(
-      id: '101',
-      username: 'أحمد علي',
-      email: 'ahmed@test.com',
-    );
-
-    test('يجب أن تكون الحالة الأولية isLoading مساوية لـ false', () {
-      expect(viewModel.isLoading, false);
-      expect(viewModel.user, null);
-    });
-
-    test('يجب أن يقوم بتحميل بيانات المستخدم بنجاح وتغيير الحالة', () async {
-      // 1. Arrange: محاكاة إرجاع المستودع الوهمي للنموذج
-      when(() => mockRepository.getUserById('101'))
-          .thenAnswer((_) async => tUser);
-
-      // 2. Act: استدعاء دالة جلب البيانات بالـ ViewModel
-      final future = viewModel.loadUser('101');
-
-      // التحقق من حالة التحميل المؤقتة
-      expect(viewModel.isLoading, true);
-
-      await future;
-
-      // 3. Assert: التحقق من التغير النهائي للحالة والنموذج
-      expect(viewModel.isLoading, false);
-      expect(viewModel.user, tUser);
-      verify(() => mockRepository.getUserById('101')).called(1);
-    });
+  test('Counter increment test', () {
+    // 1. Arrange
+    final counter = Counter();
+    
+    // 2. Act
+    counter.increment();
+    
+    // 3. Assert
+    expect(counter.value, equals(1));
   });
 }
 ```
 
 ---
 
-<ExerciseBox title="جرب بنفسك 💻">
+## ⚡ نصائح الأداء والتحسين (Performance Tips)
 
-1. اكتب اختباراً أحادياً لـ `CounterViewModel` يتحقق أن استدعاء `increment()` يرفع القيمة من `0` إلى `1`.
-2. قم بتشغيل الاختبار عبر أمر Terminal: `flutter test` واستعرض تقرير النجاح.
-
-</ExerciseBox>
+:::tip سرعة تشغيل الاختبارات الأحادية
+الاختبارات الأحادية تنفذ على المعالج مباشرة دون فتح محاكي وتوفر وقت الفحص اليدوي.
+:::
 
 ---
 
-<SummaryBox title="خلاصة الدرس 📌">
+## 🐛 أخطاء شائعة يجب تجنبها (Common Mistakes)
 
-- تتيح معمارية MVVM اختبار كل منطق التطبيق بـ Unit Tests دون الحاجة لتشغيل محاكي الأجهزة (Emulator).
-- نمط AAA هو المعيار القياسي لتنظيم كود الاختبارات.
-- نستخدم `mocktail` لإنشاء كائنات وهمية تطابق واجهات الـ Repositories وتمنع إجراء الاتصالات الشبكية الحقيقية أثناء الاختبار.
+```dart
+// ❌ 1. الاتصال بالشبكة الحقيقية داخل الاختبار الأحادي
+test('api', () async { await http.get(...); });
+
+// ✅ الحل الصحيح
+استخدام Mock Repository لتوفير بيانات وهمية فورية
+
+```
+
+---
+
+## 🎤 أسئلة وأجوبة المقابلات (Interview Q&A)
+
+<details>
+<summary><strong>س1: ما هي نمطية AAA في كتابة الاختبارات الأحادية؟</strong></summary>
+
+تاني Arrange (التجهيز)، Act (التنفيذ)، و Assert (التأكد من صحة النتائج).
+
+</details>
+
+---
+
+<ExerciseBox title="تمرين عملي - اختبار أحادي 🏋️">
+
+اكتب اختباراً أحادياً لفئة العداد يتثبت أن القيمة تزيد بمقدار 1.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي المشروح بالتعليقات (Solution Code)</strong></summary>
+
+```dart
+test('Counter test', () {
+  final c = Counter();
+  c.inc();
+  expect(c.val, 1);
+});
+```
+
+</details>
+
+---
+
+<SummaryBox title="ملخص الدرس 📌">
+
+- AAA pattern للتنظيم.
+- اختبار المنطق بدون واجهات.
+- `expect` للتأكد من النتائج المتوقعة.
 
 </SummaryBox>

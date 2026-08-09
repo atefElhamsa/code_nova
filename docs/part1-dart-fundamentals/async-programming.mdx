@@ -1,4 +1,4 @@
-﻿---
+---
 id: async-programming
 title: "1.9 Async / Futures / Streams"
 sidebar_label: "1.9 Async / Futures / Streams"
@@ -7,46 +7,35 @@ sidebar_label: "1.9 Async / Futures / Streams"
 import ExerciseBox from '@site/src/components/ExerciseBox';
 import SummaryBox from '@site/src/components/SummaryBox';
 
-# 1.9 البرمجة غير التزامنية (Futures, Streams & Async/Await)
+# 1.9 البرمجة غير التزامنية (Futures, Streams, Async/Await & Isolates)
 
-تطبيقات الهاتف المحمول الحديثة تعتمد بشكل أساسي على البرمجة غير التزامنية (Asynchronous Programming) لجلب البيانات عبر الشبكة، القراءة من قواعد البيانات، وتلقي التحديثات دون تجميد واجهة المستخدم (UI Freeze).
+تعتمد تطبيقات الهواتف المحمولة الحديثة بشكل أساسي على البرمجة غير التزامنية (Asynchronous Programming). في Dart و Flutter، تُنفذ العمليات غير التزامنية مثل جلب البيانات عبر الشبكة، القراءة من قوافل البيانات المحلية، والاستجابة لتحديثات الواجهة دون تجميد الشاشة (UI Freeze) بفضل نموذج الخيط الواحد وحلقة الأحداث (Event Loop).
 
 ---
 
 ## 🎯 أهداف الدرس (Learning Objectives)
 
-1. فهم كيفية عمل حلقة الأحداث (Event Loop) في Dart.
-2. التعامل مع الـ **Futures** والكلمات المفتاحية `async` و `await`.
-3. التقاط الأخطاء والتعامل مع الاستثناءات عبر `try-catch-finally`.
-4. التعامل مع التدفقات المستمرة للبيانات (**Streams**) و `StreamController`.
-5. إدارة العمليات اللاتزامنية بنظافة في الـ **ViewModel**.
+1. **فهم حلقة الأحداث (Event Loop):** استيعاب كيفية إدارة Dart للمهام عبر طابوري الأحداث: `Microtask Queue` و `Event Queue`.
+2. **إتقان الـ Futures:** كتابة كود لاتزامني نظيف باستخدام `Future`، `async`، `await`، و `Future.wait`.
+3. **إتقان الـ Streams:** التعامل مع التدفقات البيانات المستمرة، المراقبة (`listen`)، والفرق بين `Single-Subscription` و `Broadcast Stream`.
+4. **التكامل المعماري في ViewModel:** إدارة حالات التحميل والأخطاء بأمان بدون تسريبات ذاكرة (`Memory Leaks`).
+5. **معالجة المهام الثقيلة (Isolates):** استخدام `Isolates` ودالة `compute()` لنقل الحسابات المعقدة خارج خيط الواجهة الرئيسي.
 
 ---
 
-## 📘 الشرح النظري (Theoretical Explanation)
+## 💻 الكود البرمجي أولاً (Code Example First)
 
-### 1. الـ Future
-يمثل قيمة مفرودة ستكون متاحة في المستقبل (نجاح أو فشل). يُشبه الوعد (Promise) في اللغات الأخرى.
-
-### 2. الكلمات المفتاحية `async` و `await`
-تمنحك إمكانية كتابة الكود غير التزامني ليبدو وكأنه كود تزامني مرتب متسلسل، مما يرفع مقروئية الكود بشكل استثنائي.
-
-### 3. الـ Streams
-تُمثل تدفقاً مستمراً من الأحداث أو البيانات عبر الزمن (مثل استلام رسائل محادثة مباشرة أو تحديثات الموقع المباشرة GPS).
-
----
-
-## 💻 التطبيق المعماري (MVVM & Clean Code)
-
-في معمارية MVVM، نقوم بالتعامل مع العمليات غير التزامنية في الـ ViewModel مع إخطار الواجهة بالتغيرات قبل وبعد جلب البيانات.
+<span className="code-first-badge">⚡ Pure English Dart Code (MVVM & Clean Code)</span>
 
 ```dart
 // ==========================================
 // File: lib/presentation/viewmodels/news_viewmodel.dart
-// Description: ViewModel يتولى جلب الأخبار غير التزامنية بأمان
+// Description: Production-grade ViewModel handling async Futures, 
+// Stream subscriptions, safe disposal, and error states.
 // Architecture Layer: Presentation (ViewModel)
 // ==========================================
 
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 
 class NewsViewModel extends ChangeNotifier {
@@ -54,52 +43,233 @@ class NewsViewModel extends ChangeNotifier {
   List<String> _articles = [];
   String? _errorMessage;
 
+  // Stream Subscription reference for cleanup
+  StreamSubscription<int>? _tickerSubscription;
+  int _liveTickerSeconds = 0;
+  bool _isDisposed = false;
+
   bool get isLoading => _isLoading;
   List<String> get articles => _articles;
   String? get errorMessage => _errorMessage;
+  int get liveTickerSeconds => _isLiveTickerSeconds;
+  int get _isLiveTickerSeconds => _liveTickerSeconds;
 
-  /// دالة جلب البيانات غير التزامنية
+  /// Fetch news articles asynchronously
   Future<void> fetchNewsArticles() async {
     _isLoading = true;
     _errorMessage = null;
-    notifyListeners(); // إخطار الواجهة بعرض المؤشر الحركي Loading
+    _safeNotifyListeners();
 
     try {
-      // محاكاة طلب شبكة يستغرق ثانيتين
-      await Future.delayed(const Duration(seconds: 2));
+      // Parallel async execution using Future.wait
+      final results = await Future.wait([
+        _fetchHeaderTitle(),
+        _fetchArticleList(),
+      ]);
 
-      // بيانات وهمية ناجحة
-      _articles = [
-        'إطلاق الإصدار الجديد من Flutter بنجاح',
-        'شرح معمارية MVVM بأعلى معايير الجودة',
-        'ميزات Dart 3 الحبيبة في العمليات اللاتزامنية'
-      ];
-    } catch (e) {
-      _errorMessage = 'حدث خطأ أثناء تحميل البيانات: ${e.toString()}';
+      final header = results[0] as String;
+      final fetchedList = results[1] as List<String>;
+
+      _articles = [header, ...fetchedList];
+    } catch (error) {
+      _errorMessage = 'Failed to load news articles: ${error.toString()}';
     } finally {
       _isLoading = false;
-      notifyListeners(); // إخطار الواجهة بانتهاء العملية وتعديل الشاشة
+      _safeNotifyListeners();
     }
+  }
+
+  /// Start listening to continuous stream
+  void startLiveNewsTicker() {
+    _tickerSubscription?.cancel();
+    _tickerSubscription = _createTickerStream().listen(
+      (seconds) {
+        _liveTickerSeconds = seconds;
+        _safeNotifyListeners();
+      },
+      onError: (err) {
+        _errorMessage = err.toString();
+        _safeNotifyListeners();
+      },
+    );
+  }
+
+  /// Generator Stream method creating periodic events
+  Stream<int> _createTickerStream() async* {
+    int counter = 0;
+    while (!_isDisposed) {
+      await Future.delayed(const Duration(seconds: 1));
+      yield ++counter;
+    }
+  }
+
+  Future<String> _fetchHeaderTitle() async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    return '🔥 Breaking News Today';
+  }
+
+  Future<List<String>> _fetchArticleList() async {
+    await Future.delayed(const Duration(milliseconds: 800));
+    return [
+      'Flutter 3.x Released with Dynamic Improvements',
+      'Clean Code Principles for Senior Dart Developers',
+    ];
+  }
+
+  void _safeNotifyListeners() {
+    if (!_isDisposed) {
+      notifyListeners();
+    }
+  }
+
+  @override
+  void dispose() {
+    _isDisposed = true;
+    _tickerSubscription?.cancel(); // Prevent memory leak!
+    super.dispose();
   }
 }
 ```
 
 ---
 
-<ExerciseBox title="جرب بنفسك 💻">
+## 📘 الشرح التفصيلي للكود (Line-by-Line Technical Explanation)
 
-قم بإنشاء دالة ترجع `Stream<int>` تُسمى `countdownStream(int startFrom)`:
-1. تقوم بإرسال الأعداد تنازلياً من `startFrom` إلى `0` بفاصل ثانية واحدة بين كل رقم.
-2. استخدم الكلمات المفتاحية `async*` و `yield`.
+### 1. إدارة العمليات غير التزامنية التوازية (`Future.wait`)
+* **`Future.wait([...])`**: بدلاً من انتظار كل طلب شبكة بالتتابع باستخدام `await` منفصل يضاعف وقت الانظار، تقوم `Future.wait` بتشغيل الطلبين بالتوازي في وقت واحد، مما يختصر وقت تحميل الصفحة بشكل ملحوظ.
 
-</ExerciseBox>
+### 2. التدفقات المولدات اللاتزامنية (`async*` & `yield`)
+* **`Stream<int> _createTickerStream() async*`**: الكلمة المفتاحية `async*` تشير إلى أن الدالة مولدة لتدفق بيانات (`Stream Generator`)، ويتم ضخ الأرقام تدريجياً عبر الزمن باستخدام `yield`.
+
+### 3. الحماية ضد تسريب الذاكرة والأخطاء المعمارية
+* **`_tickerSubscription?.cancel();`**: في دالة `dispose()`: إغلاق الاشتراكات عند تدمير الشاشة حاسم جداً لتفادي تسريب الذاكرة (`Memory Leaks`).
+* **`_safeNotifyListeners()`**: التحقق من عدم تدمير الكائن (`!_isDisposed`) قبل استدعاء `notifyListeners()` يمنع الأخطاء الشهيرة عند تنقل المستخدم بسرعة بين الشاشات.
 
 ---
 
-<SummaryBox title="خلاصة الدرس 📌">
+## ⚡ نصائح الأداء والتحسين (Performance Tips)
 
-- الـ `Future` يتعامل مع عملية لاتزامنية تعيد قيمة واحدة، بينما يتعامل الـ `Stream` مع تدفق متعدد للبيانات.
-- نستخدم `async` و `await` لكتابة كود لاتزامني نظيف ومفهوم.
-- في معمارية **MVVM**، نضع دائماً التعديلات على حالات التحميل والأخطاء حول عمليات الـ `await` مع استدعاء `notifyListeners()`.
+:::tip المهام الثقيلة والمعالج (Isolates & compute)
+تنفذ Dart كودها على خيل واحد (Single Thread). إذا كان لديك عملية فك ضغط بيانات JSON هائلة أو معالجة صور تستغرق أكثر من 16 مللي ثانية، استخدم `compute(parseJsonFunction, rawJsonString)`. تنقل هذه الدالة المعالجة إلى **Isolate** خارجي لمنع تجميد واجهة المستخدم.
+:::
+
+:::tip إلغاء الـ Stream Subscriptions دائماً
+أي `StreamSubscription` تقوم بإنشائه داخل ViewModel أو State يجب إلغاؤه صراحة في دالة `dispose()`. عدم الإلغاء يترك الاستماع يعمل في الخلفية مستهلكاً الباطارية والرام.
+:::
+
+---
+
+## 🐛 أخطاء شائعة يجب تجنبها (Common Mistakes)
+
+```dart
+// ❌ 1. مناداة notifyListeners بعد إغلاق الشاشة وتدمير الـ ViewModel
+Future<void> loadData() async {
+  var data = await repository.getData();
+  notifyListeners(); // 💥 خطأ: إذا غادر المستخدم الشاشة أثناء جلب البيانات، ستستدعى الدالة على كائن ميت!
+}
+
+// ✅ الحل الصحيح: التثبت من حالة الكائن قبل الإخطار
+Future<void> loadData() async {
+  var data = await repository.getData();
+  if (hasListeners) {
+    notifyListeners();
+  }
+}
+
+
+// ❌ 2. تنفيذ عمليات await المتتالية بدلاً من التوازية عند عدم وجود اعتمادية
+var user = await fetchUser();       // يستغرق ثانية
+var settings = await fetchSettings(); // يستغرق ثانية (الإجمالي 2 ثانية!)
+
+// ✅ الحل الصحيح: استخدام Future.wait للتنفيذ الموازي
+var results = await Future.wait([fetchUser(), fetchSettings()]); // يستغرق ثانية واحدة فقط!
+```
+
+---
+
+## 🎤 أسئلة وأجوبة المقابلات الشخصية (Interview Q&A)
+
+<details>
+<summary><strong>س1: كيف تعمل حلقة الأحداث (Event Loop) في لغة Dart وما الفرق بين طابور Microtask وطابور Event؟</strong></summary>
+
+لغة Dart تعمل بخيط واحد (Single Threaded). يدير هذا الخيط طابورين للأحداث:
+1. **طابور Microtask Queue:** يمتلك أولوية قصوى ويحتوي على المهام الداخلية السريعة جداً الخاصة باللغة. لا ينتقل الخيط لتنفيذ أي حدث آخر حتى يفرغ هذا الطابور تماماً.
+2. **طابور Event Queue:** يحتوي على الأحداث الخارجية مثل نقرات المستخدم، استجابات الشبكة، والمؤطرات الزمانية (`Timer`).
+
+</details>
+
+<details>
+<summary><strong>س2: ما الفرق بين Single-Subscription Stream و Broadcast Stream؟</strong></summary>
+
+- **Single-Subscription Stream:** يقبل مستمعاً واحداً فقط (`listen`) طوال فترة حياته، ويقوم بتخزين الأحداث حتى يبدأ المستمع المراقبة. يُستخدم عادة في عمليات قراءة الملفات أو طلبات الشبكة.
+- **Broadcast Stream:** يقبل عدة مستمعين في وقت واحد، وتُبث الأحداث في التو واللحظة لكافة المستمعين الحاليين (مثل تحديثات الموقع المباشر GPS أو غرف المحادثة).
+
+</details>
+
+<details>
+<summary><strong>س3: متى نستخدم Isolates بدلاً من Futures العادية؟</strong></summary>
+
+نستخدم **Futures** للمهام غير التزامنية التي تنتظر مدخلات/مخرجات (I/O Bound) مثل طلبات الشبكة أو قاعدة البيانات. بينما نستخدم **Isolates** للمهام التي تستهلك المعالج بشكل مكثف (CPU Bound) مثل تشفير البيانات، معالجة الصور، أو معالجة مصفوفات ضخمة، وذلك لتنفيذها على نواة معالج مختلفة دون تعطيل الـ Main UI Thread.
+
+</details>
+
+<details>
+<summary><strong>س4: ما فائدة الكلمات المفتاحية `async*` و `yield`؟</strong></summary>
+
+تُستخدم الكلمة المفتاحية `async*` لتعريف دالة مولدة لتدفق بيانات مستمر (`Stream Generator`). وتُستخدم `yield` لإرسال وقذف قيمة جديدة إلى الـ Stream دون الخروج من الدالة، مما يسمح بضخ سلسلة متتالية من الأحداث عبر الزمن.
+
+</details>
+
+---
+
+<ExerciseBox title="تمرين عملي - تطبيق العد التنازلي مع الـ Stream 🏋️">
+
+قم بكتابة دالة مولدة لتدفق البيانات باسم `countdownStream(int startFrom)`:
+1. تُرجع `Stream<int>`.
+2. تقوم بإرسال الأرقام تنازلياً من `startFrom` حتى الوصول إلى `0` بفاصل ثانية واحدة بين كل حدث واستخدام `Future.delayed`.
+3. استخدم الكلمات المفتاحية `async*` و `yield`.
+4. في دالة `main()`: قم بالاستماع للـ Stream وطباعة النص `"Remaining seconds: $value"` واطبع `"Blast off! 🚀"` عند انتهاء التدفق.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي المشروح بالتعليقات (Solution Code)</strong></summary>
+
+```dart
+import 'dart:async';
+
+// 1. دالة مولدة لتدفق أعداد تنازلية مع async* و yield
+Stream<int> countdownStream(int startFrom) async* {
+  for (int i = startFrom; i >= 0; i--) {
+    // الانتظار لمدة ثانية واحدة بين كل رقم
+    await Future.delayed(const Duration(seconds: 1));
+    // ضخ الرقم الحالي في الـ Stream
+    yield i;
+  }
+}
+
+void main() async {
+  print('Starting countdown...');
+  
+  // الاستماع للـ Stream وطباعة الأرقام المنسابة
+  await for (final value in countdownStream(5)) {
+    print('Remaining seconds: $value');
+  }
+
+  print('Blast off! 🚀');
+}
+```
+
+</details>
+
+
+---
+
+<SummaryBox title="ملخص الدرس 📌">
+
+- تعتمد Dart على حلقة الأحداث (Event Loop) وإدارة طابوري `Microtask` و `Event` لمعالجة المهام دون تجميد واجهة المستخدم.
+- الـ `Future` يُمثل قيمة مستقبلية واحدة، بينما يُمثل الـ `Stream` تدفقاً مستمراً من القيم عبر الزمن.
+- استخدام `Future.wait` يسرّع أداء التطبيق بتشغيل طلبات الشبكة المستقبلية المستقلة بالتوازي.
+- في معمارية **MVVM**، ينبغي دائماً تنظيف الاشتراكات في دالة `dispose()` والحذر من استدعاء `notifyListeners()` بعد مغادرة الشاشات.
 
 </SummaryBox>

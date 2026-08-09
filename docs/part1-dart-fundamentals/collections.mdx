@@ -399,6 +399,37 @@ List<Map<String, dynamic>> orders = [
 
 </ExerciseBox>
 
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي المشروح بالتعليقات (Solution Code)</strong></summary>
+
+```dart
+void main() {
+  List<Map<String, dynamic>> orders = [
+    {'id': 1, 'items': ['Mouse', 'Keyboard'], 'total': 150.0, 'isPaid': true},
+    {'id': 2, 'items': ['Monitor'],           'total': 300.0, 'isPaid': false},
+    {'id': 3, 'items': ['USB', 'Cable'],      'total': 50.0,  'isPaid': true},
+  ];
+
+  // 1. تصفية الطلبات المدفوعة فقط باستخدام where
+  final paidOrders = orders.where((order) => order['isPaid'] == true);
+
+  // 2. استخراج قيم الـ total باستخدام map
+  final totalsList = paidOrders.map((order) => order['total'] as double);
+
+  // 3. تجميع المجموع باستخدام fold
+  final grandTotal = totalsList.fold(0.0, (previousSum, element) => previousSum + element);
+  print('Grand Total of Paid Orders: \$$grandTotal'); // يطبع: 200.0
+
+  // 4. التحدي الصعب: الوصول لأول عنصر في الطلب الثاني (id: 2)
+  final secondOrder = orders.firstWhere((o) => o['id'] == 2);
+  final firstItemInSecondOrder = (secondOrder['items'] as List<String>)[0];
+  print('First item in order #2: $firstItemInSecondOrder'); // يطبع: Monitor
+}
+```
+
+</details>
+
+
 ---
 
 <SummaryBox title="📌 Lesson Summary">

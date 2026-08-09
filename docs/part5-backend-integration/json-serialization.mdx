@@ -1,96 +1,104 @@
 ---
 id: json-serialization
-title: "5.4 JSON Serialization - json_serializable"
-sidebar_label: "5.4 JSON Serialization - json_serializable"
+title: "5.4 JSON Serialization"
+sidebar_label: "5.4 JSON Serialization"
 ---
 
 import ExerciseBox from '@site/src/components/ExerciseBox';
 import SummaryBox from '@site/src/components/SummaryBox';
 
-# 5.4 تسلسل البيانات تلقائياً (JSON Serialization with json_serializable)
+# 5.4 التوليد التلقائي لفك واستخراج JSON (json_serializable)
 
-التحليل اليدوي لبيانات JSON المعقدة آتية من السيرفر قد يسبب أخطاء كتابية كثيرة وصعوبة في التتبع. تتيح حزمتا `json_serializable` و `build_runner` توليد دوال `fromJson` و `toJson` تلقائياً وبكفاءة صارمة.
+استخدام التوليد التلقائي عبر `json_serializable` و `build_runner` يلغي الأخطاء الإملائية اليدوية عند فك بيانات الشبكة.
 
 ---
 
 ## 🎯 أهداف الدرس (Learning Objectives)
 
-1. فهم فوائد التوليد التلقائي لدوّال تسلسل البيانات مقارنة بالتحليل اليدوي.
-2. إضافة وتكوين حزم `json_annotation`, `json_serializable`, و `build_runner`.
-3. استخدام التلميحات البرمجية `@JsonSerializable()` و `@JsonKey(name: '...')`.
-4. تشغيل أمر توليد الكود التلقائي وإدارة ملفات `.g.dart`.
+1. إضافة حزم json_annotation و build_runner.
+2. استخدام التلميحات @JsonSerializable و @JsonKey.
+3. توليد ملفات .g.dart المساعدة.
 
 ---
 
-## 📘 الشرح النظري (Theoretical Explanation)
+## 1. نماذج التوليد التلقائي (@JsonSerializable)
 
-تتيح حزمة `json_serializable` قراءة الفئة وتوليد كود دقيق وفعال يتعامل مع حقول الـ JSON بالأنواع الصحيحة وإعادة تسميتها إذا اختلفت تسميات السيرفر عن قواعد تسمية Dart.
+### 📘 الشرح النظري
+نضيف التلميح `@JsonSerializable()` ونعرف الجزء المولّد `part 'file_name.g.dart';`.
 
-### الأمر الأساسي لتوليد الكود:
-```bash
-flutter pub run build_runner build --delete-conflicting-outputs
-```
-
----
-
-## 💻 التطبيق المعماري (MVVM & Clean Code)
-
-توليد نموذج مستخدم كامل مع ربط ملف التوليد التلقائي `.g.dart`.
-
+### 💻 التطبيق العملي
 ```dart
-// ==========================================
-// File: lib/data/models/api_user_model.dart
-// Description: نموذج بيانات يتولى التحليل التلقائي بـ json_serializable
-// Architecture Layer: Data (Model DTO)
-// ==========================================
-
 import 'package:json_annotation/json_annotation.dart';
+part 'user_model.g.dart';
 
-// 1. إخبار Dart بأن هذا الملف مرتبط بملف الكود المولد
-part 'api_user_model.g.dart';
-
-@JsonSerializable(explicitToJson: true)
-class ApiUserModel {
+@JsonSerializable()
+class UserModel {
+  @JsonKey(name: 'user_id')
   final String id;
+  final String name;
 
-  // إعادة تعيين اسم المفتاح إذا كان بالسيرفر snake_case
-  @JsonKey(name: 'first_name')
-  final String firstName;
+  UserModel({required this.id, required this.name});
 
-  @JsonKey(name: 'is_active', defaultValue: true)
-  final bool isActive;
-
-  const ApiUserModel({
-    required this.id,
-    required this.firstName,
-    required this.isActive,
-  });
-
-  /// 2. ربط دالة fromJson بالدالة المولدة تلقائياً
-  factory ApiUserModel.fromJson(Map<String, dynamic> json) =>
-      _$ApiUserModelFromJson(json);
-
-  /// 3. ربط دالة toJson بالدالة المولدة تلقائياً
-  Map<String, dynamic> toJson() => _$ApiUserModelToJson(this);
+  factory UserModel.fromJson(Map<String, dynamic> json) => _$UserModelFromJson(json);
+  Map<String, dynamic> toJson() => _$UserModelToJson(this);
 }
 ```
 
 ---
 
-<ExerciseBox title="جرب بنفسك 💻">
+## ⚡ نصائح الأداء والتحسين (Performance Tips)
 
-1. أنشئ نموذج `ProductModel` يحتوي على `product_id` و `unit_price`.
-2. استخدم التلميح `@JsonKey(name: 'product_id')` لربطه بالحقل `id` في Dart.
-3. قم بتشغيل أمر `build_runner` وتأكد من توليد ملف `product_model.g.dart` بدون أخطاء.
-
-</ExerciseBox>
+:::tip أمر التوليد المستمر
+استخدم `dart run build_runner watch` لتوليد الأكواد تلقائياً فور حفظ الملفات.
+:::
 
 ---
 
-<SummaryBox title="خلاصة الدرس 📌">
+## 🐛 أخطاء شائعة يجب تجنبها (Common Mistakes)
 
-- استخدام التوليد التلقائي لـ JSON تلغي الأخطاء البشرية الإملائية عند مطابقة المفاتيح.
-- التلميح `@JsonKey` يسمح بالحفاظ على تسمية `camelCase` القياسية في Dart دون التأثر بأسماء `snake_case` من السيرفر.
-- ربط ملفات `part '*.g.dart'` يمنح مترجم Dart الوصول للحلول المولدة بنظافة عالية.
+```dart
+// ❌ 1. نسيان جزء part 'file.g.dart' في أعلى الملف
+@JsonSerializable() class User {} // بدون part
+
+// ✅ الحل الصحيح
+part 'user.g.dart'; @JsonSerializable() class User {}
+
+```
+
+---
+
+## 🎤 أسئلة وأجوبة المقابلات (Interview Q&A)
+
+<details>
+<summary><strong>س1: ما فائدة استخدام @JsonKey(name: ...)؟</strong></summary>
+
+تتيح ربط اسم الحقل القادم من السيرفر (مثل snake_case) مع متغير Dart المكتوب بنمط camelCase.
+
+</details>
+
+---
+
+<ExerciseBox title="تمرين عملي - نموذج JSON تلقائي 🏋️">
+
+أنشئ موديل `ProductModel` يمتلك id و price وربطه بالتوليد التلقائي.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي المشروح بالتعليقات (Solution Code)</strong></summary>
+
+```dart
+@JsonSerializable() class Product { final String id; Product(this.id); }
+```
+
+</details>
+
+---
+
+<SummaryBox title="ملخص الدرس 📌">
+
+- `json_serializable` يقضي على الأخطاء اليدوية.
+- `@JsonKey` يقارب بين أنماط التسمية المختلفين.
+- `build_runner` يتولى التوليد التلقائي.
 
 </SummaryBox>

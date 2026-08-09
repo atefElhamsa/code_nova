@@ -1,4 +1,4 @@
-﻿---
+---
 id: solid-and-srp
 title: "3.2 SOLID & SRP Principles"
 sidebar_label: "3.2 SOLID & SRP Principles"
@@ -7,99 +7,406 @@ sidebar_label: "3.2 SOLID & SRP Principles"
 import ExerciseBox from '@site/src/components/ExerciseBox';
 import SummaryBox from '@site/src/components/SummaryBox';
 
-# 3.2 مبادئ SOLID ومبدأ المسؤولية الأحادية (SRP)
+# 3.2 مبادئ SOLID الخمسة للتصميم المعماري (SOLID Principles)
 
-مبادئ **SOLID** هي المبادئ الخمسة الأساسية لتصميم البرمجيات الكائنية القابلة للتطوير والصيانة. في هذا الدرس، سنركز بشكل خاص على المبدأ الأول والأكثر أهمية في هندسة الواجهات: **مبدأ المسؤولية الأحادية (Single Responsibility Principle - SRP)**.
+تُعتبر مبادئ **SOLID** المبادئ التوجيهية الأساسية الخمسة لتصميم الهندسة المعمارية للأكواد الكائنية (Object-Oriented Architecture). تم ابتكار هذه المبادئ بواسطة *Robert C. Martin (Uncle Bob)* وجرى تطويعها في تطوير تطبيقات **Flutter & Dart** لضمان بناء تطبيقات سهلة الصيانة، قابلة للاختبار الأحادي (Unit Testing)، ومحصنة تماماً ضد أخطاء التراجع (Regression Bugs) عند إضافة الميزات الجديدة.
+
+في هذا الدرس، سنستعرض كل مبدأ من المبادئ الخمسة بشرح نظري عميق متبوعاً مباشرة بكود عملي يوضح الخطأ ❌ وكيفية معالجته وإصلاحه بالنظافة المعمارية ✅.
 
 ---
 
 ## 🎯 أهداف الدرس (Learning Objectives)
 
-1. فهم مبادئ SOLID الخمسة باختصار (SRP, OCP, LSP, ISP, DIP).
-2. تطبيق مبدأ SRP في تقسيم الفئات بالطبقات.
-3. التخلص من "الفئات المنفردة العملاقة" (God Classes).
-4. التأكد من أن الـ View لا تمتلك إلا سبباً واحداً للتغير (تغيير الشكل البصري فقط).
+1. **الاستيعاب الشامل لمبادئ SOLID الخمسة:** التعرف النظري والعملي الدقيق على SRP, OCP, LSP, ISP, و DIP.
+2. **التخلص من الفئات المكدسة (God Classes):** تطبيق مبدأ SRP لتوزيع المسؤوليات بين طبقات المعمارية (Datasource, Repository, ViewModel, View).
+3. **توسع الكود بدون تعديل الأصلي (OCP):** التمديد باستخدام التجريد (Abstract Interfaces) دون المساس بالأكواد المستقرة.
+4. **ضمان التوافق السلوكي (LSP):** جعل الفئات المشتقة قابلة للاستبدال كلياً محل الفئات الأصلية دون رمي استثناءات غير متوقعة.
+5. **تفكيك الواجهات المتضخمة وعكس التبعيات (ISP & DIP):** تصميم عقود خفيفة وفصل الطبقات العليا عن التفاصيل التنفيذية.
 
 ---
 
-## 📘 الشرح النظري (Theoretical Explanation)
+## 1. S - Single Responsibility Principle (SRP) - مبدأ المسؤولية الأحادية
 
-ينص مبدأ المسؤولية الأحادية (SRP) على:
-> **"يجب أن تمتلك الفئة سبباً واحداً فقط للتغيير."**
+### 📘 الشرح النظري (Theory)
+ينص مبدأ المسؤولية الأحادية على:
+> **"يجب أن تمتلك الفئة سبباً واحداً فقط للتغيير (A class should have one, and only one, reason to change)."**
 
-### تفكيك المسؤوليات في Flutter:
-* **`Model`**: مسؤول فقط عن تمثيل واستخراج البيانات (Data Holding & Serialization).
-* **`Repository`**: مسؤول فقط عن مصدر البيانات ورسائل الشبكة/قاعدة البيانات (Data Fetching).
-* **`ViewModel`**: مسؤول فقط عن منطق الواجهة وإدارة الحالة (UI Logic & State Management).
-* **`View`**: مسؤولة فقط عن رص الودجات وعرض الألوان والنصوص (UI Rendering).
+في تطبيقات Flutter، يحدث خرق هذا المبدأ عندما تُنشأ فئة واحدة تقوم بجلب البيانات من السيرفر، وتحليل نص JSON، وتخزين البيانات محلياً، وإدارة حالة الواجهة، ورسم الودجات! يُطلق على هذه الفئة اسم **God Class**.
+
+#### كيفية تطبيق SRP في معمارية Flutter:
+* **`Datasource`**: مسؤولة فقط عن تنفيذ الاتصال الشبكي (HTTP Request).
+* **`Repository`**: مسؤولة فقط عن استراتيجية جلب وتجميع البيانات بين السيرفر والتخزين المحلي.
+* **`ViewModel`**: مسؤولة فقط عن إدارة حالة الشاشة وترجمة الأحداث.
+* **`View / Widget`**: مسؤولة فقط عن رص الودجات وعرض الألوان والنصوص للمستخدم.
 
 ---
 
-## 💻 التطبيق المعماري (MVVM & Clean Code)
+### 💻 التطبيق العملي (Practical Code)
 
-تحويل فئة مكدسة تخرق مبدأ SRP إلى ثلاث فئات نظيفة تطبق SRP بالحرف.
-
+#### ❌ كود يخرق مبدأ SRP (فئة مكدسة تقوم بكل شيء):
 ```dart
-// ==========================================
-// ❌ كود يخرق مبدأ SRP: الـ Widget تنفذ الاتصال الشبكي، التحليل، والعرص!
-// ==========================================
-// (تم تجنبه لتطبيق معايير الكورس الصارمة)
+// ❌ خطأ: شاشة الـ Widget تقوم بطلب الشبكة، فك الـ JSON، وإدارة الحالة داخلها مباشرة!
+class BadUserProfileWidget extends StatefulWidget {
+  const BadUserProfileWidget({super.key});
 
-// ==========================================
-// ✅ تطبيق مبدأ SRP بنظافة احترافية
-// File: lib/data/datasources/user_remote_datasource.dart
-// Architecture Layer: Data (Datasource)
-// ==========================================
+  @override
+  State<BadUserProfileWidget> createState() => _BadUserProfileWidgetState();
+}
 
+class _BadUserProfileWidgetState extends State<BadUserProfileWidget> {
+  String? userName;
+  bool isLoading = false;
+
+  Future<void> fetchUser() async {
+    setState(() => isLoading = true);
+    // 💥 الاتصال المباشر بالشبكة داخل الـ Widget!
+    final response = await http.get(Uri.parse('https://api.example.com/user'));
+    final data = jsonDecode(response.body); // 💥 فك البيانات داخل الـ Widget!
+    setState(() {
+      userName = data['name'];
+      isLoading = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: isLoading 
+          ? const CircularProgressIndicator()
+          : Text(userName ?? 'No Data'),
+    );
+  }
+}
+```
+
+#### ✅ كود يطبق مبدأ SRP (فصل الكود إلى فئات ذات مسؤولية واحدة):
+```dart
+// 1. Datasource: مسؤولة حصرياً عن الاتصال الشبكي
 class UserRemoteDatasource {
-  Future<Map<String, dynamic>> fetchRawUserData(String userId) async {
-    // مسؤول حصرياً عن تنفيذ طلب الشبكة
-    return {'id': userId, 'name': 'سارة خالد', 'email': 'sara@example.com'};
+  Future<Map<String, dynamic>> fetchRawUser() async {
+    final response = await http.get(Uri.parse('https://api.example.com/user'));
+    return jsonDecode(response.body);
   }
 }
 
-// File: lib/data/repositories/user_repository_impl.dart
-// Architecture Layer: Data (Repository)
-
-import '../models/user_model.dart';
-import '../datasources/user_remote_datasource.dart';
-
+// 2. Repository: مسؤولة حصرياً عن استراتيجية البيانات والنمذجة
 class UserRepositoryImpl {
-  final UserRemoteDatasource datasource;
+  final UserRemoteDatasource _datasource;
+  UserRepositoryImpl(this._datasource);
 
-  UserRepositoryImpl(this.datasource);
-
-  Future<UserModel> getUserById(String id) async {
-    final rawData = await datasource.fetchRawUserData(id);
-    return UserModel.fromJson(rawData);
+  Future<UserModel> getUser() async {
+    final json = await _datasource.fetchRawUser();
+    return UserModel.fromJson(json);
   }
 }
 
-// File: lib/presentation/viewmodels/user_details_viewmodel.dart
-// Architecture Layer: Presentation (ViewModel)
-
-import 'package:flutter/foundation.dart';
-import '../../data/models/user_model.dart';
-import '../../data/repositories/user_repository_impl.dart';
-
-class UserDetailsViewModel extends ChangeNotifier {
-  final UserRepositoryImpl repository;
+// 3. ViewModel: مسؤولة حصرياً عن منطق العرض وحالة الشاشة
+class UserViewModel extends ChangeNotifier {
+  final UserRepositoryImpl _repository;
+  UserViewModel(this._repository);
 
   UserModel? _user;
   bool _isLoading = false;
 
-  UserDetailsViewModel(this.repository);
-
   UserModel? get user => _user;
   bool get isLoading => _isLoading;
 
-  Future<void> loadUser(String id) async {
+  Future<void> loadUser() async {
     _isLoading = true;
     notifyListeners();
-
-    _user = await repository.getUserById(id);
-
+    _user = await _repository.getUser();
     _isLoading = false;
+    notifyListeners();
+  }
+}
+
+// 4. View: مسؤولة حصرياً عن رسم الـ UI بدون أي منطق برمجي
+class CleanUserProfileView extends StatelessWidget {
+  const CleanUserProfileView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<UserViewModel>(
+      builder: (context, vm, child) {
+        if (vm.isLoading) return const CircularProgressIndicator();
+        return Text(vm.user?.name ?? 'No User');
+      },
+    );
+  }
+}
+```
+
+---
+
+## 2. O - Open/Closed Principle (OCP) - مبدأ الفتح والإنغلاق
+
+### 📘 الشرح النظري (Theory)
+ينص مبدأ الفتح والإنغلاق على:
+> **"الكيانات البرمجية يجب أن تكون مفتوحة للتمديد، ولكنها مغلقة أمام التعديل (Open for extension, closed for modification)."**
+
+عند إضافة ميزة جديدة للتطبيق (مثل إضافة بوابة دفع جديدة كالـ PayPal بجانب Credit Card)، لا ينبغي أن نذهب للكود المستقر مسبقاً ونقوم بالتعديل عليه عبر إضافة شروط جديدة `if-else` أو `switch`. التعديل على الكود المستقر يفتح الباب لأخطاء التراجع (Regression Bugs). بدلاً من ذلك، نستخدم التجريد (Abstract Interfaces) بحيث نمدد النظام بكتابة فئات جديدة دون مساس بالأكواد القديمة.
+
+---
+
+### 💻 التطبيق العملي (Practical Code)
+
+#### ❌ كود يخرق مبدأ OCP (التعديل المباشر على الكود القديم عند كل ميزة جديدة):
+```dart
+// ❌ خطأ: عند إضافة بوابة دفع جديدة (مثل Apple Pay)، ستحتاج لتعديل هذه الفئة وإضافة شرط جديد!
+class BadPaymentProcessor {
+  void processPayment(String paymentType, double amount) {
+    if (paymentType == 'credit_card') {
+      print('Processing $amount via Credit Card...');
+    } else if (paymentType == 'paypal') {
+      print('Processing $amount via PayPal...');
+    } else if (paymentType == 'apple_pay') {
+      // 💥 التعديل على الكود المستقر يهدد بكسر المعاملات البنكية القديمة!
+      print('Processing $amount via Apple Pay...');
+    }
+  }
+}
+```
+
+#### ✅ كود يطبق مبدأ OCP (التمديد عبر الواجهات بدون تعديل الكود القديم):
+```dart
+// 1. العقد التجريدي المفتوح للتمديد والمغلق أمام التعديل
+abstract class PaymentGateway {
+  Future<bool> pay(double amount);
+}
+
+// 2. بوابة البطاقات الإئتمانية (فئة مستقلة)
+class CreditCardGateway implements PaymentGateway {
+  @override
+  Future<bool> pay(double amount) async {
+    print('Processing $amount securely via Credit Card.');
+    return true;
+  }
+}
+
+// 3. بوابة PayPal (فئة مستقلة)
+class PaypalGateway implements PaymentGateway {
+  @override
+  Future<bool> pay(double amount) async {
+    print('Processing $amount securely via PayPal.');
+    return true;
+  }
+}
+
+// 4. إضافة Apple Pay دون تعديل سطر كود واحد في البوابات السابقة!
+class ApplePayGateway implements PaymentGateway {
+  @override
+  Future<bool> pay(double amount) async {
+    print('Processing $amount securely via Apple Pay.');
+    return true;
+  }
+}
+
+// 5. الخدمة الرئيسية تتعامل مع العقد العام وتعمل مع أي بوابة جديدة فوراً
+class CheckoutService {
+  final PaymentGateway _gateway;
+  CheckoutService(this._gateway);
+
+  Future<bool> checkout(double amount) => _gateway.pay(amount);
+}
+```
+
+---
+
+## 3. L - Liskov Substitution Principle (LSP) - مبدأ استبدال ليسكوف
+
+### 📘 الشرح النظري (Theory)
+ينص مبدأ استبدال ليسكوف (الذي سمي نسبة للعالمة *Barbara Liskov*) على:
+> **"يجب أن تكون الفئات الفرعية (Subclasses) قابلة للاستبدال كلياً محل الفئات الأصلية (Base Classes) دون كسر السلوك المطلوب من البرنامج."**
+
+إذا كان لدينا فئة أم تفرض دالة معينة، وقامت فئة فرعية بوراثتها ولكنها ألقت استثناءً مثل `UnimplementedError` لأنها لا تستطيع تنفيذ تلك الدالة، فهذا خرق صارخ لمبدأ LSP. يجب أن تلتزم كل فئة مشتقة بالسلوك المتوقع من الفئة الأم بالكامل.
+
+---
+
+### 💻 التطبيق العملي (Practical Code)
+
+#### ❌ كود يخرق مبدأ LSP (الفئة الابن ترث دالة لا تستطيع تنفيذها وترمي استثناء):
+```dart
+abstract class LocalStorage {
+  void writeData(String key, String value);
+  String readData(String key);
+}
+
+// ❌ خطأ: فئة قراءة فقط ترث من LocalStorage وتكسر العقد برمي استثناء عند الكتابة!
+class ReadOnlyCacheStorage extends LocalStorage {
+  @override
+  String readData(String key) => 'Cached Data';
+
+  @override
+  void writeData(String key, String value) {
+    // 💥 كسر صارخ لمبدأ LSP! الاستبدال هنا سيتسبب في كراش للتطبيق في الـ Runtime
+    throw UnimplementedError('ReadOnlyCacheStorage does not support writing data!');
+  }
+}
+```
+
+#### ✅ كود يطبق مبدأ LSP (فصل العقود لضمان صحة الاستبدال 100%):
+```dart
+// 1. عقد القراءة المستقل
+abstract class ReadableStorage {
+  String readData(String key);
+}
+
+// 2. عقد الكتابة المستقل الممتد
+abstract class WritableStorage {
+  void writeData(String key, String value);
+}
+
+// 3. فئة القراءة فقط تنفذ عقد القراءة فقط وتعمل بأمان تام بدون أخطاء
+class ReadOnlyCacheStorage implements ReadableStorage {
+  @override
+  String readData(String key) => 'Cached Data Only';
+}
+
+// 4. فئة التخزين الكاملة تنفذ عقد القراءة والكتابة معا
+class FullLocalStorage implements ReadableStorage, WritableStorage {
+  @override
+  String readData(String key) => 'Stored Data';
+
+  @override
+  void writeData(String key, String value) {
+    print('Saved $key = $value');
+  }
+}
+```
+
+---
+
+## 4. I - Interface Segregation Principle (ISP) - مبدأ فصل الواجهات
+
+### 📘 الشرح النظري (Theory)
+ينص مبدأ فصل الواجهات على:
+> **"لا ينبغي إجبار العملاء على الاعتماد على واجهات لا يستخدمونها (Clients should not be forced to depend upon interfaces that they do not use)."**
+
+تجنب إنشاء واجهات ضخمة ممتلئة بالدوال (Fat Interfaces). عندما تحتوي الواجهة على عشرات الدوال غير المترابطة، ستُجبر الفئات التي تطبقها على كتابة دوال فارغة لا تحتاجها لمجرد إرضاء المترجم. الحل هو تقسيم الواجهات إلى عقود صغيرة، دقيقة، ومحددة التخصص.
+
+---
+
+### 💻 التطبيق العملي (Practical Code)
+
+#### ❌ كود يخرق مبدأ ISP (واجهة متضخمة تُجبر الفئات على تنفيذ دوال زائدة):
+```dart
+// ❌ خطأ: واجهة ضخمة تجمع التسجيل، تحرير الملاحظات، وتصدير التقارير!
+abstract class MultiUserActions {
+  void login();
+  void logout();
+  void createNote();
+  void exportPdfReport(); // 💥 ليست كل الفئات بحاجة لطباعة التقارير!
+}
+
+class BasicCustomerService implements MultiUserActions {
+  @override void login() { print('Login'); }
+  @override void logout() { print('Logout'); }
+  @override void createNote() { print('Note Created'); }
+
+  @override
+  void exportPdfReport() {
+    // 💥 إجبار الفئة على كتابة دالة لا تستخدمها لمجرد أن الواجهة ضخمة!
+  }
+}
+```
+
+#### ✅ كود يطبق مبدأ ISP (واجهات خفيفة ومحددة لكل تخصص):
+```dart
+// 1. عقد مصادقة المستخدمين
+abstract class AuthenticationContract {
+  void login();
+  void logout();
+}
+
+// 2. عقد إدارة الملاحظات
+abstract class NoteManagementContract {
+  void createNote();
+}
+
+// 3. عقد تصدير التقارير
+abstract class ReportExporterContract {
+  void exportPdfReport();
+}
+
+// 4. الفئة تنفذ فقط العقود التي تحتاج إليها بنظافة وحجم مثالي
+class CustomerAuthService implements AuthenticationContract {
+  @override void login() { print('Customer Logged In'); }
+  @override void logout() { print('Customer Logged Out'); }
+}
+
+class AdminService implements AuthenticationContract, ReportExporterContract {
+  @override void login() { print('Admin Logged In'); }
+  @override void logout() { print('Admin Logged Out'); }
+  @override void exportPdfReport() { print('Exported Admin PDF'); }
+}
+```
+
+---
+
+## 5. D - Dependency Inversion Principle (DIP) - مبدأ عكس التبعيات
+
+### 📘 الشرح النظري (Theory)
+ينص مبدأ عكس التبعيات على:
+> **"الطبقات العليا يجب ألا تعتمد على الطبقات السفلى مباشرة؛ كلاهما يجب أن يعتمد على التجريد (Abstractions)."**
+
+في معمارية Clean Code الخاصة بـ Flutter، تمثل طبقة العرض `ViewModel` طبقة عليا، بينما تمثل طبقة الشبكة `ApiRepository` طبقة سفلى. إذا قامت الـ ViewModel بإنشاء كائن الـ Repository الخرساني بنفسها بداخلها (`final repo = ApiRepository();`)، فستكون الفئتان شديدتي الإلتصاق (Tightly Coupled)، وسيكون من المستحيل كتابة Unit Tests للشاشة بدون الاتصال بالإنترنت! 
+
+الحل هو جعل الـ ViewModel تعتمد على العقد التجريدي (`abstract class BaseRepository`) وتلقي التبعية عبر البناء (Constructor Dependency Injection).
+
+---
+
+### 💻 التطبيق العملي (Practical Code)
+
+#### ❌ كود يخرق مبدأ DIP (اعتماد مباشر على الفئة الفردية الخرسانية):
+```dart
+// ❌ خطأ: الـ ViewModel تقوم بإنشاء الفئة الفردية للشبكة بنفسها بشكل مباشر!
+class BadProductViewModel extends ChangeNotifier {
+  // 💥 ربط مباشر شديد (Tight Coupling) يجعل الاختبار الأحادي مستحيلاً!
+  final ApiProductRepository _repository = ApiProductRepository();
+
+  List<String> products = [];
+
+  Future<void> loadProducts() async {
+    products = await _repository.fetchProductsFromNetwork();
+    notifyListeners();
+  }
+}
+```
+
+#### ✅ كود يطبق مبدأ DIP (الاعتماد على العقود التجريدية وحقن التبعية):
+```dart
+// 1. العقد التجريدي في طبقة الـ Domain
+abstract class BaseProductRepository {
+  Future<List<String>> fetchProducts();
+}
+
+// 2. التنفيذ الفعلي في طبقة الـ Data
+class ApiProductRepositoryImpl implements BaseProductRepository {
+  @override
+  Future<List<String>> fetchProducts() async {
+    return ['Product A', 'Product B'];
+  }
+}
+
+// 3. التنفيذ الوهمي للاختبارات الأحادية (Mocking for Unit Testing)
+class MockProductRepositoryImpl implements BaseProductRepository {
+  @override
+  Future<List<String>> fetchProducts() async {
+    return ['Mock Product 1', 'Mock Product 2'];
+  }
+}
+
+// 4. الـ ViewModel تعتمد حصرياً على العقد التجريدي وتتلقاه في الـ Constructor (DIP)
+class CleanProductViewModel extends ChangeNotifier {
+  final BaseProductRepository _repository; // ✅ الاعتماد على التجريد
+
+  CleanProductViewModel(this._repository); // ✅ Dependency Injection
+
+  List<String> _products = [];
+  List<String> get products => _products;
+
+  Future<void> loadProducts() async {
+    _products = await _repository.fetchProducts();
     notifyListeners();
   }
 }
@@ -107,19 +414,128 @@ class UserDetailsViewModel extends ChangeNotifier {
 
 ---
 
-<ExerciseBox title="جرب بنفسك 💻">
+## ⚡ نصائح الأداء والتحسين (Performance Tips)
 
-1. حدد المسؤولية الأحادية لفئة تُسمى `InvoicePdfExporter`. هل يجب أن تحتوي هذه الفئة على دالة حساب الخصم البنكي؟
-2. أعد فصل فئة تحسب الرواتب وتطبع الإيصال وتتصل بقاعدة البيانات إلى 3 فئات مستقلة.
+:::tip التغطية الكاملة للاختبارات الأحادية (100% Unit Testability)
+تطبيق مبدأ **DIP** هو السر الحقيقي للتمكن من فحص منطق التطبيق بالكامل. بفضل الاعتماد على العقود والتجريد، يمكنك اختبار الـ ViewModel بأمان مائة بالمائة بمرور كائنات وهمية (Mock Repositories) ودون الحاجة لتشغيل محاكي أو الاتصال بسيرفرات حقيقية.
+:::
 
-</ExerciseBox>
+:::tip تجنب تكاليف صيانة الأكواد المرتفعة (Low Technical Debt)
+تطبيق مبدأ **OCP** و **SRP** يُقلل الديون التقنية للتطبيق، حيث تظل ملفات الميزات المستقرة مغلقة ومحمية، مما يمنع الأخطاء المفاجئة عند تسليم الإصدارات الجديدة للمستخدمين.
+:::
 
 ---
 
-<SummaryBox title="خلاصة الدرس 📌">
+## 🐛 أخطاء شائعة يجب تجنبها (Common Mistakes)
 
-- يضمن مبدأ SRP أن كل فئة تقوم بوظيفة واحدة فقط ومحددة بدقة.
-- فصل السيرفر والتخزين عن الـ ViewModel والـ View يسّهل عملية كتابة Unit Tests بنسبة 100%.
-- إذا وجدت نفسك تكتب دوال شبكة أو قواعد بيانات داخل ملف الـ Widget، فأنت تخرق مبدأ SRP بشكل مباشر!
+```dart
+// ❌ 1. مناداة أجهزة الاتصال بالشبكة من داخل الـ Widget
+ElevatedButton(
+  onPressed: () async {
+    final res = await http.get(...); // 💥 خرق صارخ لمبدأ SRP!
+  },
+  child: Text('Fetch'),
+)
+
+// ✅ الحل الصحيح: مناداة دالة الـ ViewModel المدارة والمفصولة المعمارية
+ElevatedButton(
+  onPressed: () => context.read<ProductViewModel>().loadProducts(),
+  child: const Text('Fetch'),
+)
+```
+
+---
+
+## 🎤 أسئلة وأجوبة المقابلات الشخصية (Interview Q&A)
+
+<details>
+<summary><strong>س1: ما هو الفرق الجوهري بين مبدأ SRP ومبدأ ISP؟</strong></summary>
+
+- **SRP (Single Responsibility Principle):** ينطبق على مستوى الفئات والتنفيذ (Class & Implementation level)، ويركز على أن الفئة يجب أن تمتلك سبباً واحداً فقط للتغير والتعديل.
+- **ISP (Interface Segregation Principle):** ينطبق على مستوى العقود والواجهات (Interface level)، ويركز على عدم إجبار العميل والمستدعي على تنفيذ دوال لا يحتاجها داخل الواجهة.
+
+</details>
+
+<details>
+<summary><strong>س2: كيف يحمي مبدأ Open/Closed Principle (OCP) التطبيقات الكبيرة من Regression Bugs؟</strong></summary>
+
+يحمي المبدأ التطبيقات الكبيرة لأنه يمنع التعديل على الملفات والفئات القديمة المستقرة في الإنتاج. بدلاً من ذلك، تُضاف الميزات الجديدة في ملفات وفئات جديدة تنفذ الواجهات الأصلية، وبالتالي تبقى الميزات القديمة بنسبة 100% بعيدة عن التغيير والأخطاء.
+
+</details>
+
+<details>
+<summary><strong>س3: كيف يرتبط مبدأ Dependency Inversion (DIP) بحزم حاقن التبعيات مثل GetIt؟</strong></summary>
+
+مبدأ DIP يفرض الاعتماد على العقد التجريدي (`abstract class BaseRepository`). وتأتي مكتبة **GetIt** لتنفذ عملية الربط السلسة وقت التشغيل؛ فيتم تسجيل العقد وإقرانه بالتنفيذ الفعلي (`sl.registerLazySingleton<BaseRepository>(() => RepositoryImpl())`)، وتزود الـ ViewModel بالتجريد المطلوبة بمرونة تامة.
+
+</details>
+
+---
+
+<ExerciseBox title="تمرين عملي - تطبيق ومراجعة مبادئ SOLID الخمسة 🏋️">
+
+1. أعد فصل فئة مكدسة تقوم بحساب الراتب، طباعة القسيمة، وتحديث قوافل البيانات إلى 3 فئات مستقلة بحسب **SRP**.
+2. أنشئ فئة `DiscountService` تطبق مبدأ **OCP** لخصومات الموسم دون استخدام شروط `if-else` متكررة.
+3. طبق مبدأ **DIP** بحقن التبعية في فئة `CheckoutService`.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي المشروح بالتعليقات (Solution Code)</strong></summary>
+
+```dart
+// 1. تطبيق SRP: 3 فئات مستقلة لكل منها مسؤولية واحدة فقط
+class SalaryCalculator {
+  double calculateNetSalary(double gross, double taxRate) => gross * (1.0 - taxRate);
+}
+
+class PayslipPrinter {
+  void printPayslip(String employeeId, double salary) {
+    print('Receipt for $employeeId: $salary');
+  }
+}
+
+class EmployeeDatabaseRepository {
+  Future<void> updateSalaryRecord(String id, double salary) async {
+    print('Updated salary record in DB for $id');
+  }
+}
+
+// 2. تطبيق OCP: استراتيجية خصومات مفتوحة للتمديد عبر التجريد
+abstract class DiscountStrategy {
+  double applyDiscount(double amount);
+}
+
+class RegularDiscount implements DiscountStrategy {
+  @override double applyDiscount(double amount) => amount * 0.95; // 5% discount
+}
+
+class VIPDiscount implements DiscountStrategy {
+  @override double applyDiscount(double amount) => amount * 0.80; // 20% discount
+}
+
+// 3. تطبيق DIP: خدمة الفحص تعتمد على العقد التجريدي للخصومات
+class CheckoutService {
+  final DiscountStrategy _discountStrategy; // التجريد (DIP)
+
+  CheckoutService(this._discountStrategy);
+
+  double calculateFinalPrice(double total) {
+    return _discountStrategy.applyDiscount(total);
+  }
+}
+```
+
+</details>
+
+---
+
+<SummaryBox title="ملخص الدرس 📌">
+
+- **S (SRP):** فئة واحدة = مسؤولية واحدة وسبب تغيير واحد.
+- **O (OCP):** تمديد النظام عبر واجهات جديدة بدون مساس بالكود القديم المستقر.
+- **L (LSP):** الفئات الابن تلتزم بالكامل بسلوك الفئات الأم بدون استثناءات.
+- **I (ISP):** واجهات صغيرة خفيفة مركزة بدلاً من واجهة واحدة ضخمة.
+- **D (DIP):** الاعتماد على العقود التجريدية وحقن التبعيات بدلاً من الربط المباشر بالفئات الخرسانية.
 
 </SummaryBox>

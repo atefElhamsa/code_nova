@@ -1,4 +1,4 @@
-﻿---
+---
 id: scrollable-views
 title: "2.4 Scrollable Views"
 sidebar_label: "2.4 Scrollable Views"
@@ -7,105 +7,151 @@ sidebar_label: "2.4 Scrollable Views"
 import ExerciseBox from '@site/src/components/ExerciseBox';
 import SummaryBox from '@site/src/components/SummaryBox';
 
-# 2.4 القوائم والشاشات القابلة للتمرير (ListView & GridView)
+# 2.4 العروض القابلة للتمرير (Scrollable Views)
 
-عند التعامل مع مجموعات بيانات كبيرة أو ديناميكية قادمة من الخادم، يصبح استخدام `ListView.builder` و `GridView.builder` ضرورة قصوى للحفاظ على كفاءة الذاكرة وسلاسة التمرير (60 FPS).
+في تطبيقات الهاتف المحمول، يتم عرض القوائم والشبكات ذات العناصر المتعددة أو غير المحدودة باستخدام القوائم القابلة للتمرير بنمط التحميل الكسول (Lazy Loading).
 
 ---
 
 ## 🎯 أهداف الدرس (Learning Objectives)
 
-1. التمييز بين البناء العادي للبناء الكسول (Lazy Loading) عبر `.builder`.
-2. استخدام `ListView.builder` للقوائم الطويلة.
-3. استخدام `GridView.builder` وشرح `SliverGridDelegateWithFixedCrossAxisCount`.
-4. ربط القوائم القابلة للتمرير بالـ ViewModel مع معالجة حماية الذاكرة.
+1. استخدام SingleChildScrollView للشاشات القصيرة.
+2. بناء القوائم الضخمة بواسطة ListView.builder لرفع الأداء.
+3. عرض شبكات البيانات باستخدام GridView.builder.
 
 ---
 
-## 📘 الشرح النظري (Theoretical Explanation)
+## 1. التمرير المفرد (SingleChildScrollView)
 
-### البناء الكسول (Lazy Construction)
-عند استخدام `ListView(children: [...])` يتم بناء جميع العناصر في الذاكرة دفعة واحدة، مما يسبب تجميد التطبيقات عند وجود آلاف العناصر.
+### 📘 الشرح النظري
+تُستخدم `SingleChildScrollView` عند رغبتك في جعل شاشة ثابتة (مثل فورم التسجيل) قابلة للتمرير على الشاشات الصغيرة لتجنب طفح المحتوى عند ظهور لوحة المفاتيح.
 
-بينما عند استخدام `ListView.builder(itemBuilder: ...)` يقوم Flutter ببناء العناصر **المعروضة على الشاشة فقط** وتدمير/إعادة استخدام العناصر التي تخرج من حدود الشؤون المرئية.
-
----
-
-## 💻 التطبيق المعماري (MVVM & Clean Code)
-
-نستعرض بناء شاشة منتجات شبكية `ProductGridView` تعتمد على ViewModel لجلب القائمة وتمريرها للعرض.
-
+### 💻 التطبيق العملي
 ```dart
-// ==========================================
-// File: lib/presentation/views/product_catalog_view.dart
-// Description: View تعرض قائمة شبكية باستخدام GridView.builder
-// Architecture Layer: Presentation (View)
-// ==========================================
-
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../viewmodels/product_catalog_viewmodel.dart';
-import '../widgets/product_card_widget.dart';
-
-class ProductCatalogView extends StatelessWidget {
-  const ProductCatalogView({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('كتالوج المنتجات'),
-      ),
-      body: Consumer<ProductCatalogViewModel>(
-        builder: (context, viewModel, child) {
-          if (viewModel.isLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (viewModel.products.isEmpty) {
-            return const Center(child: Text('لا توجد منتجات متاحة حالياً'));
-          }
-
-          return GridView.builder(
-            padding: const EdgeInsets.all(12.0),
-            itemCount: viewModel.products.length,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2, // عدد الأعمدة أفقياً
-              childAspectRatio: 0.75, // نسبة العرض إلى الارتفاع
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-            ),
-            itemBuilder: (context, index) {
-              final product = viewModel.products[index];
-              return ProductCardWidget(
-                product: product,
-                onTap: () => viewModel.selectProduct(product.id),
-              );
-            },
-          );
-        },
-      ),
-    );
-  }
+Widget buildScrollableForm() {
+  return SingleChildScrollView(
+    padding: const EdgeInsets.all(16),
+    child: Column(
+      children: const [
+        TextField(decoration: InputDecoration(labelText: 'Email')),
+        SizedBox(height: 16),
+        TextField(decoration: InputDecoration(labelText: 'Password')),
+      ],
+    ),
+  );
 }
 ```
 
 ---
 
-<ExerciseBox title="جرب بنفسك 💻">
+## 2. القوائم الكسولة (ListView.builder)
 
-1. أنشئ شاشة قائمة تنقل باستخدام `ListView.separated`.
-2. استخدم المعامل `separatorBuilder` لإضافة خط فاصل `Divider()` بين كل عنصر وآخر.
-3. تأكد من توفير `itemCount` دائماً لتجنب خطأ التكرار غير المنتهي.
+### 📘 الشرح النظري
+تُعتبر `ListView.builder` الحل الأمثل للقوائم الطويلة. تقوم هذه الودجة بإنشاء العناصر المعروضة في الشاشة فقط (Lazy Rendering) وتتخلص من العناصر الخارجة من الذاكرة.
 
-</ExerciseBox>
+### 💻 التطبيق العملي
+```dart
+Widget buildLazyList(List<String> items) {
+  return ListView.builder(
+    itemCount: items.length,
+    itemBuilder: (context, index) {
+      // رندر العنصر الحالي فقط في الذاكرة
+      return ListTile(
+        title: Text(items[index]),
+        leading: Icon(Icons.label),
+      );
+    },
+  );
+}
+```
 
 ---
 
-<SummaryBox title="خلاصة الدرس 📌">
+## 3. الشبكات التكعيبية (GridView.builder)
 
-- استخدم دائماً `.builder` للـ `ListView` و `GridView` مع القوائم الديناميكية والكبيرة لبناء العناصر كسولياً لحماية الذاكرة.
-- التحكم في تباعدات الشبكة يكون عن طريق `SliverGridDelegate`.
-- تفصل معمارية **MVVM** منطق جلب قائمة عناصر القائمة وتوفرها جاهزة للـ View عبر `itemCount` و `products[index]`.
+### 📘 الشرح النظري
+تُستخدم `GridView.builder` لرص العناصر على شكل شبكة صفوف وأعمدة متناسقة (مثل متاجر المنتجات).
+
+### 💻 التطبيق العملي
+```dart
+Widget buildProductGrid() {
+  return GridView.builder(
+    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+      crossAxisCount: 2, // عمودين في كل صف
+      crossAxisSpacing: 10,
+      mainAxisSpacing: 10,
+    ),
+    itemCount: 20,
+    itemBuilder: (context, index) {
+      return Card(child: Center(child: Text('Item #$index')));
+    },
+  );
+}
+```
+
+---
+
+## ⚡ نصائح الأداء والتحسين (Performance Tips)
+
+:::tip استخدام ListView.builder بدلاً من ListView()
+استخدم `.builder` دائماً للقوائم التي تزيد عن 10 عناصر لمنع استهلاك الرام.
+:::
+
+---
+
+## 🐛 أخطاء شائعة يجب تجنبها (Common Mistakes)
+
+```dart
+// ❌ 1. وضَع ListView عادية داخل SingleChildScrollView مما يدمر التحميل الكسول
+SingleChildScrollView(child: ListView(children: [...]))
+
+// ✅ الحل الصحيح
+CustomScrollView(slivers: [SliverList(...)])
+
+```
+
+---
+
+## 🎤 أسئلة وأجوبة المقابلات (Interview Q&A)
+
+<details>
+<summary><strong>س1: كيف تعمل ListView.builder في رفع كفاءة الرام؟</strong></summary>
+
+تقوم فقط ببناء الودجات المريّة في الشاشة حالياً وتتخلص من العناصر التي تخرج عن نطاق الرؤية.
+
+</details>
+
+---
+
+<ExerciseBox title="تمرين عملي - قائمة منتجات متجددة 🏋️">
+
+قم ببناء قائمة `ListView.builder` تستعرض 30 عنصراً مع زر إضافة للسلة لكل عنصر.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي المشروح بالتعليقات (Solution Code)</strong></summary>
+
+```dart
+Widget buildList() {
+  return ListView.builder(
+    itemCount: 30,
+    itemBuilder: (ctx, idx) => ListTile(
+      title: Text('Product #${idx + 1}'),
+      trailing: IconButton(icon: Icon(Icons.add), onPressed: () {}),
+    ),
+  );
+}
+```
+
+</details>
+
+---
+
+<SummaryBox title="ملخص الدرس 📌">
+
+- `SingleChildScrollView` للفورمات والشاشات الصغيرة.
+- `ListView.builder` للقوائم الكبيرة الكسولة.
+- `GridView.builder` للشبكات التكعيبية.
 
 </SummaryBox>

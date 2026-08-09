@@ -1,4 +1,4 @@
-﻿---
+---
 id: feature-first-folder-structure
 title: "3.3 Feature-First Folder Structure"
 sidebar_label: "3.3 Feature-First Folder Structure"
@@ -7,113 +7,112 @@ sidebar_label: "3.3 Feature-First Folder Structure"
 import ExerciseBox from '@site/src/components/ExerciseBox';
 import SummaryBox from '@site/src/components/SummaryBox';
 
-# 3.3 التقسيم المجمعي حسب الميزات (Feature-First Folder Structure)
+# 3.3 هيكلة المجلدات حسب الميزات (Feature-First Folder Structure)
 
-عندما ينوع مشروع Flutter وتتضاعف عدد شاشاته، يتأثر تنظيم الكود بشكل مباشر. تعتبر هيكلية **Feature-First** النمط القياسي الأكثر نجاحاً لتنظيم المشاريع الضخمة القابلة للتوسع.
+تنسيق المشروع بنمط Feature-First يضمن سهولة التوسع، حيث تُعزل كل ميزة (مثل الملاحظات، المصادقة) في مجلد خاص يضم طبقاتها الثلاث.
 
 ---
 
 ## 🎯 أهداف الدرس (Learning Objectives)
 
-1. المقارنة بين التقسيم حسب الطبقات (Layer-First) والتقسيم حسب الميزات (Feature-First).
-2. بناء الهيكل الثلاثي الصارم لكل ميزة: `core/`, `data/`, `presentation/`.
-3. تنظيم مجلد `core/` الثابت لكامل التطبيق (Constants, Router, Theme, Network).
-4. تحسين سرعة التنقل والتطوير في الفرق البرمجية الكبيرة.
+1. التمييز بين Feature-First و Layer-First.
+2. تقسيم الميزة إلى data, domain, و presentation.
+3. تخصيص مجلد core للعناصر العامة.
 
 ---
 
-## 📘 الشرح النظري (Theoretical Explanation)
+## 1. هيكل الميزة المفصولة (Feature Layers)
 
-### هيكلية Feature-First القياسية
-بدلاً من وضع جميع الـ ViewModels في مجلد واحد عملاق، يتم تقسيم التطبيق بناءً على الميزات الوظيفية (مثل: `auth`, `products`, `cart`, `profile`).
+### 📘 الشرح النظري
+تضم كل ميزة داخل `lib/features/feature_name/` الطبقات التالية: data (الموديلات والمستودعات)، domain (العقود والكيانات)، و presentation (الشاشات والـ ViewModels).
 
-تضم كل ميزة داخلها الطبقات الثلاث:
-
-```text
-lib/
-├── core/                        # العناصر المشتركة عبر التطبيق بأكمله
-│   ├── constants/               # الثوابت
-│   ├── errors/                  # الفشل والاستثناءات
-│   ├── network/                 # إعدادات Dio أو الشبكة
-│   ├── router/                  # المسارات بـ go_router
-│   ├── theme/                   # السمات والألوان
-│   └── utils/                   # الأدوات المساعدة
-│
-└── features/                    # الميزات المستقلة
-    ├── auth/                    # ميزة المصادقة
-    │   ├── data/                # Models, Datasources, Repositories
-    │   └── presentation/        # Views, ViewModels, Widgets
-    │
-    └── products/                # ميزة المنتجات
-        ├── data/
-        └── presentation/
+### 💻 التطبيق العملي
+```dart
+/*
+lib/features/notes/
+  ├── data/            # models & repositories impl
+  ├── domain/          # entities & contracts
+  └── presentation/    # views & viewmodels
+*/
 ```
 
 ---
 
-## 💻 التطبيق المعماري (MVVM & Clean Code)
+## 2. النواة المشتركة (Core Module)
 
-نستعرض نموذجاً عملياً لاستيراد الملفات عبر هذه الهيكلية المنظمة.
+### 📘 الشرح النظري
+يُحتفظ بالخدمات التشاركية التي تخدم كافة الميزات (مثل Dio, AppTheme, Helpers) داخل مجلد `lib/core/`.
+
+### 💻 التطبيق العملي
+```dart
+/*
+lib/core/
+  ├── network/         # dio_client.dart
+  ├── theme/           # app_theme.dart
+  └── utils/           # formatters.dart
+*/
+```
+
+---
+
+## ⚡ نصائح الأداء والتحسين (Performance Tips)
+
+:::tip السهولة في الحذف والتعديل
+نمط Feature-First يتيح لك حذف ميزة بالكامل بحذف مجلدها دون التأثير على باقي المشروع.
+:::
+
+---
+
+## 🐛 أخطاء شائعة يجب تجنبها (Common Mistakes)
 
 ```dart
-// ==========================================
-// File: lib/features/products/presentation/views/product_list_view.dart
-// Description: شاشة عرض المنتجات داخل مجلد الميزة المحدد
-// Architecture Layer: Presentation (View inside Feature)
-// ==========================================
+// ❌ 1. وضع كود مخصص لميزة واحدة داخل مجلد core العام
+lib/core/widgets/note_card_widget.dart
 
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+// ✅ الحل الصحيح
+lib/features/notes/presentation/widgets/note_card_widget.dart
 
-// 1. استيراد من المجلد المباشر لنفس الميزة
-import '../viewmodels/product_list_viewmodel.dart';
-import '../widgets/product_item_widget.dart';
-
-// 2. استيراد العناصر العامة من مجلد core
-import '../../../../core/theme/app_theme.dart';
-
-class ProductListView extends StatelessWidget {
-  const ProductListView({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('قائمة المنتجات'),
-        backgroundColor: AppTheme.primaryBlue,
-      ),
-      body: Consumer<ProductListViewModel>(
-        builder: (context, viewModel, child) {
-          return ListView.builder(
-            itemCount: viewModel.products.length,
-            itemBuilder: (context, index) {
-              return ProductItemWidget(product: viewModel.products[index]);
-            },
-          );
-        },
-      ),
-    );
-  }
-}
 ```
 
 ---
 
-<ExerciseBox title="جرب بنفسك 💻">
+## 🎤 أسئلة وأجوبة المقابلات (Interview Q&A)
 
-قم بتصميم شجرة المجلدات لميزة إدارة الملاحظات `notes`:
-1. أنشئ مجلد `lib/features/notes/`.
-2. أنشئ مجلدات `data/models`, `data/repositories`, `presentation/views`, `presentation/viewmodels`.
-3. وزع الملفات التشاركية العامة في `lib/core/`.
+<details>
+<summary><strong>س1: لماذا يُفضل Feature-First في المشاريع الضخمة؟</strong></summary>
+
+لأنه يسهل عمل عدة فرق برمجة في وقت واحد ويزيد من إمكانية صيانة وإضافة الميزات بشكل مستقل.
+
+</details>
+
+---
+
+<ExerciseBox title="تمرين عملي - تصميم شجرة المجلدات 🏋️">
+
+قم بتمثيل هيكل مجلدات ميزة المصادقة `auth` بنمط Feature-First.
 
 </ExerciseBox>
 
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي المشروح بالتعليقات (Solution Code)</strong></summary>
+
+```dart
+/*
+lib/features/auth/
+  ├── data/
+  ├── domain/
+  └── presentation/
+*/
+```
+
+</details>
+
 ---
 
-<SummaryBox title="خلاصة الدرس 📌">
+<SummaryBox title="ملخص الدرس 📌">
 
-- تضمن هيكلية Feature-First سهولة إضافة أو حذف أي ميزة دون التأثير على الميزات الأخرى.
-- المجلد `core/` يحتوي فقط على الخدمات والأدوات العامة التشاركية.
-- كل ميزة تحافظ على التقسيم المعماري الصارم: `data/` و `presentation/`.
+- Feature-First يعزل كل ميزة بمجلدها الخاص.
+- تتكون الميزة من data, domain, و presentation.
+- مجلد `core` مخصص للخدمات العامة المشتركة.
 
 </SummaryBox>

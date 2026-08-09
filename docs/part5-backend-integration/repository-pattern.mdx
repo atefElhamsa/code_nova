@@ -1,4 +1,4 @@
-﻿---
+---
 id: repository-pattern
 title: "5.2 Repository Pattern"
 sidebar_label: "5.2 Repository Pattern"
@@ -7,80 +7,39 @@ sidebar_label: "5.2 Repository Pattern"
 import ExerciseBox from '@site/src/components/ExerciseBox';
 import SummaryBox from '@site/src/components/SummaryBox';
 
-# 5.2 نمط المستودع والتكامل الشبكي (Repository Pattern with Remote API)
+# 5.2 نمط المستودع وإدارة المصادر (Repository Pattern)
 
-يقوم نمط المستودع (Repository Pattern) بالوساطة والتنسيق بين طبقة النماذج والبيانات الخارجية وبين طبقة الواجهة والتنفيذ. فهو يخفي تفاصيل التعامل المباشر مع قواعد البيانات والـ APIs خلف واجهة برمجة تطبيقات مبسطة وموحدة.
+نمط المستودع (Repository Pattern) يُشكل وسيطاً ذكياً بين مصادر البيانات المختلفة (السيرفر والتخزين المحلي) وطبقة العرض.
 
 ---
 
 ## 🎯 أهداف الدرس (Learning Objectives)
 
-1. التمييز الدقيق بين **Remote Datasource** و **Local Datasource**.
-2. بناء طبقة مستودع ذكية تقوم بالتبديل بين التخزين المحلي والشبكي في حالة انقطاع الإنترنت.
-3. التخلص التام من الاعتماد المباشر على مكتبات Dio داخل الـ ViewModels.
-4. توحيد طريقة إرجاع البيانات في شكل نماذج DTOs نظيفة.
+1. فصل Remote Datasource عن Local Datasource.
+2. تطبيق استراتيجية التخزين المؤقت (Caching Strategy).
+3. توحيد العقد البرمجي للبيانات.
 
 ---
 
-## 📘 الشرح النظري (Theoretical Explanation)
+## 1. استراتيجية التخزين المؤقت (Caching Strategy)
 
-تتألف طبقة البيانات من ثلاثة مكونات أساسية:
-1. **Remote Datasource:** متخصصة حصرياً في إجراء طلبات الـ HTTP عبر Dio وإرجاع `Map<String, dynamic>`.
-2. **Local Datasource:** متخصصة حصرياً في التعامل مع التخزين المحلي مثل `SharedPreferences` أو `Hive`.
-3. **Repository:** المنسق الرئيسي الذكي. يقوم بجلب البيانات من Remote Datasource وتحفظ نسخة محلية في Local Datasource، وإذا فشل الاتصال يجلب البيانات المحفوظة محلياً!
+### 📘 الشرح النظري
+يقوم المستودع بجلب البيانات من السيرفر، وحفظها محلياً في الرام أو SharedPreferences، واستعادتها فوراً عند انقطاع الإنترنت.
 
----
-
-## 💻 التطبيق المعماري (MVVM & Clean Code)
-
-تطبيق المستودع المنسق بين الخادم والتخزين المحلي.
-
+### 💻 التطبيق العملي
 ```dart
-// ==========================================
-// File: lib/data/datasources/user_remote_datasource.dart
-// Architecture Layer: Data (Remote Datasource)
-// ==========================================
+class ProductRepositoryImpl {
+  final RemoteDs remote;
+  final LocalDs local;
+  ProductRepositoryImpl(this.remote, this.local);
 
-import 'package:dio/dio.dart';
-
-class UserRemoteDatasource {
-  final Dio dio;
-
-  UserRemoteDatasource(this.dio);
-
-  Future<Map<String, dynamic>> fetchUserProfile(String userId) async {
-    final response = await dio.get('users/$userId');
-    return response.data as Map<String, dynamic>;
-  }
-}
-
-// ==========================================
-// File: lib/data/repositories/user_repository_impl.dart
-// Description: مستودع ذكي يدير الاتصال بالخادم مع حل احتياطي
-// Architecture Layer: Data (Repository)
-// ==========================================
-
-import '../models/user_model.dart';
-import '../datasources/user_remote_datasource.dart';
-
-class UserRepositoryImpl {
-  final UserRemoteDatasource remoteDatasource;
-
-  UserRepositoryImpl({required this.remoteDatasource});
-
-  Future<UserModel> getUserProfile(String userId) async {
+  Future<List<String>> getProducts() async {
     try {
-      // 1. محاولة جلب البيانات الحية من السيرفر
-      final rawJson = await remoteDatasource.fetchUserProfile(userId);
-      return UserModel.fromJson(rawJson);
-    } catch (e) {
-      // 2. حل احتياطي في حال انقطاع الشبكة
-      print('⚠️ فشل الاتصال الشبكي، جلب النسخة الاحتياطية...');
-      return UserModel(
-        id: userId,
-        username: 'مستخدم (بدون اتصال)',
-        email: 'offline@cache.local',
-      );
+      final list = await remote.fetch();
+      await local.save(list); // التخزين الكسولي
+      return list;
+    } catch (_) {
+      return await local.getSaved(); // القراءة المحلية عند انقطاع الشبكة
     }
   }
 }
@@ -88,19 +47,59 @@ class UserRepositoryImpl {
 
 ---
 
-<ExerciseBox title="جرب بنفسك 💻">
+## ⚡ نصائح الأداء والتحسين (Performance Tips)
 
-1. أنشئ فئة `ProductLocalDatasource` تمتلك دالة `saveProductsLocally(List<ProductModel> list)`.
-2. ربط المستودع بحيث يحفظ المنتجات محلياً فور النجاح في جلبها من السيرفر.
-
-</ExerciseBox>
+:::tip السرعة والعمل بدون إنترنت (Offline First)
+الـ Caching المحلي يجعل التطبيق يفتح فوراً ويعرض البيانات المحفوظة مسبقاً.
+:::
 
 ---
 
-<SummaryBox title="خلاصة الدرس 📌">
+## 🐛 أخطاء شائعة يجب تجنبها (Common Mistakes)
 
-- يعزل نمط المستودع المصادر المختلفة للبيانات ويخفي تعقيداتها عن بقية التطبيق.
-- يُعتبر الـ Repository المنسق الرئيسي بين البيانات الحية من السيرفر والبيانات المخزنة محلياً عند انقطاع الإنترنت.
-- لا تعرف الـ ViewModels أي تفاصيل عن عناوين الـ API أو مكتبات الاتصالات المستخدمة.
+```dart
+// ❌ 1. كتابة منطق التخزين المحلي مباشرة داخل الـ ViewModel
+ViewModel calling SharedPreferences directly
+
+// ✅ الحل الصحيح
+Repository handles Caching transparently
+
+```
+
+---
+
+## 🎤 أسئلة وأجوبة المقابلات (Interview Q&A)
+
+<details>
+<summary><strong>س1: ما هي الفائدة الرئيسية من استخدام Repository Pattern؟</strong></summary>
+
+تحديد مصدر البيانات وتوفير استراتيجية Caching موحدة بدون أن تدري الواجهة بكيفية وتفاصيل الجلب.
+
+</details>
+
+---
+
+<ExerciseBox title="تمرين عملي - مستودع ذاكرة مؤقتة 🏋️">
+
+أنشئ مستودعاً يحفظ البيانات محلياً فور استلامها من الشبكة.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي المشروح بالتعليقات (Solution Code)</strong></summary>
+
+```dart
+class Repo { Future<void> sync() async { var d = await api.get(); await cache.save(d); } }
+```
+
+</details>
+
+---
+
+<SummaryBox title="ملخص الدرس 📌">
+
+- المستودع يجسر بين السيرفر والتخزين المحلي.
+- يدعم العمل بدون إنترنت (Offline-first).
+- يفصل تفاصيل الشبكة عن الـ ViewModel.
 
 </SummaryBox>

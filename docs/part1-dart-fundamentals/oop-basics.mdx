@@ -9,15 +9,16 @@ import SummaryBox from '@site/src/components/SummaryBox';
 
 # 1.6 البرمجة الكائنية التوجه - الأساسيات (Classes & Objects)
 
-تُعتبر البرمجة الكائنية (OOP) الركيزة الأساسية لبناء تطبيقات Dart و Flutter. من خلال الفئات (Classes) والكائنات (Objects)، نقوم بمحاكاة عالم الواقع وكتابة كود قابل لإعادة الاستخدام والصيانة.
+تُعتبر البرمجة الكائنية (Object-Oriented Programming - OOP) العمود الفقري لتطوير التطبيقات بلغة Dart وإطار العمل Flutter. من خلال الفئات (Classes) والكائنات (Objects)، نقوم بنمذجة بيانات العالم الحقيقي في هياكل برمجية قابلة لإعادة الاستخدام، سهلة الصيانة، ومحمية من التغييرات غير المصرّح بها.
 
 ---
 
 ## 🎯 أهداف الدرس (Learning Objectives)
 
-1. فهم مفهوم الفئات (Classes) والكائنات (Objects).
-2. إتقان أنواع البناة المختلفين: Generative Constructors, Named Constructors, و Factory Constructors.
-3. تطبيق مفهوم الكبسولة (Encapsulation) لحماية المتغيرات وتخصيص الوصول عبر `Getters`.
+1. **فهم الفئات والكائنات:** الإلمام بالفرق بين الفئة كقالب نظري (Blueprint) والكائن كنسخة موقعة في الذاكرة (Instance).
+2. **إتقان كافة أنواع البناة (Constructors):** التعرف العملي على Generative, Named, Factory, Const, و Redirecting Constructors.
+3. **تطبيق مبدأ الكبسولة (Encapsulation):** حماية المتغيرات الحساسة باستخدام العناصر الخاصة بالملف (`_`) والتحكم في القراءة والتعديل عبر `Getters` و `Setters`.
+4. **تطبيق أفضل الممارسات المعمارية:** بناء نماذج بيانات (Models) متوافقة مع معمارية Clean Code و MVVM.
 
 ---
 
@@ -27,43 +28,69 @@ import SummaryBox from '@site/src/components/SummaryBox';
 
 ```dart
 // ==========================================
-// File: lib/data/models/bank_account_model.dart
-// Description: Bank account domain model with encapsulation and factory constructor
+// File: lib/data/models/user_account_model.dart
+// Description: User account domain model showcasing encapsulation, 
+// named constructors, factory deserialization, and const immutability.
 // Architecture Layer: Data (Model)
 // ==========================================
 
-class BankAccountModel {
-  final String accountNumber;
-  final String accountHolder;
-  // Private property to prevent unauthorized external mutation
+class UserAccountModel {
+  final String id;
+  final String username;
+  final String email;
+  
+  // Private field to enforce encapsulation
   double _balance;
 
-  /// Generative Constructor
-  BankAccountModel({
-    required this.accountNumber,
-    required this.accountHolder,
+  /// 1. Generative Constructor with Initializer List
+  UserAccountModel({
+    required this.id,
+    required this.username,
+    required this.email,
     required double initialBalance,
   }) : _balance = initialBalance >= 0 ? initialBalance : 0.0;
 
-  /// Named Constructor creating account with zero balance
-  BankAccountModel.zeroBalance({
-    required this.accountNumber,
-    required this.accountHolder,
-  }) : _balance = 0.0;
+  /// 2. Named Constructor for Guest Accounts
+  UserAccountModel.guest()
+      : id = 'guest_000',
+        username = 'Guest User',
+        email = 'guest@example.com',
+        _balance = 0.0;
 
-  /// Factory Constructor parsing JSON object safely
-  factory BankAccountModel.fromJson(Map<String, dynamic> json) {
-    return BankAccountModel(
-      accountNumber: json['account_number'] as String? ?? 'UNKNOWN',
-      accountHolder: json['account_holder'] as String? ?? 'Guest User',
+  /// 3. Redirecting Constructor
+  UserAccountModel.withDefaultEmail({
+    required String id,
+    required String username,
+  }) : this(
+          id: id,
+          username: username,
+          email: '$username@default.com',
+          initialBalance: 100.0,
+        );
+
+  /// 4. Factory Constructor for Safe JSON Parsing
+  factory UserAccountModel.fromJson(Map<String, dynamic> json) {
+    return UserAccountModel(
+      id: json['id'] as String? ?? '',
+      username: json['username'] as String? ?? 'Anonymous',
+      email: json['email'] as String? ?? '',
       initialBalance: (json['balance'] as num?)?.toDouble() ?? 0.0,
     );
   }
 
-  /// Public Getter for reading balance safely
+  /// Public Getter for Balance (Read-Only external access)
   double get balance => _balance;
 
-  /// Method to deposit funds securely
+  /// Custom Setter with Validation Logic
+  set balance(double newBalance) {
+    if (newBalance >= 0) {
+      _balance = newBalance;
+    } else {
+      throw ArgumentError('Account balance cannot be negative.');
+    }
+  }
+
+  /// Deposit Method enforcing Domain Logic
   void deposit(double amount) {
     if (amount > 0) {
       _balance += amount;
@@ -76,31 +103,158 @@ class BankAccountModel {
 
 ## 📘 الشرح التفصيلي للكود (Line-by-Line Technical Explanation)
 
-### 1. الكبسولة والوصول الخاص (Encapsulation & Private Members)
-في `double _balance;`: الشحطة السفلية `_` تجعل الحقل خاصاً بالملف (File-Private).
+### 1. الكبسولة والحقول الخاصة (Encapsulation & Private Fields)
+* **`double _balance;`**: إضافة الشرطة السفلية (`_`) قبل اسم المتغير تجعله خاصاً بالملف (File-Private). هذا يعني أن أي كود خارج هذا الملف لن يتمكن من التعديل المباشر على `_balance`.
+* **`double get balance => _balance;`**: يُتيح قراءة رصيد الحساب بأمان من خارج الملف دون السماح للجهة المستدعية بتغيير الرصيد بحرية.
 
-### 2. أنواع البناة (Constructors)
-* **`Generative Constructor`**: البناء المباشر.
-* **`Named Constructor`**: البناء المسمى `BankAccountModel.zeroBalance`.
-* **`Factory Constructor`**: البناء المصنعي `BankAccountModel.fromJson` المخصص لتحويل بيانات JSON.
+### 2. أنواع البناة المختلفة (Constructors in Depth)
+* **`Generative Constructor`**: البناء الأساسي لتمرير القيم المطلوبة وإسناد القيم الابتدائية في قائمة التهيئة (`Initializer List`).
+* **`UserAccountModel.guest()`**: بناء مسمى (`Named Constructor`) يُستخدم لإنشاء كائنات ذات حالة خاصة متكررة (مثل حسابات الزوار).
+* **`UserAccountModel.withDefaultEmail()`**: بناء يعيد التوجيه (`Redirecting Constructor`) إلى البناء الأساسي بتمرير قيم افتراضية.
+* **`factory UserAccountModel.fromJson(...)`**: بناء مصنعي (`Factory Constructor`). لا يقوم دائماً بإنشاء كائن جديد بنفسه مباشرة بل يمكنه إرجاع كائنات معالجة، كائنات مؤطرة، أو تحويل بيانات قادمة من شبكة API.
 
 ---
 
-<ExerciseBox title="جرب بنفسك 💻">
+## ⚡ نصائح الأداء والتحسين (Performance Tips)
 
-قم بتصميم فئة `AuthTokenModel`:
-1. تمتلك المتغيرات الخاصة `_accessToken` و `_refreshToken` و `_expiresIn`.
-2. قم بإنشاء Getter باسم `isExpired` يرجع `true` إذا كانت الصلاحية صفر.
-3. أنشئ Named Constructor باسم `AuthTokenModel.empty()` يضع قيم افتراضية فارغة للمتغيرات.
+:::tip البناة الثابتة Const Constructors
+في Dart، إذا كانت جميع حقول الفئة ثنائية الحتمية (`final`)، استخدم البناء الثابت `const MyClass()`. في إطار عمل Flutter، يقلل البناء الثابت من إعادة رسم عناصر الواجهة (Re-builds) في الـ Widget Tree، مما يرفع معدل الإطارات إلى 60/120 FPS.
+:::
+
+:::tip تجنب الـ Setters غير المبررة
+لا تضع `Setter` لكل متغير خاص لمجرد إتاحة التعديل. اجعل كائنات النموذج (Models) ثنائية الحتمية (Immutable) بقدر الإمكان، واستخدم دالة `copyWith` لإنشاء نسخ جديدة عند تعديل الحالة في تطبيقات MVVM/Bloc.
+:::
+
+---
+
+## 🐛 أخطاء شائعة يجب تجنبها (Common Mistakes)
+
+```dart
+// ❌ 1. ترك المتغيرات قابلة للتعديل المباشر بدون حماية
+class BadAccount {
+  double balance; // 💥 يمكن لأي مكان في الكود تغيير الرصيد إلى قيم سالبة!
+  BadAccount(this.balance);
+}
+
+// ✅ الحل الصحيح: جعل المتغير خاصاً وتوفير Getter دقيق
+class GoodAccount {
+  double _balance;
+  GoodAccount(this._balance);
+  double get balance => _balance;
+}
+
+
+// ❌ 2. نسيان التحقق من القيم عند الاستقبال من JSON
+factory User.fromJson(Map<String, dynamic> json) {
+  return User(name: json['name']); // 💥 سيتعطل التطبيق إذا كان الاسم null!
+}
+
+// ✅ الحل الصحيح: استخدام Casting آمن مع قيم افتراضية
+factory User.fromJson(Map<String, dynamic> json) {
+  return User(name: json['name'] as String? ?? 'Default');
+}
+```
+
+---
+
+## 🎤 أسئلة وأجوبة المقابلات الشخصية (Interview Q&A)
+
+<details>
+<summary><strong>س1: ما الفرق بين البناء العادي (Generative Constructor) والبناء المصنعي (Factory Constructor)؟</strong></summary>
+
+- **البناء العادي (Generative):** يقوم دائماً بإنشاء نسخة جديدة (New Instance) من الفئة الحالية في الذاكرة ومباشرة.
+- **البناء المصنعي (Factory):** لا ينشئ كائناً بنفسه إجبارياً، بل يستطيع إرجاع كائن مسبق الإنشاء (Cache)، أو كائن من فئة فرعية (Subclass)، أو معالجة التحويل من بيانات مثل JSON قبل إنشاء الكائن.
+
+</details>
+
+<details>
+<summary><strong>س2: كيف تعمل خصوصية العناصر (Encapsulation) في لغة Dart؟</strong></summary>
+
+في لغة Dart، لا توجد كلمات مفتاحية مثل `private` أو `protected` كما في Java و C#. الخصوصية في Dart قائمة على مستوى الملف (File-Level Privacy). أي عنصر يبدأ اسمه بشرطة سفلية (`_`) يكون خاصاً وحصرياً بالملف الذي كُتب فيه.
+
+</details>
+
+<details>
+<summary><strong>س3: ما أهمية البناء الثابت Const Constructor بالنسبة لتطبيقات Flutter؟</strong></summary>
+
+البناء الثابت يخبر المترجم (Compiler) بأن هذا الكائن ثري بالقيم الثابتة وقت التجميع (Compile-time Constant). في Flutter، عندما تعيد رسم الشاشة، تتجاهل Flutter إعادة بناء أي Widget يحمل `const` لأنه مخزن مسبقاً في الذاكرة، مما يوفر استهلاك المعالج ورام الأجهزة.
+
+</details>
+
+<details>
+<summary><strong>س4: متى تستخدم Getter بدلاً من دالة عادية بدون وسائط؟</strong></summary>
+
+نستخدم **Getter** عندما تكون العملية سريعة جداً (O(1))، تعيد قيمة متغير، ولا تسبب أي آثار جانبية (No Side Effects). بينما نستخدم **Method** إذا كانت العملية تتطلب حسابات معقدة، تشغل وقت معالجة، أو تجلب بيانات لاتزامنية عبر الشبكة.
+
+</details>
+
+---
+
+<ExerciseBox title="تمرين عملي - تصميم AuthTokenModel 🏋️">
+
+قم بكتابة فئة نموذجية باسم `AuthTokenModel` تتبع المعايير التالية:
+1. تحتوي على الحقول الخاصة: `_accessToken` (نص)، `_refreshToken` (نص)، و `_expiresInSeconds` (عدد صحيح).
+2. قم بإضافة `Generative Constructor` لاستلام القيم.
+3. أنشئ `Getter` باسم `isExpired` يرجع `true` إذا كان `_expiresInSeconds <= 0`.
+4. أنشئ `Factory Constructor` باسم `fromJson` يستخرج التوكن بأمان من خريطة JSON.
+5. أضف دالة `AuthTokenModel.empty()` كـ `Named Constructor` يعيد توكن بقيم فارغة وصلاحية صفر.
 
 </ExerciseBox>
 
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي المشروح بالتعليقات (Solution Code)</strong></summary>
+
+```dart
+class AuthTokenModel {
+  // 1. المتغيرات الخاصة بالملف لضمان التكبسول (Encapsulation)
+  final String _accessToken;
+  final String _refreshToken;
+  final int _expiresInSeconds;
+
+  // 2. Generative Constructor لاستلام البيانات وتخزينها
+  AuthTokenModel({
+    required String accessToken,
+    required String refreshToken,
+    required int expiresInSeconds,
+  })  : _accessToken = accessToken,
+        _refreshToken = refreshToken,
+        _expiresInSeconds = expiresInSeconds;
+
+  // 3. Getter ذكي لفحص انتهاء الصلاحية
+  bool get isExpired => _expiresInSeconds <= 0;
+
+  // Public Getters للقراءة فقط من الخارج
+  String get accessToken => _accessToken;
+  String get refreshToken => _refreshToken;
+  int get expiresInSeconds => _expiresInSeconds;
+
+  // 4. Factory Constructor لتحويل JSON بأمان
+  factory AuthTokenModel.fromJson(Map<String, dynamic> json) {
+    return AuthTokenModel(
+      accessToken: json['access_token'] as String? ?? '',
+      refreshToken: json['refresh_token'] as String? ?? '',
+      expiresInSeconds: (json['expires_in'] as num?)?.toInt() ?? 0,
+    );
+  }
+
+  // 5. Named Constructor لإحداث كائن فارغ بقيم افتراضية
+  AuthTokenModel.empty()
+      : _accessToken = '',
+        _refreshToken = '',
+        _expiresInSeconds = 0;
+}
+```
+
+</details>
+
+
 ---
 
-<SummaryBox title="خلاصة الدرس 📌">
+<SummaryBox title="ملخص الدرس 📌">
 
-- الكود البرمجي مكتوب بلغة إنجليزية نقية 100% جهة اليسار LTR.
-- تبدأ العناصر الخاصة في Dart برمز الشحطة السفلية `_` وتكون محصورة بالملف نفسه.
-- البناء من نوع `Factory` يُتيح التحكم في كيفية إنشاء الكائنات وإعادة استخراجها من JSON.
+- الفئات في Dart هي القوالب الأساسية للبيانات، والكائنات هي النسخ الحقيقية المتواجدة في الذاكرة.
+- تبدأ العناصر الخاصة برمز الشرطة السفلية `_` وتكون محصورة بنطاق الملف نفسه.
+- البناة في Dart متعددة ومرافقها تشمل البناء المسمى (`Named`)، المصنعي (`Factory`)، والثابت (`Const`).
+- استخدام البناة الثابتة والـ Models ثنائية الحتمية يُشكل حجر الزاوية لكتابة كود نظيف وعالي الأداء في تطبيقات Flutter.
 
 </SummaryBox>

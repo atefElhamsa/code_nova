@@ -1,4 +1,4 @@
-﻿---
+---
 id: clean-code-naming
 title: "3.1 Clean Naming Conventions"
 sidebar_label: "3.1 Clean Naming Conventions"
@@ -7,104 +7,109 @@ sidebar_label: "3.1 Clean Naming Conventions"
 import ExerciseBox from '@site/src/components/ExerciseBox';
 import SummaryBox from '@site/src/components/SummaryBox';
 
-# 3.1 الكود النظيف وقواعد التسمية (Clean Code & Naming Conventions)
+# 3.1 التسميات النظيفة والمعايير الاحترافية (Clean Naming)
 
-الكود النظيف (Clean Code) هو الكود الذي يمكن قراءته وفهمه بسهولة وتعديله بواسطة أي مبرمج في الفريق دون عناء. في هذا الدرس، ستتعلم القواعد الذهبية لتسمية المتغيرات والفئات والملفات في Dart و Flutter.
+قراءة الكود هي العملية الأطول في تطوير البرمجيات. اتباع قواعد التسمية النظيفة يجعل الكود شارحاً لنفسه (Self-Documenting Code).
 
 ---
 
 ## 🎯 أهداف الدرس (Learning Objectives)
 
-1. إتقان قواعد التسمية القياسية في Dart: `PascalCase`, `camelCase`, و `snake_case`.
-2. التخلص المباشر من "الأرقام والنصوص السحرية" (Magic Numbers & Strings).
-3. كتابة كود مفسر لذاته (Self-Documenting Code) يقلل الحاجة للتعليقات الزائدة.
-4. تطهير أسماء الفئات والدوّال لتعبّر عن وظيفتها المعمارية بدقة.
+1. اتّباع camelCase و PascalCase بحسب المعايير.
+2. تجنب الاختصارات المبهمة الأسماء.
+3. تسمية الدوال كأفعال والبيانات كأسماء.
 
 ---
 
-## 📘 الشرح النظري (Theoretical Explanation)
+## 1. قواعد التسمية القياسية في Dart
 
-### 1. قواعد التسمية في Dart
-* **`PascalCase`**: تـُستخدم في أسماء الفئات (Classes)، الأنواع المعرفة (Enums)، والـ Mixins (مثل `UserProfileViewModel`).
-* **`camelCase`**: تـُستخدم في أسماء المتغيرات، الدوال، المعاملات، والمفاتيح (مثل `calculateTotalPrice`).
-* **`lowercase_with_underscores` (snake_case)**: تـُستخدم حصراً في أسماء الملفات والمجلدات والمكتبات (مثل `user_profile_viewmodel.dart`).
+### 📘 الشرح النظري
+تستخدم الفئات والـ Enums نمط `PascalCase` بينما تُكتب المتغيرات والدوال والملفات بنمط `camelCase` و `snake_case`.
 
-### 2. تجنب الأرقام والنصوص السحرية
-عدم كتابة قيم ثابتة عشوائية كـ `15.0` أو `"http://api.example.com"` داخل الدوال، بل تجميعها كـ ثوابت تسمية واضحة في `core/constants/`.
-
----
-
-## 💻 التطبيق المعماري (MVVM & Clean Code)
-
-مقارنة عملي بين الكود السيء (Dirty Code) والكود النظيف (Clean Code).
-
+### 💻 التطبيق العملي
 ```dart
-// ==========================================
-// ❌ كود سيء (Dirty Code): غير واضح ومكتظ بالأرقام السحرية
-// ==========================================
-class C1 {
-  double p = 100;
-  double d() {
-    return p * 0.15; // ما هو 0.15؟ رقم سحري مبهم!
-  }
-}
+// PascalCase للفئات
+class UserProfileModel {}
 
-// ==========================================
-// ✅ كود نظيف (Clean Code) متبعاً للممارسات القياسية
-// File: lib/core/constants/app_constants.dart
-// Architecture Layer: Core Constants
-// ==========================================
+// camelCase للمتغيرات والدوال
+double accountBalance = 150.0;
 
-class AppConstants {
-  static const double vatTaxRate = 0.15; // 15% نسبة ضريبة القيمة المضافة
-  static const int minPasswordLength = 8;
-  static const String currencySymbol = 'ر.س';
-}
-
-// File: lib/presentation/viewmodels/invoice_calculator_viewmodel.dart
-// Architecture Layer: Presentation (ViewModel)
-
-import 'package:flutter/foundation.dart';
-import '../../core/constants/app_constants.dart';
-
-class InvoiceCalculatorViewModel extends ChangeNotifier {
-  double _subtotalAmount = 0.0;
-
-  double get subtotalAmount => _subtotalAmount;
-
-  /// حساب قيمة الضريبة بناءً على الثابت المعرف
-  double get calculatedTaxAmount =>
-      _subtotalAmount * AppConstants.vatTaxRate;
-
-  /// السعر الإجمالي النهائي شامل الضريبة
-  double get grandTotalAmount => _subtotalAmount + calculatedTaxAmount;
-
-  void updateSubtotal(double newSubtotal) {
-    if (newSubtotal >= 0) {
-      _subtotalAmount = newSubtotal;
-      notifyListeners();
-    }
-  }
-}
+void calculateDiscountAmount() {}
 ```
 
 ---
 
-<ExerciseBox title="جرب بنفسك 💻">
+## 2. الوضوح وتجنب الغموض (Self-Documenting Code)
 
-قم بإعادة صياغة الدالة التالية لتصبح كوداً نظيفاً:
-`double fn(double a, int b) { return a * b * 0.9; }`
-1. اختر أسماء معبرة ذات مغزى للمتغيرات والدالة.
-2. استخرج النسبة `0.9` إلى ثابت معنون يعكس نسبة الخصم 10%.
+### 📘 الشرح النظري
+تجنب الاختصارات الحرفية مثل `usr` أو `p`. اسم المتغير يجب أن يعبر بدقة عن قيمته دون الحاجة لقراءة الكود المحيط.
 
-</ExerciseBox>
+### 💻 التطبيق العملي
+```dart
+// ❌ مبهم: double d;
+// ✅ واضح ومباشر:
+double discountPercentage = 0.15;
+```
 
 ---
 
-<SummaryBox title="خلاصة الدرس 📌">
+## ⚡ نصائح الأداء والتحسين (Performance Tips)
 
-- اتبع دائماً `PascalCase` للفئات، `camelCase` للدوال والمتغيرات، و `snake_case` للملفات.
-- استخرج كل الأرقام والنصوص السحرية إلى ثوابت مسمّاة ذات مغزى واضح في `core/constants/`.
-- اكتب أسماءً تعبر بوضوح عن وظيفة العنصر لتستغني عن كتابة التعليقات المكررة الشارحة للبديهيات.
+:::tip اسم واضح يغني عن التعليقات الزائدة
+اسم المتغير البليغ يقضي على الحاجة لكتابة تعليقات شرح بديهية مكررة.
+:::
+
+---
+
+## 🐛 أخطاء شائعة يجب تجنبها (Common Mistakes)
+
+```dart
+// ❌ 1. استخدام اختصارات غير معروفة للمتغيرات
+var u = getUser();
+
+// ✅ الحل الصحيح
+var activeUser = getUser();
+
+```
+
+---
+
+## 🎤 أسئلة وأجوبة المقابلات (Interview Q&A)
+
+<details>
+<summary><strong>س1: ما هو الكود الشارح لنفسه (Self-documenting Code)؟</strong></summary>
+
+هو الكود المكتوب بأسماء متغيرات ودوال بليغة تجعل أي مطور يستوعب المنطق بمجرد القراءة دون تعليقات.
+
+</details>
+
+---
+
+<ExerciseBox title="تمرين عملي - إعادة تسمية متطلبات 🏋️">
+
+أعد كتابة فئة تحتوي على أسماء مبهمة بأسماء نظيفة واضحة.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي المشروح بالتعليقات (Solution Code)</strong></summary>
+
+```dart
+class UserAccount {
+  final String emailAddress;
+  final bool isEmailVerified;
+  UserAccount(this.emailAddress, this.isEmailVerified);
+}
+```
+
+</details>
+
+---
+
+<SummaryBox title="ملخص الدرس 📌">
+
+- PascalCase للفئات والتعدادات.
+- camelCase للمتغيرات والدوال.
+- تجنب الاختصارات الحرفية المبهمة.
 
 </SummaryBox>

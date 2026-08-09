@@ -1,4 +1,4 @@
-﻿---
+---
 id: layout-widgets
 title: "2.3 Layout Widgets"
 sidebar_label: "2.3 Layout Widgets"
@@ -7,152 +7,181 @@ sidebar_label: "2.3 Layout Widgets"
 import ExerciseBox from '@site/src/components/ExerciseBox';
 import SummaryBox from '@site/src/components/SummaryBox';
 
-# 2.3 ودجات التخطيط (Layout Widgets)
+# 2.3 ودجات التنسيق والتخطيط (Layout Widgets)
 
-بناء واجهات مستخدم مذهلة ومتجاوبة يتطلب إتقان ودجات التخطيط (Layout Widgets). يوفر Flutter مجموعة شاسعة من التخطيطات أحادية ومتعددة الأبناء مثل `Row`, `Column`, `Stack`, و `Expanded`.
+إتقان التنسيق في Flutter يعتمد على فهم كيفية تنظيم العناصر عمودياً وإفقياً، والتحكم في المساحات والتراكمات باستخدام `Column`, `Row`, `Expanded`, `Flexible`, و `Stack`.
 
 ---
 
 ## 🎯 أهداف الدرس (Learning Objectives)
 
-1. التحكم بالترتيب الأفقي والعمودي باستخدام `Row` و `Column`.
-2. فهم محاور التراصف: `MainAxisAlignment` و `CrossAxisAlignment`.
-3. استخدام `Stack` و `Positioned` لتراكب العناصر فوق بعضها البعض.
-4. توزيع المساحات بمرونة واستجابة باستخدام `Expanded`, `Flexible`, و `SizedBox`.
-5. تقطيع الواجهة المعقدة إلى ودجات صغيرة قابلة لإعادة الاستخدام (Extracted Widgets).
+1. التنظيم العمودي والأفقي باستخدام `Column` و `Row`.
+2. معالجة طفح المحتوى (Overflow) بواسطة `Expanded` و `Flexible`.
+3. تجميع العناصر المتراكمة فوق بعضها بـ `Stack` و `Positioned`.
 
 ---
 
-## 📘 الشرح النظري (Theoretical Explanation)
+## 1. التنسيق العمودي والأفقي (Column & Row)
 
-### 1. التخطيطات الخطية (`Row` & `Column`)
-* **`Row`**: ترتب الأبناء أفقياً من اليسار لليمين (أو اليمين لليسار في RTL).
-* **`Column`**: ترتب الأبناء عمودياً من الأعلى للأسفل.
+### 📘 الشرح النظري
+تُستخدم `Column` لرص العناصر رأسباً، وتُستخدم `Row` لرص العناصر أفقياً. يتم التحكم بالرص عبر المحور الرئيسي (`mainAxisAlignment`) والمحور الفرعي (`crossAxisAlignment`).
 
-### 2. التراصف والمرونة
-* **`MainAxisAlignment`**: محاذاة العناصر على المحور الرئيسي (أفقي للـ Row، عمودي للـ Column).
-* **`CrossAxisAlignment`**: محاذاة العناصر على المحور التقاطعي التعامدي.
-* **`Expanded`**: تجعل الودجة تتوسع لملء المساحة المتبقية داخل الـ Row أو Column لتجنب خطأ التجاوز (Pixel Overflow).
-
----
-
-## 💻 التطبيق المعماري (MVVM & Clean Code)
-
-سنقوم بتصميم بطاقة معلومات مستخدم `UserProfileCard` مقسمة إلى ودجات صغيرة نظيفة داخل مجلد `lib/presentation/widgets/`.
-
+### 💻 التطبيق العملي
 ```dart
-// ==========================================
-// File: lib/presentation/widgets/user_profile_card.dart
-// Description: ودجة عرض مخصصة ومستخرجة بنظافة Clean Code
-// Architecture Layer: Presentation (Widget)
-// ==========================================
-
 import 'package:flutter/material.dart';
 
-class UserProfileCard extends StatelessWidget {
-  final String avatarUrl;
-  final String userName;
-  final String userRole;
-  final VoidCallback onProfileTap;
-
-  const UserProfileCard({
-    super.key,
-    required this.avatarUrl,
-    required this.userName,
-    required this.userRole,
-    required this.onProfileTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: InkWell(
-        onTap: onProfileTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            children: [
-              // 1. الصورة الشخصية مع التراكب للطلب عبر Stack
-              Stack(
-                children: [
-                  CircleAvatar(
-                    radius: 32,
-                    backgroundImage: NetworkImage(avatarUrl),
-                  ),
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: Container(
-                      width: 14,
-                      height: 14,
-                      decoration: BoxDecoration(
-                        color: Colors.green,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(width: 16),
-
-              // 2. تفاصيل النص ممددة بأمان لمنع الـ Overflow
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      userName,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      userRole,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // 3. أيقونة التعديل الجانبية
-              const Icon(Icons.arrow_forward_ios, size: 18, color: Colors.grey),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+Widget buildUserRow() {
+  return Row(
+    mainAxisAlignment: MainAxisAlignment.spaceBetween, // محاذاة الأطراف
+    crossAxisAlignment: CrossAlignment.center,
+    children: const [
+      Icon(Icons.person),
+      Text('Ahmed Ali'),
+      Icon(Icons.arrow_forward_ios, size: 16),
+    ],
+  );
 }
 ```
 
 ---
 
-<ExerciseBox title="جرب بنفسك 💻">
+## 2. إدارة المساحات المتبقية (Expanded & Flexible)
 
-قم بإنشاء ودجة تخطيط باسم `StatCardWidget` تحتوي على:
-1. `Row` يضم أيقونة في اليسار، و `Column` يضم العنوان والقيمة العددية.
-2. استخدم `Expanded` لحماية النصوص من التجاوز.
-3. اضبط الهوامش الداخلية باستخدام `Padding(padding: EdgeInsets.symmetric(...))`.
+### 📘 الشرح النظري
+تُستخدم `Expanded` لإجبار الودجة الابن على ملء كافة المساحة المتبقية داخل `Row` أو `Column` لمنع خطأ طفح المحتوى الأصفر الشهير (Yellow Overflow Strip).
 
-</ExerciseBox>
+### 💻 التطبيق العملي
+```dart
+Widget buildFlexibleTitle() {
+  return Row(
+    children: const [
+      Icon(Icons.title),
+      SizedBox(width: 8),
+      Expanded(
+        // تضمن تمدد النص وتدفقه بمرونة دون الخروج عن حدود الشاشة
+        child: Text('Very long product title that wraps safely inside row'),
+      ),
+    ],
+  );
+}
+```
 
 ---
 
-<SummaryBox title="خلاصة الدرس 📌">
+## 3. التراكم فوق البصريات (Stack & Positioned)
 
-- الـ `Row` و `Column` هما أساس التخطيطات في Flutter وتأتي الـ `Expanded` لحل مشاكل التجاوز (Overflow).
-- نستخدم الـ `Stack` لوضع الودجات فوق بعضها بتنسيق أبعاد محدد عبر `Positioned`.
-- يستوجب الكود النظيف تقسيم الشاشات الضخمة إلى ودجات مستخرجة ذات أسماء واضحة ومسؤولية أحادية.
+### 📘 الشرح النظري
+تُتيح ودجة `Stack` وضع العناصر فوق بعضها البعض على المحور Z. ونستخدم `Positioned` لتحديد إحداثيات موقع الودجة بدقة (أعلى، أسفل، يمين، يسار).
+
+### 💻 التطبيق العملي
+```dart
+Widget buildBadgeImage() {
+  return Stack(
+    children: [
+      Container(width: 100, height: 100, color: Colors.blueGrey),
+      Positioned(
+        top: 4,
+        right: 4,
+        child: Container(
+          padding: const EdgeInsets.all(4),
+          color: Colors.red,
+          child: const Text('NEW', style: TextStyle(fontSize: 10, color: Colors.white)),
+        ),
+      ),
+    ],
+  );
+}
+```
+
+---
+
+## ⚡ نصائح الأداء والتحسين (Performance Tips)
+
+:::tip استخدام SizedBox بدلاً من Container للمساحات
+استخدم `const SizedBox(width: 8)` للفواصل المكانية الخالية بدلاً من `Container`، لأن `SizedBox` أخف وزناً بكثير على الذاكرة والرسم.
+:::
+
+---
+
+## 🐛 أخطاء شائعة يجب تجنبها (Common Mistakes)
+
+```dart
+// ❌ 1. وضع ListView غير محددة الحجم داخل Column بدون Expanded
+Column(
+  children: [
+    // 💥 خطأ: يسبب Unbounded Height Error!
+    ListView(children: [ ... ]),
+  ],
+)
+
+// ✅ الحل الصحيح
+Column(
+  children: [
+    Expanded(child: ListView(children: [ ... ])),
+  ],
+)
+```
+
+---
+
+## 🎤 أسئلة وأجوبة المقابلات (Interview Q&A)
+
+<details>
+<summary><strong>س1: ما الفرق بين Expanded و Flexible؟</strong></summary>
+
+- **Expanded:** تُجبر الودجة الابن على شغل كامل المساحة المتبقية إجبارياً.
+- **Flexible:** تتيح للودجة شغل مساحة تصل كحد أقصى للمساحة المتبقية دون إجبارها على ملئها بالكامل إذا كان حجمها أصغر.
+
+</details>
+
+---
+
+<ExerciseBox title="تمرين عملي - تصميم كارت منتج 🏋️">
+
+صمم كارت منتج يحتوي على صورة بعلامة خصم متداخلة فوقها (`Stack`) وعنوان وسعر جنبًا إلى جنب (`Row` و `Expanded`).
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي المشروح بالتعليقات (Solution Code)</strong></summary>
+
+```dart
+import 'package:flutter/material.dart';
+
+Widget buildProductCard() {
+  return Container(
+    width: 200,
+    padding: const EdgeInsets.all(8),
+    color: Colors.black12,
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Stack(
+          children: [
+            Container(height: 100, color: Colors.grey),
+            Positioned(top: 4, right: 4, child: Text('SALE', style: TextStyle(color: Colors.red))),
+          ],
+        ),
+        Row(
+          children: const [
+            Expanded(child: Text('Item Name', overflow: TextOverflow.ellipsis)),
+            Text('$99'),
+          ],
+        ),
+      ],
+    ),
+  );
+}
+```
+
+</details>
+
+---
+
+<SummaryBox title="ملخص الدرس 📌">
+
+- `Column` و `Row` هما الركيزتان الأساسيتان للتخطيط.
+- `Expanded` تُعالج مشاكل طفح المحتوى.
+- `Stack` و `Positioned` للتراكم وإضافة الشارات المتموضعة.
 
 </SummaryBox>

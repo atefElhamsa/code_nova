@@ -1,4 +1,4 @@
-﻿---
+---
 id: changenotifier-and-provider
 title: "4.2 ChangeNotifier & Provider"
 sidebar_label: "4.2 ChangeNotifier & Provider"
@@ -7,100 +7,126 @@ sidebar_label: "4.2 ChangeNotifier & Provider"
 import ExerciseBox from '@site/src/components/ExerciseBox';
 import SummaryBox from '@site/src/components/SummaryBox';
 
-# 4.2 إدارة الحالة باستخدام ChangeNotifier و Provider
+# 4.2 إدارة الحالة بـ ChangeNotifier & Provider
 
-تعتبر مكتبة **Provider** المعززة بفئة **ChangeNotifier** الوسيلة الرسمية والأكثر استخداماً لإدارة الحالة وسحب التغييرات في تطبيق MVVM في Flutter.
+تُعتبر حزمة `provider` الأداة الأكثر انتشاراً وسهولة لحقن ونشر الـ ViewModels في شجرة الودجات.
 
 ---
 
 ## 🎯 أهداف الدرس (Learning Objectives)
 
-1. فهم كيفية إرسال التنبيهات من الـ ViewModel عبر `notifyListeners()`.
-2. ربط الـ Provider بأعلى الشجرة باستخدام `ChangeNotifierProvider`.
-3. الاستماع للتغييرات باستخدام `Consumer` و `Selector`.
-4. التفريق الدقيق بين `context.watch()` و `context.read()`.
+1. تزويد الشجرة بـ ChangeNotifierProvider.
+2. استخدام Consumer وتحديد نطاقات Re-build.
+3. التمييز بين context.read و context.watch و Selector.
 
 ---
 
-## 📘 الشرح النظري (Theoretical Explanation)
+## 1. مزود الحالة (ChangeNotifierProvider)
 
-### الأدوات الأساسية في Provider:
-1. **`ChangeNotifier`**: الفئة الأصلية التي تمنح الـ ViewModel خاصية إخطار المستمعين بالتحديثات عبر `notifyListeners()`.
-2. **`ChangeNotifierProvider`**: الودجة التي توفر النسخة الخاصة بالـ ViewModel للودجات الابنة في شجرة العناصر.
-3. **`Consumer<T>`**: ودجة تعيد بناء كود محدد داخلها فقط عند استلام إخطار من الـ ViewModel `T`.
-4. **`Selector<A, S>`**: ودجة ذكية تقوم بإعادة البناء **فقط** إذا تغير جزء دقيق محدد من الحالة `S` لمنع إعادة البناء الزائدة (Rebuild Optimization).
-5. **`context.watch<T>()`**: للاستماع المباشر وإعادة بناء الـ Widget كاملة.
-6. **`context.read<T>()`**: للحصول على المرجع بدون استماع (تستخدم حصراً في دالة `onPressed` لإنعاش الأفعال).
+### 📘 الشرح النظري
+يُغلف `ChangeNotifierProvider` الشاشة الفرعية لإنشاء وإدارة دورة حياة الـ ViewModel وتوفيره للودجات التابعة.
 
----
-
-## 💻 التطبيق المعماري (MVVM & Clean Code)
-
-شاشة تفاعلية تستخدم `Consumer` و `Selector` لتحسين الأداء ومنع إعادة البناء غير الضرورية.
-
+### 💻 التطبيق العملي
 ```dart
-// ==========================================
-// File: lib/presentation/views/optimized_user_view.dart
-// Description: View تستخدم Selector لتحسين كفاءة إعادة البناء
-// Architecture Layer: Presentation (View)
-// ==========================================
-
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../viewmodels/user_profile_viewmodel.dart';
-
-class OptimizedUserView extends StatelessWidget {
-  const OptimizedUserView({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('الملف الشخصي المحسن')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // 1. Selector تستمع فقط للتغير في اسم المستخدم وتتجاهل بقية المتغيرات
-            Selector<UserProfileViewModel, String>(
-              selector: (context, vm) => vm.displayEmail,
-              builder: (context, email, child) {
-                return Text(
-                  'البريد: $email',
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                );
-              },
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              // 2. استخدام context.read بنظافة داخل onPressed
-              onPressed: () {
-                context.read<UserProfileViewModel>().refreshUserData();
-              },
-              child: const Text('تحديث البيانات'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+Widget buildProvidedScreen() {
+  return ChangeNotifierProvider(
+    create: (_) => CounterViewModel(),
+    child: const CounterView(),
+  );
 }
 ```
 
 ---
 
-<ExerciseBox title="جرب بنفسك 💻">
+## 2. مستلك الحالة (Consumer Widget)
 
-1. ما الفرق الجوهري بين استدعاء `context.read<MyViewModel>().doAction()` واستدعاء `context.watch<MyViewModel>().doAction()`؟
-2. اكتب ودجة `Selector` تستمع فقط لمتغير `isLoading` البولياني دون أن تعيد البناء عند تغيير قائمة المنتجات.
+### 📘 الشرح النظري
+تُستخدم `Consumer` لإعادة بناء (Re-build) الجزء المحتاج فقط من الواجهة عند استدعاء `notifyListeners()`.
 
-</ExerciseBox>
+### 💻 التطبيق العملي
+```dart
+Consumer<CounterViewModel>(
+  builder: (context, vm, child) {
+    return Text('Count: ${vm.count}');
+  },
+);
+```
 
 ---
 
-<SummaryBox title="خلاصة الدرس 📌">
+## 3. الاستماع المخصص (Selector)
 
-- نستخدم `context.read` للاستدعاء دون استماع (مثالي داخل دالة `onPressed`).
-- نستخدم `Consumer` للاستماع وإعادة بناء الجزئية المحددة.
-- نستخدم `Selector` لأعلى درجات تحسين الأداء عند الرغبة في التفاعل مع متغير واحد فقط من الـ ViewModel.
+### 📘 الشرح النظري
+تُستخدم `Selector` للاستماع لمتغير محدد دقيق داخل الـ ViewModel وتجاهل التغيرات في باقي المتغيرات.
+
+### 💻 التطبيق العملي
+```dart
+Selector<CounterViewModel, bool>(
+  selector: (_, vm) => vm.isLoading,
+  builder: (context, isLoading, child) {
+    return isLoading ? const CircularProgressIndicator() : const SizedBox();
+  },
+);
+```
+
+---
+
+## ⚡ نصائح الأداء والتحسين (Performance Tips)
+
+:::tip استخدام Selector للـ Re-builds الدقيقة
+يمنع `Selector` إعادة رسم الشاشة بأكملها عند تغير متغير فرعي غير مرئي.
+:::
+
+---
+
+## 🐛 أخطاء شائعة يجب تجنبها (Common Mistakes)
+
+```dart
+// ❌ 1. استخدام context.watch داخل زر onPressed
+onPressed: () => context.watch<VM>().doSomething()
+
+// ✅ الحل الصحيح
+onPressed: () => context.read<VM>().doSomething()
+
+```
+
+---
+
+## 🎤 أسئلة وأجوبة المقابلات (Interview Q&A)
+
+<details>
+<summary><strong>س1: متى نستخدم context.read ومتى نستخدم context.watch؟</strong></summary>
+
+نستخدم `context.read` داخل الـ Callbacks مثل onPressed، بينما نستخدم `context.watch` داخل طريقة `build()` للاستماع والتفاعل.
+
+</details>
+
+---
+
+<ExerciseBox title="تمرين عملي - تطبيق Selector 🏋️">
+
+اكتب ودجة Selector تستمع لمتغير isLoading فقط.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي المشروح بالتعليقات (Solution Code)</strong></summary>
+
+```dart
+Selector<MyVM, bool>(
+  selector: (_, vm) => vm.isLoading,
+  builder: (_, loading, __) => loading ? CircularProgressIndicator() : SizedBox(),
+);
+```
+
+</details>
+
+---
+
+<SummaryBox title="ملخص الدرس 📌">
+
+- `ChangeNotifierProvider` يزود الشجرة بالحالة.
+- `Consumer` يعيد رسم الودجة عند التغير.
+- `Selector` للاستماع المخصص الدقيق.
 
 </SummaryBox>

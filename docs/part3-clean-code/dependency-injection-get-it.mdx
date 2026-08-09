@@ -7,107 +7,115 @@ sidebar_label: "3.4 Dependency Injection - get_it"
 import ExerciseBox from '@site/src/components/ExerciseBox';
 import SummaryBox from '@site/src/components/SummaryBox';
 
-# 3.4 حقن التبعيات وتحديد الخدمات (Dependency Injection with get_it)
+# 3.4 حقن التبعيات وحزمة get_it (Dependency Injection)
 
-حقن التبعيات (Dependency Injection - DI) هو النمط المعماري الذي يسمح بفصل إنشاء الكائنات عن مكان استخدامها. نستخدم حزمة `get_it` الموثوقة لتفعيل نمط Service Locator وإدارة دورة حياة الخدمات بكفاءة.
+حزمة `get_it` هي مكتبة Service Locator الشهيرة لتزويد المشروع بالتبعيات وفصل إنشاء الكائنات عن استخدامها.
 
 ---
 
 ## 🎯 أهداف الدرس (Learning Objectives)
 
-1. فهم مفهوم حقن التبعيات والهدف من فصل إنشاء الكائنات.
-2. التفريق بين نطاقات التجميع في `get_it`: `registerFactory`, `registerLazySingleton`, و `registerSingleton`.
-3. إنشاء ملف التهيئة المركزي `core/di/injection_container.dart`.
-4. توفير التبعيات مباشرة للـ ViewModels والـ Repositories دون تكديس.
+1. فهم مفهوم Service Locator.
+2. التمييز بين registerLazySingleton و registerFactory.
+3. ربط get_it مع Provider للـ ViewModels.
 
 ---
 
-## 📘 الشرح النظري (Theoretical Explanation)
+## 1. تسجيل التبعية الأحادية (registerLazySingleton)
 
-بدلاً من أن تقوم الفئة بإنشاء تبعياتها يدوياً داخلياً مثل `final repo = UserRepositoryImpl();` (مما يجعل الكود مكدساً وصعب الاختبار)، نمرر التبعية عبر Constructor وتقوم حزمة `get_it` بتوفيرها تلقائياً.
+### 📘 الشرح النظري
+تُستخدم `registerLazySingleton` لتسجيل التبعيات التي نريد إنشاء نسخة واحدة منها فقط في الذاكرة طوال فترة تشغيل التطبيق (مثل Dio أو المستودعات).
 
-### أنواع التسجيل في `get_it`:
-1. **`registerFactory`**: يُنشئ نسخة جديدة تماماً (New Instance) من الفئة في كل مرة نطلبها. ممتاز للـ ViewModels.
-2. **`registerLazySingleton`**: يُنشئ نسخة واحدة فقط (Single Instance) ويؤجل إنشائها حتى أول طلب لها. ممتاز للـ Repositories والـ Datasources.
-3. **`registerSingleton`**: يُنشئ النسخة فور تسجيلها في بداية تشغيل التطبيق. ممتاز للخدمات التي تتطلب تهيئة فورية مثل SharedPreferences.
-
----
-
-## 💻 التطبيق المعماري (MVVM & Clean Code)
-
-نعد حاوي حقن التبعيات المركزي في `lib/core/di/injection_container.dart`.
-
+### 💻 التطبيق العملي
 ```dart
-// ==========================================
-// File: lib/core/di/injection_container.dart
-// Description: الملف المركزي لحقن التبعيات وحفظ الخدمات
-// Architecture Layer: Core DI
-// ==========================================
-
 import 'package:get_it/get_it.dart';
-import '../../data/datasources/user_remote_datasource.dart';
-import '../../data/repositories/user_repository_impl.dart';
-import '../../presentation/viewmodels/user_details_viewmodel.dart';
 
-final sl = GetIt.instance; // sl: Service Locator
+final GetIt sl = GetIt.instance;
 
-Future<void> initDependencyInjection() async {
-  // ==========================================
-  // 1. ViewModels (Factory -> نسخة جديدة بكل طلب)
-  // ==========================================
-  sl.registerFactory<UserDetailsViewModel>(
-    () => UserDetailsViewModel(sl()),
-  );
-
-  // ==========================================
-  // 2. Repositories (LazySingleton -> نسخة واحدة عند الحاجة)
-  // ==========================================
-  sl.registerLazySingleton<UserRepositoryImpl>(
-    () => UserRepositoryImpl(sl()),
-  );
-
-  // ==========================================
-  // 3. Data Sources
-  // ==========================================
+void setupLocator() {
+  // إنشاء نسخة واحدة فقط عند أول استدعاء
   sl.registerLazySingleton<UserRemoteDatasource>(
     () => UserRemoteDatasource(),
   );
-}
-
-// ==========================================
-// File: lib/main.dart
-// Description: استدعاء تهيئة DI قبل تشغيل التطبيق
-// ==========================================
-
-import 'package:flutter/material.dart';
-import 'core/di/injection_container.dart' as di;
-
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  
-  // تهيئة حقن التبعيات
-  await di.initDependencyInjection();
-  
-  runApp(const MyApp());
 }
 ```
 
 ---
 
-<ExerciseBox title="جرب بنفسك 💻">
+## 2. تسجيل المصانع المتجددة (registerFactory)
 
-1. أضف مكتبة `get_it` في `pubspec.yaml`.
-2. قم بتسجيل `AuthRepository` كـ `registerLazySingleton` و `AuthViewModel` كـ `registerFactory`.
-3. استخدم `sl<AuthViewModel>()` لربطه مع `ChangeNotifierProvider`.
+### 📘 الشرح النظري
+تُستخدم `registerFactory` لتسجيل التبعيات التي نريد إنشاء نسخة جديدة كلياً منها عند كل استدعاء (مثل الـ ViewModels للشاشات التفاعلية).
 
-</ExerciseBox>
+### 💻 التطبيق العملي
+```dart
+void setupViewModels() {
+  // إنشاء نسخة جديدة عند كل شاشة
+  sl.registerFactory<UserViewModel>(
+    () => UserViewModel(sl<UserRepositoryImpl>()),
+  );
+}
+```
 
 ---
 
-<SummaryBox title="خلاصة الدرس 📌">
+## ⚡ نصائح الأداء والتحسين (Performance Tips)
 
-- حقن التبعيات يلغي التبادل المباشر والتكديس الصلب بين الفئات (Tight Coupling).
-- تتيح مكتبة `get_it` إمكانية الوصول النظيف للخدمات والـ Repositories في أي مكان.
-- نستخدم `registerFactory` للـ ViewModels لضمان التجدد عند كل شاشة جديدة، و `registerLazySingleton` لطبقة البيانات لحفظ الذاكرة.
+:::tip التهيئة الكسولة للخدمات
+استخدم `registerLazySingleton` لعدم استهلاك الرام في إنشاء خدمات حتى يحتاجها المستخدم فعلياً.
+:::
+
+---
+
+## 🐛 أخطاء شائعة يجب تجنبها (Common Mistakes)
+
+```dart
+// ❌ 1. استدعاء get_it قبل إتمام التجميع setupLocator
+void main() { runApp(MyApp()); setupLocator(); }
+
+// ✅ الحل الصحيح
+void main() { setupLocator(); runApp(MyApp()); }
+
+```
+
+---
+
+## 🎤 أسئلة وأجوبة المقابلات (Interview Q&A)
+
+<details>
+<summary><strong>س1: ما الفرق بين registerSingleton و registerLazySingleton في get_it؟</strong></summary>
+
+`registerSingleton` تنشئ الكائن فور التجميع، بينما `registerLazySingleton` تنشئ الكائن عند أول طلب فقط.
+
+</details>
+
+---
+
+<ExerciseBox title="تمرين عملي - إعداد حاقن التبعيات 🏋️">
+
+قم بتسجيل `AuthViewModel` كـ Factory و `AuthRepository` كـ LazySingleton في get_it.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي المشروح بالتعليقات (Solution Code)</strong></summary>
+
+```dart
+final sl = GetIt.instance;
+void setup() {
+  sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl());
+  sl.registerFactory<AuthViewModel>(() => AuthViewModel(sl()));
+}
+```
+
+</details>
+
+---
+
+<SummaryBox title="ملخص الدرس 📌">
+
+- `get_it` يفصل إنشاء الكائنات عن استخدامها.
+- `registerLazySingleton` للنسخة الواحدة.
+- `registerFactory` للنسخ المتجددة.
 
 </SummaryBox>

@@ -1,100 +1,102 @@
 ---
 id: local-storage-shared-preferences
-title: "5.5 SharedPreferences - Local Storage"
-sidebar_label: "5.5 SharedPreferences - Local Storage"
+title: "5.5 Local Storage - SharedPreferences"
+sidebar_label: "5.5 Local Storage - SharedPreferences"
 ---
 
 import ExerciseBox from '@site/src/components/ExerciseBox';
 import SummaryBox from '@site/src/components/SummaryBox';
 
-# 5.5 التخزين المحلي للبيانات (Local Persistence with SharedPreferences)
+# 5.5 التخزين المحلي باستخدام SharedPreferences
 
-حفظ بيانات التطبيق محلية على جهاز المستخدم أمر أساسي لإبقائه مسجلاً وتخزين تفضلاته (مثل لغة التطبيق وضع الثيم). تتيح مكتبة **SharedPreferences** تخزين الأزواج المفتاحية (Key-Value Pairs) ببساطة وكفاءة.
+تُستخدم مكتبة `shared_preferences` لتخزين البيانات البسيطة (مثل توكن المصادقة، الإعدادات، والمظهر) على جهاز المستخدم.
 
 ---
 
 ## 🎯 أهداف الدرس (Learning Objectives)
 
-1. فهم كيفية عمل التخزين المحلي الثابت (Persistent Storage) بالقيم المفتاحية.
-2. بناء فئة مغلفة مخصصة `AppPreferencesLocalDatasource` لحماية المفاتيح النصية.
-3. التخزين الآمن لتوكن الدخول (Auth Token) وتفضيلات الوضع الداكن.
-4. دمج التخزين المحلي مع حقن التبعيات بـ `get_it`.
+1. تهيئة كائن SharedPreferences.
+2. حفظ وقراءة البيانات الأساسية (String, bool, int).
+3. تغليف التخزين في خدمة مستقلة LocalStorageService.
 
 ---
 
-## 📘 الشرح النظري (Theoretical Explanation)
+## 1. خدمة التخزين المغلفة (LocalStorageService)
 
-تتيح مكتبة `shared_preferences` حفظ أنواع البيانات الأساسية (`String`, `int`, `double`, `bool`, `List<String>`).
+### 📘 الشرح النظري
+نغلف مكتبة SharedPreferences داخل فئة مستقلة نضعها في مجلد `core/storage` ونحقنها عبر `get_it`.
 
-لحماية الكود من تشتت المفاتيح النصية السحرية، نُنشئ فئة محلية خاصة بالبيانات (Local Datasource) تحت المجلد `data/datasources/` تحتوي على مفاتيح ثابتة محمية.
-
----
-
-## 💻 التطبيق المعماري (MVVM & Clean Code)
-
-فئة التخزين المحلي المعمارية النظيفة.
-
+### 💻 التطبيق العملي
 ```dart
-// ==========================================
-// File: lib/data/datasources/app_preferences_local_datasource.dart
-// Description: فئة مغلفة لعمليات SharedPreferences النظيفة
-// Architecture Layer: Data (Local Datasource)
-// ==========================================
+class LocalStorageService {
+  final SharedPreferences _prefs;
+  LocalStorageService(this._prefs);
 
-import 'package:shared_preferences/shared_preferences.dart';
-
-class AppPreferencesLocalDatasource {
-  final SharedPreferences prefs;
-
-  AppPreferencesLocalDatasource(this.prefs);
-
-  // مفاتيح نصية ثابتة محمية من التكرار الإملائي الخاطئ
-  static const String _authTokenKey = 'KEY_AUTH_TOKEN';
-  static const String _isDarkModeKey = 'KEY_IS_DARK_MODE';
-
-  /// حفظ توكن الدخول
   Future<bool> saveAuthToken(String token) async {
-    return await prefs.setString(_authTokenKey, token);
+    return await _prefs.setString('auth_token', token);
   }
 
-  /// قراءة توكن الدخول (يرجع null إذا لم يكن موجوداً)
   String? getAuthToken() {
-    return prefs.getString(_authTokenKey);
-  }
-
-  /// حذف التوكن عند تسجيل الخروج
-  Future<bool> clearAuthToken() async {
-    return await prefs.remove(_authTokenKey);
-  }
-
-  /// حفظ وضع التصفح الداكن
-  Future<bool> setDarkMode(bool isDark) async {
-    return await prefs.setBool(_isDarkModeKey, isDark);
-  }
-
-  /// جلب حالة وضع التصفح الداكن
-  bool getIsDarkMode() {
-    return prefs.getBool(_isDarkModeKey) ?? false;
+    return _prefs.getString('auth_token');
   }
 }
 ```
 
 ---
 
-<ExerciseBox title="جرب بنفسك 💻">
+## ⚡ نصائح الأداء والتحسين (Performance Tips)
 
-1. أضف مكتبة `shared_preferences` في `pubspec.yaml`.
-2. قم بتسجيل `SharedPreferences.getInstance()` في `get_it` كـ Singleton عند بداية تشغيل التطبيق.
-3. أنشئ دالة في الـ ViewModel تقوم بحفظ اسم المستخدم محلياً واستعادته عند تشغيل التطبيق مجدداً.
-
-</ExerciseBox>
+:::tip تسجيل النسخة الأحادية Singleton في get_it
+قم باستدعاء `SharedPreferences.getInstance()` مرة واحدة فقط أثناء بداية التشغيل.
+:::
 
 ---
 
-<SummaryBox title="خلاصة الدرس 📌">
+## 🐛 أخطاء شائعة يجب تجنبها (Common Mistakes)
 
-- نغلف دائماً مكتبة `SharedPreferences` داخل فئة Local Datasource لحماية المفاتيح ومنع انتشارها في التطبيق.
-- نستخدم المفاتيح الثابتة `static const String` لحماية البيانات من الأخطاء الإملائية.
-- تُعتبر بيانات الاعتماد والسمات والإعدادات من أهم الاستخدامات التخزينية المباشرة.
+```dart
+// ❌ 1. محاولة حفظ كائنات معقدة مباشرة دون تحويلها لـ JSON String
+_prefs.setObject('user', userModel); // غير مدعوم مباشرة!
+
+// ✅ الحل الصحيح
+_prefs.setString('user', jsonEncode(userModel.toJson()));
+
+```
+
+---
+
+## 🎤 أسئلة وأجوبة المقابلات (Interview Q&A)
+
+<details>
+<summary><strong>س1: متى نستخدم SharedPreferences ومتى نفضل قواعد بيانات مثل Hive أو SQLite؟</strong></summary>
+
+نستخدم SharedPreferences للإعدادات والتوكنات البسيطة، بينما نستخدم Hive/SQLite للقوائم والبيانات الضخمة.
+
+</details>
+
+---
+
+<ExerciseBox title="تمرين عملي - حفظ توكن المصادقة 🏋️">
+
+أنشئ خدمة تخزين تحفظ وتستعيد التوكن بنظافة.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي المشروح بالتعليقات (Solution Code)</strong></summary>
+
+```dart
+class Storage { final SharedPreferences p; Storage(this.p); String? getT() => p.getString('t'); }
+```
+
+</details>
+
+---
+
+<SummaryBox title="ملخص الدرس 📌">
+
+- `SharedPreferences` للقيم البسيطة.
+- تغليف التخزين في خدمة مستقلة.
+- تحويل الكائنات المعقدة لـ JSON عند التخزين.
 
 </SummaryBox>

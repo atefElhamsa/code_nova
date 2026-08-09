@@ -11,8 +11,11 @@ const config: Config = {
   baseUrl: '/',
 
   onBrokenLinks: 'throw',
-  onBrokenMarkdownLinks: 'warn',
-
+  markdown: {
+    hooks: {
+      onBrokenMarkdownLinks: 'warn',
+    },
+  },
 
   i18n: {
     defaultLocale: 'ar',
@@ -45,39 +48,7 @@ const config: Config = {
   themeConfig: {
     image: 'img/docusaurus-social-card.jpg',
     navbar: {
-      title: 'Dart & Flutter Pro',
-      logo: {
-        alt: 'Flutter Logo',
-        src: 'img/logo.svg',
-      },
       items: [],
-    },
-    footer: {
-      style: 'dark',
-      links: [
-        {
-          title: 'Course Parts',
-          items: [
-            { label: 'Part 1 | Dart Fundamentals', to: '/docs/part1-dart-fundamentals/variables-and-data-types' },
-            { label: 'Part 2 | Flutter Basics', to: '/docs/part2-flutter-basics/setup-and-architecture' },
-            { label: 'Part 3 | Clean Code', to: '/docs/part3-clean-code/clean-code-naming' },
-            { label: 'Part 4 | MVVM State', to: '/docs/part4-mvvm-state-management/intro-to-mvvm' },
-            { label: 'Part 5 | Backend Integration', to: '/docs/part5-backend-integration/dio-and-interceptors' },
-            { label: 'Part 6 | Testing', to: '/docs/part6-testing/unit-testing' },
-            { label: 'Part 7 | Capstone Project', to: '/docs/part7-capstone-project/project-setup' },
-          ],
-        },
-        {
-          title: 'Architecture & Patterns',
-          items: [
-            { label: 'SOLID & SRP', to: '/docs/part3-clean-code/solid-and-srp' },
-            { label: 'Feature-First Structure', to: '/docs/part3-clean-code/feature-first-folder-structure' },
-            { label: 'State Management', to: '/docs/part4-mvvm-state-management/changenotifier-and-provider' },
-            { label: 'Repository Pattern', to: '/docs/part5-backend-integration/repository-pattern' },
-          ],
-        },
-      ],
-      copyright: `All rights reserved © ${new Date().getFullYear()} | Dart & Flutter Pro Course`,
     },
     colorMode: {
       defaultMode: 'dark',

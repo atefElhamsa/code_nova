@@ -9,65 +9,91 @@ import SummaryBox from '@site/src/components/SummaryBox';
 
 # 1.7 البرمجة الكائنية المتقدمة (Inheritance, Abstract, Mixins & Extensions)
 
-تصل قوة Dart في إدارتها للهندسة المعمارية عن طريق المفاهيم المتقدمة للـ OOP مثل **Abstract Classes** لتحديد العقود (Contracts)، و **Mixins** لإعادة استخدام المنطق، و **Extension Methods**.
+تصل قوة لغة Dart وإطار Flutter في إدارة الهندسة المعمارية للتطبيقات المعقدة إلى قمتها باستخدام المفاهيم المتقدمة للبرمجة الكائنية. تتيح لك هذه المفاهيم بناء عقود برمجية صارمة (Contracts) عبر الفئات المجردة، إعادة استخدام السلوك الموحد عبر الخلائط (Mixins)، تمديد الفئات القياسية بدوال نظيفة عبر (Extensions)، واستخدام الفئات المغلقة (Sealed Classes) في إدارة الحالات مع Dart 3.
 
 ---
 
 ## 🎯 أهداف الدرس (Learning Objectives)
 
-1. تطبيق مفهوم الوراثة (Inheritance) واستخدام الكلمة المفتاحية `super`.
-2. تصميم العقود البرمجية باستخدام الفئات المجردة (Abstract Classes) والواجهات (Interfaces).
-3. دمج السلوكيات المشتركة باستخدام الـ **Mixins** والكلمة المفتاحية `with`.
-4. توسيع الفئات القائمة باستخدام **Extension Methods**.
+1. **الوراثة واستدعاء الفئة الأم:** فهم مفهوم الوراثة (`extends`) واستخدام `super` لتمرير البيانات للبناء الأم.
+2. **العقود والواجهات البرمجية:** التمييز بين الوراثة (`extends`) والتطبيق الحرفي للواجهات (`implements`) عبر الفئات المجردة (`abstract class`).
+3. **تركيب السلوك عبر Mixins:** إعادة استخدام الأكواد بين فئات غير مرتبطة وراثياً باستخدام الكلمة المفتاحية `with` وتحديد القيود عبر `on`.
+4. **تمديد الأنواع القائمة (Extensions):** إضافة وظائف ودوال جديدة للفئات الأساسية دون تعديل سورس الكود الأصلي.
+5. **إتقان Sealed Classes في Dart 3:** استخدام الفئات المغلقة لبناء حالات معمارية (States) مضمونة التغطية وقت التجميع.
 
 ---
 
 ## 💻 الكود البرمجي أولاً (Code Example First)
 
-<span className="code-first-badge">⚡ Pure English Dart Code (Clean Code)</span>
+<span className="code-first-badge">⚡ Pure English Dart Code (MVVM & Clean Code)</span>
 
 ```dart
 // ==========================================
-// File: lib/core/extensions/string_extensions.dart
-// Description: Custom extension methods on String class
+// File: lib/core/extensions/string_validator_extension.dart
+// Description: Extension methods extending standard String type
 // Architecture Layer: Core Extensions
 // ==========================================
 
 extension StringValidatorExtension on String {
-  /// Validates if string matches standard email regex format
+  /// Validates if string matches standard email format
   bool get isValidEmail {
     final emailRegExp = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
     return emailRegExp.hasMatch(this);
   }
-}
 
-// ==========================================
-// File: lib/data/repositories/base_auth_repository.dart
-// Description: Abstract repository contract interface
-// Architecture Layer: Data (Repository Contract)
-// ==========================================
-
-abstract class BaseAuthRepository {
-  Future<bool> login(String email, String password);
-  Future<void> logout();
+  /// Capitalizes first letter of input string
+  String get capitalize {
+    if (isEmpty) return this;
+    return '${this[0].toUpperCase()}${substring(1)}';
+  }
 }
 
 // ==========================================
 // File: lib/core/mixins/validation_mixin.dart
-// Description: Input validation helper mixin
+// Description: Mixin providing reusable form validation logic
 // Architecture Layer: Core Mixins
 // ==========================================
 
 mixin ValidationMixin {
-  String? validateEmailInput(String? email) {
-    if (email == null || email.isEmpty) {
-      return 'Email is required';
+  String? validateEmail(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Email address is required.';
     }
-    if (!email.isValidEmail) {
-      return 'Invalid email format';
+    if (!value.isValidEmail) {
+      return 'Please enter a valid email address.';
     }
     return null;
   }
+}
+
+// ==========================================
+// File: lib/domain/repositories/base_auth_repository.dart
+// Description: Abstract repository contract (Interface)
+// Architecture Layer: Domain (Repository Contract)
+// ==========================================
+
+abstract class BaseAuthRepository {
+  Future<bool> login({required String email, required String password});
+  Future<void> logout();
+}
+
+// ==========================================
+// File: lib/domain/states/auth_state.dart
+// Description: Sealed Class representing exhaustive Auth States in Dart 3
+// Architecture Layer: Presentation (State)
+// ==========================================
+
+sealed class AuthState {}
+
+class AuthInitialState extends AuthState {}
+class AuthLoadingState extends AuthState {}
+class AuthSuccessState extends AuthState {
+  final String userId;
+  AuthSuccessState(this.userId);
+}
+class AuthErrorState extends AuthState {
+  final String message;
+  AuthErrorState(this.message);
 }
 ```
 
@@ -75,30 +101,166 @@ mixin ValidationMixin {
 
 ## 📘 الشرح التفصيلي للكود (Line-by-Line Technical Explanation)
 
-### 1. Abstract Classes & Contracts
-في `abstract class BaseAuthRepository`: الفئة المجردة كقالب يحدد الدوال التي يجب على المستودعات تنفيذها.
+### 1. الفئات المجردة والعقود (Abstract Classes & Contracts)
+* **`abstract class BaseAuthRepository`**: الفئة المجردة تُستخدم لتعريف العقد (Contract). أي فئة تنفذ هذه الفئة تنظيماً يجب أن توفر التطبيق العملي لـ `login` و `logout`. هذا هو أساس مبدأ فصل الاهتمامات (Separation of Concerns).
 
-### 2. Mixins
-في `mixin ValidationMixin`: تتيح تزويد الفئات بخصائص وسلوكيات معينة دون الحاجة للوراثة المباشرة.
+### 2. الخلائط (Mixins)
+* **`mixin ValidationMixin`**: الخلائط تتيح إضافة دوال مساعدة لعدة فئات (مثل عدة ViewModels أو Form Controllers) دون إجبار الفئة على الوراثة من فئة أم واحدة.
 
-### 3. Extension Methods
-في `extension StringValidatorExtension on String`: تتيح تمديد الكائنات القياسية بوظائف جديدة.
+### 3. التوسيعات (Extension Methods)
+* **`extension StringValidatorExtension on String`**: تُتيح لك مناداة `email.isValidEmail` مباشرة على أي متغير نصي في التطبيق بالكامل بكل سلاسة وكأنها دالة مدمجة أصلية في لغة Dart.
+
+### 4. الفئات المغلقة (Sealed Classes)
+* **`sealed class AuthState`**: الفئات المغلقة في Dart 3 تمنع إنشاء فئات فرعية خارج الملف نفسه. هذا يضمن لـ Dart معرفة جميع الحالات الممكنة لـ `AuthState` وقت التجميع، مما يجعل تعبيرات `switch` شاملة (Exhaustive) تلقائياً.
 
 ---
 
-<ExerciseBox title="جرب بنفسك 💻">
+## ⚡ نصائح الأداء والتحسين (Performance Tips)
 
-1. أنشئ Extension على نوع `double` يحول السعر إلى صيغة عملة مثل: `150.0.toCurrency()` يرجع `"150.00 ر.س"`.
-2. أنشئ Mixin باسم `LoggerMixin` يمتلك دالة `logInfo(String message)` يطبع النص مسبوقاً بوقت التشغيل الحالي `DateTime.now()`.
+:::tip التجميع مقابل الوراثة (Composition over Inheritance)
+تجنب إنشاء شجيرات وراثة عميقة (Deep Inheritance Hierarchy) مثل `Class C extends B extends A`. يُفضل دائماً استخدام تركيب السلوك المعتمد على الـ **Mixins** والـ **Interfaces** لتفادي التعقيد الهيكلي والتسريب غير المقصود للدوال.
+:::
+
+:::tip الاستفادة من Sealed Classes في إدارة الحالات
+عند بناء حالات الواجهة (UI States) لـ ViewModel أو Bloc، استخدم `sealed class`. تضمن لك هذه الطريقة الحصول على خطأ تجميعي مباشر لو نسيت معالجة حالة من الحالات في شاشتك عند استخدام `Switch Expression`.
+:::
+
+---
+
+## 🐛 أخطاء شائعة يجب تجنبها (Common Mistakes)
+
+```dart
+// ❌ 1. استخدام extends عندما يكون الهدف هو تطبيق Interface فقط
+class AuthRepository extends BaseAuthRepository { 
+  // 💥 استخدام extends يقيد الفئة بوراثة واحدة فقط!
+}
+
+// ✅ الحل الصحيح: استخدام implements لتطبيق الواجهات المحددة
+class AuthRepositoryImpl implements BaseAuthRepository {
+  @override
+  Future<bool> login({required String email, required String password}) async => true;
+  
+  @override
+  Future<void> logout() async {}
+}
+
+
+// ❌ 2. نسيان قيد on في Mixins المعتمدة على فئات خاصة
+mixin DeviceLogger {
+  void log() {
+    // 💥 خطأ: الدالة تعتمد على Flutter Widget لكنها غير مقيدة بـ State!
+  }
+}
+
+// ✅ الحل الصحيح: تقييد الـ Mixin باستخدام الكلمة المفتاحية on
+mixin SafeStateLogger<T extends StatefulWidget> on State<T> {
+  void logState() {
+    print('State initialized for widget: $widget');
+  }
+}
+```
+
+---
+
+## 🎤 أسئلة وأجوبة المقابلات الشخصية (Interview Q&A)
+
+<details>
+<summary><strong>س1: ما الفرق الدقيق بين `extends` و `implements` في لغة Dart؟</strong></summary>
+
+- **`extends` (الوراثة):** ترث الفئة الابن الأكواد والتطبيق الفعلي (Implementation) والحقول من الفئة الأم. يُسمح بوراثة فئة واحدة فقط (Single Inheritance).
+- **`implements` (الواجهة):** تجبر الفئة على إعادة كتابة وتطبيق (Override) جميع الدوال والحقول الموجودة في الفئة الهدف، وتتجاهل كود الفئة الأصلية. يُسمح بتطبيق عدة واجهات في نفس الفئة.
+
+</details>
+
+<details>
+<summary><strong>س2: ما هي الـ Mixins ومتى نستخدم الكلمة المفتاحية `on`؟</strong></summary>
+
+الـ **Mixin** هي طريقة لإعادة استخدام كود في فئات متعددة دون وراثة. نستخدم الكلمة المفتاحية `on` لتقييد الـ Mixin بحين استخدامها مع فئات ترث من فئة محددة فقط (مثل `mixin CustomLogger on State<MyWidget>`).
+
+</details>
+
+<details>
+<summary><strong>س3: ما هي الفئات المغلقة (Sealed Classes) المضافة في Dart 3 وكيف تفيد في إدارة الحالات؟</strong></summary>
+
+الفئات المغلقة (`sealed class`) تُقيد الفئات الفرعية بحيث لا يمكن إنشاؤها إلا في نفس الملف. تكمن فائدتها في تمكين فحص التغطية الشاملة (`Exhaustive Switch`) وقت التجميع؛ فإذا أضفت حالة جديدة لـ `AuthState`، سينبهك المترجم فوراً في كل شاشة لم تقم بمعالجة الحالة الجديدة بعد.
+
+</details>
+
+<details>
+<summary><strong>س4: هل تؤثر Extension Methods على أداء التطبيق أو تزيد من حجم الـ Binary؟</strong></summary>
+
+لا! الـ Extension Methods في Dart هي مجرد تحسين نظافة الكود (Syntactic Sugar). يقوم المترجم بتحويل استدعاء `string.isValidEmail` إلى استدعاء دالة ساكنة عادية (`Static Method`) وقت التجميع، وبالتالي لا تسبب أي عبء إضافي على أداء التطبيق في Runtime.
+
+</details>
+
+---
+
+<ExerciseBox title="تمرين عملي - تطبيق Sealed Classes & Extensions 🏋️">
+
+1. أنشئ Extension على النوع `DateTime` باسم `DateTimeFormattingExtension` تمتلك دالة `toShortDateString` ترجع التاريخ بصيغة `YYYY-MM-DD`.
+2. أنشئ Mixin باسم `NetworkConnectivityMixin` يمتلك دالة `checkConnection()` ترجع قيم بولينية.
+3. أنشئ `sealed class DataResult<T>` يمتلك الحالات الممكنة:
+   - `DataSuccess<T>` ويحمل البيانات `final T data`.
+   - `DataFailure<T>` ويحمل الرسالة `final String errorMessage`.
+4. اكتب دالة تستخدم `Switch Expression` للتعامل مع `DataResult` وطباعة النتائج بحسب الحالة.
 
 </ExerciseBox>
 
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي المشروح بالتعليقات (Solution Code)</strong></summary>
+
+```dart
+// 1. Extension على DateTime لتنسيق التاريخ
+extension DateTimeFormattingExtension on DateTime {
+  String toShortDateString() {
+    final year = this.year.toString();
+    final month = this.month.toString().padLeft(2, '0');
+    final day = this.day.toString().padLeft(2, '0');
+    return '$year-$month-$day';
+  }
+}
+
+// 2. Mixin لفحص الاتصال بالشبكة
+mixin NetworkConnectivityMixin {
+  bool checkConnection() {
+    print('Checking network status...');
+    return true; // محاكاة وجود اتصال
+  }
+}
+
+// 3. Sealed Class لإدارة حالة نتائج البيانات (Dart 3)
+sealed class DataResult<T> {}
+
+class DataSuccess<T> extends DataResult<T> {
+  final T data;
+  DataSuccess(this.data);
+}
+
+class DataFailure<T> extends DataResult<T> {
+  final String errorMessage;
+  DataFailure(this.errorMessage);
+}
+
+// 4. دالة معالجة واستخدام Switch Expression الشامل
+void handleResult<T>(DataResult<T> result) {
+  final message = switch (result) {
+    DataSuccess<T>(data: final data) => 'Success with payload: $data',
+    DataFailure<T>(errorMessage: final err) => 'Failure with error: $err',
+  };
+  print(message);
+}
+```
+
+</details>
+
+
 ---
 
-<SummaryBox title="خلاصة الدرس 📌">
+<SummaryBox title="ملخص الدرس 📌">
 
-- الكود مكتوب بلغة إنجليزية نقية 100% جهة اليسار LTR.
-- الفئات المجردة هي الركيزة الأساسية لفصل العقود البرمجية وتطبيق مبدأ فصل الاهتمامات.
-- Extension Methods ترفع مقروءة الكود النظيف بتمديد الفئات القياسية.
+- الواجهات والفئات المجردة هي الحجر الأساسي لفصل طبقات Clean Architecture (Domain & Data Layers).
+- الـ Mixins توفر المرونة في تجميع السلوكيات بين عدة فئات دون الدخول في مشاكل الوراثة المتعددة.
+- الـ Extension Methods تتيح تمديد الفئات الأساسية بدوال مخصصة ذات مقروئية عالية.
+- الفئات المغلقة (`sealed`) في Dart 3 هي الخيار الأفضل والأمثل لبناء الحالات لـ MVVM & Bloc مع ضمان خلو التطبيق من أخطاء الحالات المفقودة.
 
 </SummaryBox>

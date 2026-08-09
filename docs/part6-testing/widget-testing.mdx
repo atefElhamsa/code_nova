@@ -1,100 +1,102 @@
 ---
 id: widget-testing
-title: "6.2 Widget Testing - WidgetTester"
-sidebar_label: "6.2 Widget Testing - WidgetTester"
+title: "6.2 Widget Testing"
+sidebar_label: "6.2 Widget Testing"
 ---
 
 import ExerciseBox from '@site/src/components/ExerciseBox';
 import SummaryBox from '@site/src/components/SummaryBox';
 
-# 6.2 اختبارات الودجات والواجهات (Widget Testing)
+# 6.2 اختبارات الودجات واختبار السلوك البصري (Widget Testing)
 
-تختبر **Widget Testing** قدرة الشاشات والودجات على الرسم البصري والتفاعل الصحيح مع نقرات المستخدم دون الحاجة لتشغيل جهاز حقيقي أو محاكي بطيء.
+تُمكّنك اختبارات الودجات من التثبت من ظهور العناصر البصرية، الاستجابة لنقرات الأزرار، وإظهار نصوص الأخطاء دون فتح محاكي.
 
 ---
 
 ## 🎯 أهداف الدرس (Learning Objectives)
 
-1. فهم كيفية ضخ وتجربة الودجة عبر الدالة `tester.pumpWidget()`.
-2. البحث عن العناصر النصية والأيقونات باستخدام أدوات `find.text()`, `find.byIcon()`, و `find.byType()`.
-3. محاكاة نقرات المستخدم وسحب الشاشة عبر `tester.tap()` و `tester.pump()`.
-4. اختبار الشاشات المربوطة بمزودات الحالات `ChangeNotifierProvider`.
+1. استخدام testWidgets و WidgetTester.
+2. ضخ الودجات بواسطة pumpWidget.
+3. البحث عن العناصر عبر finders و expect.
 
 ---
 
-## 📘 الشرح النظري (Theoretical Explanation)
+## 1. ضخ الودجة والبحث في الشجرة (pumpWidget & Finders)
 
-تتيح أداة `WidgetTester` إمكانية بناء ودجة مفرودة في بيئة اختبار سريعة للغاية داخل الذاكرة.
+### 📘 الشرح النظري
+تُغلف الودجة المراد اختبارها بـ `MaterialApp` وتُضخ باستخدام `tester.pumpWidget()` ثم نستخدم `find.text()` للبحث.
 
-### الأوامر الأساسية:
-* **`pumpWidget()`**: لضخ الودجة ورسمها في بيئة الاختبار.
-* **`pump()`**: لإعادة رسم الواجهة عند تغير حالة معينة بعد النقر.
-* **`pumpAndSettle()`**: للانتظار حتى انتهاء كافة التأثيرات البصرية والرسوم المتحركة (Animations).
-* **`findsOneWidget`**: للتأكد من وجود ودجة فريدة واحدة فقط على الشاشة.
-
----
-
-## 💻 التطبيق المعماري (MVVM & Clean Code)
-
-اختبار ودجة الزر التفاعلي والمستند إلى ViewModel.
-
+### 💻 التطبيق العملي
 ```dart
-// ==========================================
-// File: test/presentation/views/counter_view_test.dart
-// Description: اختبار ودجات لشاشة العداد النظيفة
-// Architecture Layer: Widget Tests
-// ==========================================
+testWidgets('Should display title text', (WidgetTester tester) async {
+  await tester.pumpWidget(
+    const MaterialApp(
+      home: Scaffold(body: Text('TaskFlow Pro')),
+    ),
+  );
 
-import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
-import 'package:provider/provider.dart';
-
-import 'package:doc_flutter/presentation/views/counter_view.dart';
-import 'package:doc_flutter/presentation/viewmodels/counter_viewmodel.dart';
-
-void main() {
-  testWidgets('اختبار زيادة العداد عند النقر على FloatingActionButton',
-      (WidgetTester tester) async {
-    // 1. Arrange: ضخ الشاشة مغلفة بالـ Provider المطلوبة
-    await tester.pumpWidget(
-      ChangeNotifierProvider(
-        create: (_) => CounterViewModel(),
-        child: const MaterialApp(
-          home: CounterView(),
-        ),
-      ),
-    );
-
-    // 2. Assert الأول: التحقق من وجود الرقم 0 مبدئياً
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // 3. Act: النقر على زر الزيادة (+)
-    final fab = find.byType(FloatingActionButton);
-    await tester.tap(fab);
-    await tester.pump(); // إعادة بناء الشاشة بعد التغير
-
-    // 4. Assert النهائي: التحقق من تحول النص الرقمي إلى 1
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
-  });
-}
+  expect(find.text('TaskFlow Pro'), findsOneWidget);
+});
 ```
 
 ---
 
-<ExerciseBox title="جرب بنفسك 💻">
+## ⚡ نصائح الأداء والتحسين (Performance Tips)
 
-1. اكتب اختبار ودجة لشاشة `LoginView` ينقر على زر الدخول بدون إدخال بريد إلكتروني.
-2. استخدم `expect(find.text('البريد الإلكتروني مطلوب'), findsOneWidget)` للتأكد من إظهار نص الخطأ التنبيهي.
-
-</ExerciseBox>
+:::tip اختبارات بصرية سريعة للغاية
+اختبارات الودجات تنفذ في ثوانٍ معدودة وتضمن سلامة واجهات المستخدم.
+:::
 
 ---
 
-<SummaryBox title="خلاصة الدرس 📌">
+## 🐛 أخطاء شائعة يجب تجنبها (Common Mistakes)
 
-- اختبارات الودجات هي الحل الأسرع والأمثل لاختبار التفاعلات البصرية وتفاعل زر المستخدم دون فتح الجهاز المحاكي.
-- يضمن البحث بـ `find` ودعم `pumpAndSettle()` سلامة سلوك الواجهات التكيفية مع الحالات المختلفة.
+```dart
+// ❌ 1. نسيان تغليف الودجة الاختيارية بـ MaterialApp أو Directionality
+await tester.pumpWidget(const MyCustomButton()); // 💥 كراش لغياب التغطية!
+
+// ✅ الحل الصحيح
+await tester.pumpWidget(MaterialApp(home: Scaffold(body: MyCustomButton())));
+
+```
+
+---
+
+## 🎤 أسئلة وأجوبة المقابلات (Interview Q&A)
+
+<details>
+<summary><strong>س1: ما فائدة tester.pump() و tester.pumpAndSettle()؟</strong></summary>
+
+`pump()` تقوم بإعادة رسم إطار واحد، بينما `pumpAndSettle()` تنتظر انتهاء كافة الأنيميشن والعمليات المؤجلة.
+
+</details>
+
+---
+
+<ExerciseBox title="تمرين عملي - اختبار ودجة زر 🏋️">
+
+اكتب اختبار ودجة ينقر على زر ويتثبت من إظهار النص التنبيهي.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي المشروح بالتعليقات (Solution Code)</strong></summary>
+
+```dart
+testWidgets('Btn test', (t) async {
+  await t.pumpWidget(MaterialApp(home: ElevatedButton(onPressed: (){}, child: Text('OK'))));
+  expect(find.text('OK'), findsOneWidget);
+});
+```
+
+</details>
+
+---
+
+<SummaryBox title="ملخص الدرس 📌">
+
+- `testWidgets` لاختبار الودجات.
+- `pumpWidget` لضخ الودجة في البيئة الوهمية.
+- `find` و `expect` للبحث والتثبت.
 
 </SummaryBox>

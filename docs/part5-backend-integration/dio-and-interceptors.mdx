@@ -1,4 +1,4 @@
-﻿---
+---
 id: dio-and-interceptors
 title: "5.1 Dio & Interceptors"
 sidebar_label: "5.1 Dio & Interceptors"
@@ -7,103 +7,115 @@ sidebar_label: "5.1 Dio & Interceptors"
 import ExerciseBox from '@site/src/components/ExerciseBox';
 import SummaryBox from '@site/src/components/SummaryBox';
 
-# 5.1 الاتصالات الشبكية المتقدمة (Networking with Dio & Interceptors)
+# 5.1 الاتصال الشبكي المتقدم بـ Dio & Interceptors
 
-عند بناء تطبيق Flutter يدعم خدمات خلفية (Backend APIs)، تكون مكتبة **Dio** الخيار المفضل والقياسي بين المطورين المحترفين لما توفره من إمكانيات متقدمة مثل إعداد مهلة الاتصال (Timeouts)، اعتراض الطلبات والترويسات عبر **Interceptors**، وإدارة التشفير وإلغاء الطلبات.
+مكتبة `dio` هي الخيار الاحترافي الأول لإجراء اتصالات HTTP المعقدة وإضافة الـ Interceptors لحقن توكنات المصادقة وطباعة السجلات.
 
 ---
 
 ## 🎯 أهداف الدرس (Learning Objectives)
 
-1. فهم مزايا مكتبة Dio مقارنة بالمكتبة الأساسية `http`.
-2. إعداد العميل الشبكي الموحد `DioClient` بإعدادات `BaseOptions`.
-3. كتابة **Interceptors** مخصصة لطباعة السجلات (Logging) وإرفاق توكن المصادقة (Auth Token).
-4. تطبيق عزل إعدادات الاتصال داخل الطبقة القياسية `core/network/`.
+1. إعداد كائن Dio وضبط BaseOptions.
+2. إنشاء Interceptor لحقن التوكن تلقائياً.
+3. معالجة مهلة الاتصال والأخطاء.
 
 ---
 
-## 📘 الشرح النظري (Theoretical Explanation)
+## 1. إعداد كائن Dio الأساسي
 
-### ما هو الـ Interceptor (معترض الطلبات)؟
-الـ Interceptor هو وسيط برمجي يتم اعتراض الطلب أو الاستجابة أو الخطأ الشبكي من خلاله **قبل** وصوله للـ Repository أو الخادم.
+### 📘 الشرح النظري
+نحدد `BaseOptions` لضبط عنوان السيرفر الرئيسي (`baseUrl`) ومواعيد مهلة الاتصال (`connectTimeout`).
 
-يستفاد منه في:
-* إضافة `Authorization: Bearer <token>` لكل الطلبات تلقائياً.
-* طباعة البيانات المدخلة والمخرجة في الـ Terminal لتسهيل التتبع والـ Debugging.
-* تحديث التوكن تلقائياً (Refresh Token) عند انتهاء صلاحيته (401 Unauthorized).
-
----
-
-## 💻 التطبيق المعماري (MVVM & Clean Code)
-
-إعداد عميل Dio المركزي مع الترويسات والـ Interceptors داخل `lib/core/network/dio_client.dart`.
-
+### 💻 التطبيق العملي
 ```dart
-// ==========================================
-// File: lib/core/network/dio_client.dart
-// Description: العميل الشبكي الرئيسي المعتمد على Dio
-// Architecture Layer: Core Network
-// ==========================================
+final dio = Dio(
+  BaseOptions(
+    baseUrl: 'https://api.example.com',
+    connectTimeout: const Duration(seconds: 5),
+    receiveTimeout: const Duration(seconds: 5),
+  ),
+);
+```
 
-import 'package:dio/dio.dart';
+---
 
-class DioClient {
-  late final Dio _dio;
+## 2. معترضات الطلبات (Dio Interceptors)
 
-  DioClient() {
-    _dio = Dio(
-      BaseOptions(
-        baseUrl: 'https://api.example.com/v1/',
-        connectTimeout: const Duration(seconds: 10),
-        receiveTimeout: const Duration(seconds: 10),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-      ),
-    );
+### 📘 الشرح النظري
+تُستخدم `Interceptor` لاقتاص كل طلب شبكي قبل إرساله لحقن التوكن في الهيدر (`Authorization Header`) تلقائياً.
 
-    // إضافة معترضات الطلبات
-    _dio.interceptors.add(
-      InterceptorsWrapper(
-        onRequest: (options, handler) {
-          // محاكاة إرفاق توكن مصادقة حقيقي
-          const token = 'YOUR_SECURE_AUTH_TOKEN';
-          options.headers['Authorization'] = 'Bearer $token';
-          print('🌐 [GET/POST Request] -> Path: ${options.path}');
-          return handler.next(options);
-        },
-        onResponse: (response, handler) {
-          print('✅ [API Response Success] -> Status: ${response.statusCode}');
-          return handler.next(response);
-        },
-        onError: (DioException error, handler) {
-          print('❌ [API Error] -> Message: ${error.message}');
-          return handler.next(error);
-        },
-      ),
-    );
+### 💻 التطبيق العملي
+```dart
+class AuthInterceptor extends Interceptor {
+  @override
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    options.headers['Authorization'] = 'Bearer MY_TOKEN';
+    super.onRequest(options, handler);
   }
-
-  Dio get instance => _dio;
 }
 ```
 
 ---
 
-<ExerciseBox title="جرب بنفسك 💻">
+## ⚡ نصائح الأداء والتحسين (Performance Tips)
 
-1. أنشئ Interceptor مخصص يُسمى `PrettyLoggerInterceptor` يطبع عنوان الطلب والبيانات المرسلة فقط عندما نكون في وضع الديباج `kDebugMode`.
-2. اضبط `connectTimeout` ليكون 5 ثوانٍ، واكتب معالجة تعرض تنبيه "انتهت مهلة الاتصال بالشبكة" عند تجاوزها.
-
-</ExerciseBox>
+:::tip إضافة Interceptor واحد لكل المهام الشبكية
+يغنيك عن كتابة كود إرسال التوكن في كل طلب شبكي على حدة.
+:::
 
 ---
 
-<SummaryBox title="خلاصة الدرس 📌">
+## 🐛 أخطاء شائعة يجب تجنبها (Common Mistakes)
 
-- تمنحك مكتبة Dio تحكماً كاملاً ومتطوراً بطلبات الشبكة.
-- تُعتبر الـ Interceptors المكان النظيف والأنسب لإدارة توكنات الأمان وطباعة السجلات الشبكية دون تكرار الكود.
-- تجميع إعدادات Dio في `core/network/dio_client.dart` يحافظ على التزام المشروع بـ Clean Code.
+```dart
+// ❌ 1. إنشاء كائن Dio جديد عند كل طلب شبكي
+Future<void> getData() async { final dio = Dio(); ... }
+
+// ✅ الحل الصحيح
+Dio.get() باستخدام النسخة الأحادية المسجلة في get_it
+
+```
+
+---
+
+## 🎤 أسئلة وأجوبة المقابلات (Interview Q&A)
+
+<details>
+<summary><strong>س1: ما فائدة استخدام Interceptors في Dio؟</strong></summary>
+
+تتيح اعتراض الطلبات والاستجابات مركزياً لحقن التوكنات، طباعة السجلات، وإعادة التجديد التلقائي للتوكن (Refresh Token).
+
+</details>
+
+---
+
+<ExerciseBox title="تمرين عملي - إعداد Dio Interceptor 🏋️">
+
+أنشئ Interceptor يطبع رابط الطلب قبل إرساله للسيرفر.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي المشروح بالتعليقات (Solution Code)</strong></summary>
+
+```dart
+class LoggerInterceptor extends Interceptor {
+  @override
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    print('REQ: ${options.uri}');
+    super.onRequest(options, handler);
+  }
+}
+```
+
+</details>
+
+---
+
+<SummaryBox title="ملخص الدرس 📌">
+
+- Dio يوفر إمكانيات شبكية متقدمة.
+- Interceptors لحقن التوكنات وتتبع السجلات.
+- `BaseOptions` لضبط الإعدادات المركزية.
 
 </SummaryBox>
