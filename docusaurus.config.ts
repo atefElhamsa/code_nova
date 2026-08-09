@@ -18,11 +18,10 @@ const config: Config = {
       return {
         name: 'fix-node24-webpack-progress-plugin',
         configureWebpack(config) {
-          return {
-            plugins: config.plugins?.filter(
-              (p) => p && p.constructor && p.constructor.name !== 'ProgressPlugin'
-            ),
-          };
+          config.plugins = config.plugins?.filter(
+            (p) => p && p.constructor && p.constructor.name !== 'ProgressPlugin'
+          );
+          return {};
         },
       };
     },
