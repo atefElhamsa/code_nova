@@ -36,7 +36,10 @@ CREATE POLICY "anon_can_insert_requests"
 -- (no SELECT policy = nobody can read the table directly)
 
 -- ================================================================
--- STEP 4: Secure RPC to validate a code (without exposing the table)
+-- STEP 4: Secure RPC to validate a code (ONE-TIME USE)
+-- ✅ Atomically validates AND deactivates the code in one transaction
+-- ✅ Uses FOR UPDATE to prevent race conditions (two users at once)
+-- ✅ Returns TRUE only if code was valid AND successfully deactivated
 -- ================================================================
 CREATE OR REPLACE FUNCTION public.validate_access_code(input_code TEXT)
 RETURNS BOOLEAN
@@ -44,14 +47,29 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS $$
+DECLARE
+  v_id UUID;
 BEGIN
-  RETURN EXISTS (
-    SELECT 1
-    FROM public.access_codes
-    WHERE code       = UPPER(TRIM(input_code))
-      AND is_active  = TRUE
-      AND expires_at > NOW()
-  );
+  -- Lock the row first to prevent concurrent use of the same code
+  SELECT id INTO v_id
+  FROM public.access_codes
+  WHERE code       = UPPER(TRIM(input_code))
+    AND is_active  = TRUE
+    AND expires_at > NOW()
+  FOR UPDATE;            -- 🔒 row-level lock: only one session wins
+
+  -- If no valid code found → return false immediately
+  IF NOT FOUND THEN
+    RETURN FALSE;
+  END IF;
+
+  -- ✅ Valid code found → burn it (mark as used, one-time only)
+  UPDATE public.access_codes
+  SET    is_active = FALSE,
+         notes     = COALESCE(notes, '') || ' | ✅ استُخدم في ' || NOW()::TEXT
+  WHERE  id = v_id;
+
+  RETURN TRUE;
 END;
 $$;
 
