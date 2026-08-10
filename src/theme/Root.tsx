@@ -1,8 +1,9 @@
 import React from 'react';
+import AccessGate from '../components/AccessGate';
 
 export default function Root({children}: {children: React.ReactNode}) {
   return (
-    <>
+    <AccessGate>
       {children}
       <div className="mobile-blocker">
         <div className="mobile-blocker-content">
@@ -16,6 +17,6 @@ export default function Root({children}: {children: React.ReactNode}) {
           </p>
         </div>
       </div>
-    </>
+    </AccessGate>
   );
 }

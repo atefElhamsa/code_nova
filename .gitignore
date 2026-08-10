@@ -22,3 +22,6 @@ dist/
 .vscode/
 *.swp
 *.swo
+
+# Supabase temp files (contains linked project info)
+supabase/.temp/
