@@ -166,6 +166,26 @@ html {
   scroll-behavior: smooth;
 }
 
+/* ================================================================
+   PREMIUM SCROLLBAR
+   ================================================================ */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(4, 8, 15, 0.5); 
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(14, 165, 233, 0.2); 
+  border-radius: 10px;
+  border: 2px solid rgba(4, 8, 15, 1);
+  transition: all 0.3s ease;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(14, 165, 233, 0.6); 
+}
+
 body {
   font-family: var(--ifm-font-family-base);
   -webkit-font-smoothing: antialiased;
