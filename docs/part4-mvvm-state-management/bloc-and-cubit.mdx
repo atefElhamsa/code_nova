@@ -13,7 +13,7 @@ import SummaryBox from '@site/src/components/SummaryBox';
 
 ---
 
-## 🎯 أهداف الدرس (Learning Objectives)
+##  أهداف الدرس (Learning Objectives)
 
 1. التمييز بين نمط الأحداث (BLoC) ونمط الحالات المباشرة (Cubit).
 2. بناء الحالات المغلقة (Sealed States) لمعالجة التغيرات بـ `emit()`.
@@ -117,7 +117,7 @@ Widget buildBlocConsumer() {
 
 ---
 
-## ⚡ نصائح الأداء والتحسين (Performance Tips)
+##  نصائح الأداء والتحسين (Performance Tips)
 
 :::tip تحسين الأداء بـ buildWhen
 استخدم `buildWhen: (previous, current) => previous != current` لمنع إعادة بناء الشاشة إذا كانت الحالة الجديدة مطابقة للحالة السابقة تماماً.
@@ -125,7 +125,7 @@ Widget buildBlocConsumer() {
 
 ---
 
-## 🐛 أخطاء شائعة يجب تجنبها (Common Mistakes)
+##  أخطاء شائعة يجب تجنبها (Common Mistakes)
 
 ```dart
 // ❌ 1. مناداة SnackBar أو التنقل داخل BlocBuilder المباشر
@@ -150,7 +150,7 @@ BlocListener<AuthBloc, AuthState>(
 
 ---
 
-## 🎤 أسئلة وأجوبة المقابلات (Interview Q&A)
+##  أسئلة وأجوبة المقابلات (Interview Q&A)
 
 <details>
 <summary><strong>س1: متى تستخدم Cubit ومتى تختار BLoC الكامل؟</strong></summary>

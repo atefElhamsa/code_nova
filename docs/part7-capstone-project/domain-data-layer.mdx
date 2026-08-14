@@ -13,7 +13,7 @@ import SummaryBox from '@site/src/components/SummaryBox';
 
 ---
 
-## 🎯 أهداف الدرس (Learning Objectives)
+##  أهداف الدرس (Learning Objectives)
 
 1. بناء TaskModel ذو الحتمية.
 2. تعريف العقد BaseTaskRepository.
@@ -47,7 +47,7 @@ class TaskModel {
 
 ---
 
-## ⚡ نصائح الأداء والتحسين (Performance Tips)
+##  نصائح الأداء والتحسين (Performance Tips)
 
 :::tip كائنات ثنائية الحتمية Immutable Models
 استخدام `copyWith` يمنع الطفرات غير المباشرة في الذاكرة.
@@ -55,7 +55,7 @@ class TaskModel {
 
 ---
 
-## 🐛 أخطاء شائعة يجب تجنبها (Common Mistakes)
+##  أخطاء شائعة يجب تجنبها (Common Mistakes)
 
 ```dart
 // ❌ 1. التعديل المباشر على الحقول القابلة للتغيير داخل القوائم
@@ -68,7 +68,7 @@ final updated = task.copyWith(isCompleted: true);
 
 ---
 
-## 🎤 أسئلة وأجوبة المقابلات (Interview Q&A)
+##  أسئلة وأجوبة المقابلات (Interview Q&A)
 
 <details>
 <summary><strong>س1: ما فائدة دالة copyWith في الكائنات ثنائية الحتمية؟</strong></summary>

@@ -11,9 +11,24 @@ const CHECK_INTERVAL_MS = 10_000;
 export default function AccessGate({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
   const [session, setSession] = useState<Session | null>(null);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [userPhone, setUserPhone] = useState<string | null | undefined>(undefined);
+  const [authError, setAuthError] = useState('');
+  const [authMode, setAuthMode] = useState<'main' | 'login' | 'signup'>('main');
   const [accessStatus, setAccessStatus] = useState<'none'|'pending'|'approved'>('none');
   const [blocked, setBlocked] = useState<boolean>(false);
   const [loading, setLoading] = useState(false);
+
+  const resetForm = useCallback(() => {
+    setEmail('');
+    setPassword('');
+    setFullName('');
+    setPhone('');
+    setAuthError('');
+  }, []);
 
   // Allow unrestricted access to the admin panel (it has its own password protection)
   const isAdminPage = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
@@ -48,7 +63,9 @@ export default function AccessGate({ children }: { children: React.ReactNode }) 
       if (mounted) {
         setSession(session);
         if (session) {
-          startSessionCheck();
+          const { data } = await supabase.from('user_profiles').select('phone').eq('id', session.user.id).single();
+          setUserPhone(data?.phone || null);
+          await startSessionCheck();
         }
         setReady(true);
       }
@@ -56,14 +73,17 @@ export default function AccessGate({ children }: { children: React.ReactNode }) 
 
     initialize();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (mounted) {
         setSession(session);
         if (session) {
+          const { data } = await supabase.from('user_profiles').select('phone').eq('id', session.user.id).single();
+          setUserPhone(data?.phone || null);
           startSessionCheck();
         } else {
           setAccessStatus('none');
           setBlocked(false);
+          setUserPhone(undefined);
           if (checkIntervalRef.current) clearInterval(checkIntervalRef.current);
         }
       }
@@ -78,10 +98,49 @@ export default function AccessGate({ children }: { children: React.ReactNode }) 
 
   const handleLogin = async () => {
     setLoading(true);
+    setAuthError('');
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: window.location.origin }
     });
+  };
+
+  const handleEmailLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) { setAuthError('أدخل الإيميل وكلمة المرور'); return; }
+    setLoading(true); setAuthError('');
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      setAuthError(error.message.includes('Invalid login') ? 'البيانات غير صحيحة' : error.message);
+      setLoading(false);
+    }
+  };
+
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!fullName || !phone || !email || !password) {
+       setAuthError('جميع الحقول مطلوبة'); return;
+    }
+    setLoading(true); setAuthError('');
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: fullName,
+          phone: phone,
+        }
+      }
+    });
+    if (error) {
+      setAuthError(error.message.includes('already registered') ? 'هذا الإيميل مسجل مسبقاً' : error.message);
+      setLoading(false);
+    } else {
+      if (!data.session) {
+        setAuthError('تم التسجيل بنجاح! راجع بريدك الإلكتروني للتفعيل.');
+        setLoading(false);
+      }
+    }
   };
 
   const handleLogout = async () => {
@@ -102,6 +161,15 @@ export default function AccessGate({ children }: { children: React.ReactNode }) 
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleUpdatePhone = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!phone) return;
+    setLoading(true);
+    const { error } = await supabase.from('user_profiles').update({ phone: phone }).eq('id', session?.user.id);
+    if (!error) setUserPhone(phone);
+    setLoading(false);
   };
 
   // ── 0. Admin Page Bypass ────────────────────────────────────────
@@ -144,7 +212,9 @@ export default function AccessGate({ children }: { children: React.ReactNode }) 
           .ag-logout:hover { background:rgba(255,255,255,.05); color:#e2e8f0; }
         `}</style>
         <div className="ag-card">
-          <div style={{fontSize:'4rem', marginBottom:'16px'}}>🔒</div>
+          <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'center' }}>
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          </div>
           <h1 style={{fontSize:'1.8rem', fontWeight:800, color:'#f87171', margin:'0 0 12px'}}>تم إيقاف وصولك</h1>
           <p style={{fontSize:'.95rem', color:'#94a3b8', lineHeight:1.8, margin:'0 0 32px'}}>
             تم إيقاف وصولك لهذا الموقع بواسطة المشرف.<br/>
@@ -166,25 +236,147 @@ export default function AccessGate({ children }: { children: React.ReactNode }) 
       <div className="ag-overlay">
         <style>{`
           .ag-overlay { position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:#020617;font-family:'Cairo','Inter',sans-serif;direction:rtl; }
-          .ag-card { background:rgba(15,23,42,.95); backdrop-filter:blur(24px); border:1px solid rgba(255,255,255,.08); border-radius:32px; padding:60px 48px; text-align:center; max-width:440px; width:90%; box-shadow:0 40px 80px rgba(0,0,0,.6); animation:ag-fadeup .5s ease; }
+          .ag-card { background:rgba(15,23,42,.95); backdrop-filter:blur(24px); border:1px solid rgba(255,255,255,.08); border-radius:32px; padding:60px 48px; text-align:center; max-width:440px; width:90%; box-shadow:0 40px 80px rgba(0,0,0,.6); animation:ag-fadeup .5s ease; position:relative; overflow:hidden; transition: max-width 0.3s ease; }
+          .ag-card.wide { max-width: 720px; padding: 60px 56px; }
           @keyframes ag-fadeup { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
-          .ag-btn { display:flex;align-items:center;justify-content:center;gap:12px;width:100%;padding:16px;border-radius:16px;font-size:1.05rem;font-weight:700;cursor:pointer;transition:all .2s;border:none;color:#1e293b; background:#fff; box-shadow:0 8px 24px rgba(255,255,255,.15); }
-          .ag-btn:hover { transform:translateY(-2px); box-shadow:0 12px 32px rgba(255,255,255,.25); }
+          
+          /* Form Styles */
+          .ag-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; text-align: right; }
+          .ag-grid .ag-inp-wrap { margin-bottom: 0 !important; }
+          @media (max-width: 500px) { .ag-grid { grid-template-columns: 1fr; gap: 16px; } }
+          
+          .ag-inp-wrap { margin-bottom:16px; text-align:right; }
+          .ag-inp-label { display:block; font-size:.9rem; color:#94a3b8; margin-bottom:8px; font-weight:600; }
+          .ag-inp-box { position:relative; }
+          .ag-inp-icon { position:absolute; right:16px; top:50%; transform:translateY(-50%); color:#64748b; display:flex; align-items:center; transition:color .2s; pointer-events:none; }
+          .ag-inp { box-sizing:border-box; width:100%; padding:14px 48px 14px 18px; background:rgba(255,255,255,.03); border:1.5px solid rgba(255,255,255,.08); border-radius:14px; outline:none; color:#f8fafc; font-size:.95rem; font-family:inherit; transition:all .2s; }
+          .ag-inp:focus { border-color:rgba(56,189,248,.5); background:rgba(14,165,233,.04); box-shadow:0 0 0 4px rgba(56,189,248,.1); }
+          .ag-inp:focus + .ag-inp-icon { color:#38bdf8; }
+          .ag-inp::placeholder { color:#475569; font-size:.9rem; }
+          
+          /* Buttons */
+          .ag-btn { box-sizing:border-box; width:100%; padding:14px; border-radius:14px; font-weight:700; font-size:1rem; cursor:pointer; transition:all .2s; display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:16px; }
+          .g-btn { background:#fff; color:#0f172a; border:none; }
+          .g-btn:hover { transform:translateY(-2px); box-shadow:0 8px 25px rgba(255,255,255,.15); }
+          .p-btn { background:linear-gradient(135deg, #0ea5e9, #38bdf8); color:#fff; border:none; box-shadow:0 4px 15px rgba(14,165,233,.3); }
+          .p-btn:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 8px 25px rgba(14,165,233,.4); }
+          .p-btn:disabled { opacity:0.7; cursor:not-allowed; }
+          .s-btn { background:transparent; color:#94a3b8; border:1.5px solid rgba(255,255,255,.1); }
+          .s-btn:hover { background:rgba(255,255,255,.05); color:#f8fafc; border-color:rgba(255,255,255,.2); }
+          
+          .ag-err { background:rgba(239,68,68,.1); border:1px solid rgba(239,68,68,.2); color:#fca5a5; font-size:.85rem; padding:12px; border-radius:12px; margin-bottom:20px; line-height:1.5; }
+          
+          .ag-back { position:absolute; top:20px; right:20px; background:transparent; border:none; width:40px; height:40px; color:#64748b; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all .2s; }
+          .ag-back:hover { color:#f8fafc; transform:translateX(4px); }
+          
+          .spin { border-radius:50%; border-right-color:transparent!important; animation:spin 1s linear infinite; }
+          @keyframes spin { 100% { transform:rotate(360deg); } }
         `}</style>
-        <div className="ag-card">
-          <div style={{fontSize:'3.5rem', marginBottom:'24px'}}>🚀</div>
-          <h1 style={{fontSize:'1.8rem', fontWeight:800, color:'#f8fafc', margin:'0 0 12px'}}>مرحباً بك في الكورس</h1>
-          <p style={{fontSize:'.95rem', color:'#94a3b8', lineHeight:1.8, margin:'0 0 36px'}}>
-            يجب تسجيل الدخول بحساب جوجل للوصول إلى محتوى الدورة.
+        
+        <div className={`ag-card ${authMode === 'signup' ? 'wide' : ''}`}>
+          {authMode !== 'main' && (
+            <button className="ag-back" onClick={() => { setAuthMode('main'); resetForm(); }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 19 12 12 5"></polyline></svg>
+            </button>
+          )}
+          
+          <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'center' }}>
+            {authMode === 'signup' 
+              ? <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+              : <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5-4 5-4"></path><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 4-5 4-5"></path></svg>}
+          </div>
+          <h1 style={{fontSize:'1.6rem', fontWeight:800, color:'#f8fafc', margin:'0 0 12px'}}>
+            {authMode === 'main' ? 'مرحباً بك في الكورس' : authMode === 'login' ? 'تسجيل الدخول' : 'إنشاء حساب جديد'}
+          </h1>
+          <p style={{fontSize:'.95rem', color:'#94a3b8', lineHeight:1.8, margin:'0 0 32px'}}>
+            {authMode === 'main' ? 'اختر طريقة تسجيل الدخول أو أنشئ حساباً جديداً للوصول إلى محتوى الدورة.' : 
+             authMode === 'login' ? 'أدخل بيانات حسابك للمتابعة.' : 'أدخل بياناتك لإنشاء حسابك الخاص.'}
           </p>
-          <button className="ag-btn" onClick={handleLogin} disabled={loading}>
-            {loading ? 'جاري التحويل...' : (
-              <>
-                <svg width="22" height="22" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.14 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-                تسجيل الدخول بجوجل
-              </>
-            )}
-          </button>
+
+          {authError && <div className="ag-err">{authError}</div>}
+
+          {/* MAIN MENU */}
+          {authMode === 'main' && (
+            <div className="ag-modes">
+              <button className="ag-btn g-btn" onClick={handleLogin} disabled={loading}>
+                {loading ? <div className="spin" style={{width:20,height:20,border:'2px solid rgba(0,0,0,.1)',borderTopColor:'#0f172a'}}/> : (
+                  <>
+                    <svg width="22" height="22" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.14 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+                    الاستمرار بحساب Google
+                  </>
+                )}
+              </button>
+              <button className="ag-btn p-btn" onClick={() => { setAuthMode('login'); resetForm(); }}>
+                الدخول بالإيميل وكلمة المرور
+              </button>
+              <button className="ag-btn s-btn" onClick={() => { setAuthMode('signup'); resetForm(); }} style={{marginBottom:0}}>
+                إنشاء حساب جديد
+              </button>
+            </div>
+          )}
+
+          {/* LOGIN FORM */}
+          {authMode === 'login' && (
+            <form onSubmit={handleEmailLogin}>
+              <div className="ag-inp-wrap">
+                <label className="ag-inp-label">البريد الإلكتروني</label>
+                <div className="ag-inp-box">
+                  <input className="ag-inp" type="email" placeholder="example@gmail.com" value={email} onChange={e=>setEmail(e.target.value)} required dir="ltr" />
+                  <div className="ag-inp-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></div>
+                </div>
+              </div>
+              <div className="ag-inp-wrap" style={{marginBottom: 24}}>
+                <label className="ag-inp-label">كلمة المرور</label>
+                <div className="ag-inp-box">
+                  <input className="ag-inp" type="password" placeholder="••••••••" value={password} onChange={e=>setPassword(e.target.value)} required dir="ltr" />
+                  <div className="ag-inp-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div>
+                </div>
+              </div>
+              <button type="submit" className="ag-btn p-btn" disabled={loading}>
+                {loading ? <div className="spin" style={{width:20,height:20,border:'2px solid rgba(255,255,255,.2)',borderTopColor:'#fff'}}/> : 'دخول'}
+              </button>
+            </form>
+          )}
+
+          {/* SIGNUP FORM */}
+          {authMode === 'signup' && (
+            <form onSubmit={handleSignup}>
+              <div className="ag-grid">
+                <div className="ag-inp-wrap">
+                  <label className="ag-inp-label">الاسم الكامل</label>
+                  <div className="ag-inp-box">
+                    <input className="ag-inp" type="text" placeholder="مثال: أحمد محمد" value={fullName} onChange={e=>setFullName(e.target.value)} required />
+                    <div className="ag-inp-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div>
+                  </div>
+                </div>
+                <div className="ag-inp-wrap">
+                  <label className="ag-inp-label">رقم الهاتف (واتساب)</label>
+                  <div className="ag-inp-box">
+                    <input className="ag-inp" type="tel" placeholder="05XXXXXXXX" value={phone} onChange={e=>setPhone(e.target.value)} required dir="ltr" />
+                    <div className="ag-inp-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg></div>
+                  </div>
+                </div>
+                <div className="ag-inp-wrap">
+                  <label className="ag-inp-label">البريد الإلكتروني</label>
+                  <div className="ag-inp-box">
+                    <input className="ag-inp" type="email" placeholder="example@gmail.com" value={email} onChange={e=>setEmail(e.target.value)} required dir="ltr" />
+                    <div className="ag-inp-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></div>
+                  </div>
+                </div>
+                <div className="ag-inp-wrap">
+                  <label className="ag-inp-label">كلمة المرور</label>
+                  <div className="ag-inp-box">
+                    <input className="ag-inp" type="password" placeholder="••••••••" value={password} onChange={e=>setPassword(e.target.value)} required dir="ltr" />
+                    <div className="ag-inp-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div>
+                  </div>
+                </div>
+              </div>
+              <button type="submit" className="ag-btn p-btn" disabled={loading}>
+                {loading ? <div className="spin" style={{width:20,height:20,border:'2px solid rgba(255,255,255,.2)',borderTopColor:'#fff'}}/> : 'إنشاء حساب جديد'}
+              </button>
+            </form>
+          )}
+
         </div>
       </div>
     );
@@ -200,19 +392,30 @@ export default function AccessGate({ children }: { children: React.ReactNode }) 
           @keyframes ag-fadeup { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
           .ag-btn { display:flex;align-items:center;justify-content:center;gap:12px;width:100%;padding:16px;border-radius:16px;font-size:1.05rem;font-weight:700;cursor:pointer;transition:all .2s;border:none;color:#fff;background:#38bdf8;margin-top:20px; }
           .ag-btn:hover { background:#0ea5e9; }
+          .ag-input { width:100%; padding:14px; border-radius:12px; border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.03); color:white; margin-top:16px; box-sizing:border-box; }
           .ag-logout { display:block; text-align:center; margin-top:24px; color:#64748b; font-size:.85rem; cursor:pointer; background:none; border:none; width:100%; }
           .ag-logout:hover { color:#94a3b8; }
         `}</style>
         <div className="ag-card">
           <img src={session.user.user_metadata.avatar_url} alt="" style={{width:80,height:80,borderRadius:'50%', marginBottom:16, border:'2px solid rgba(255,255,255,.1)'}} />
           <h2 style={{fontSize:'1.6rem', fontWeight:800, color:'#f8fafc', margin:'0 0 12px'}}>أهلاً، {session.user.user_metadata.full_name}</h2>
-          <p style={{fontSize:'.95rem', color:'#94a3b8', lineHeight:1.8, margin:'0 0 32px'}}>
-            حسابك مسجل لدينا بنجاح، لكنك بحاجة إلى موافقة المشرف للوصول إلى محتوى الدورة.
-          </p>
-
-          <button onClick={handleRequestAccess} className="ag-btn" disabled={loading}>
-            {loading ? 'جاري الإرسال...' : 'طلب الانضمام للكورس'}
-          </button>
+          
+          {userPhone === null ? (
+            <form onSubmit={handleUpdatePhone}>
+              <p style={{fontSize:'.9rem', color:'#94a3b8', margin:'0 0 8px'}}>يرجى إدخال رقم هاتفك للمتابعة:</p>
+              <input type="tel" className="ag-input" placeholder="05XXXXXXXX" value={phone} onChange={e => setPhone(e.target.value)} required />
+              <button type="submit" className="ag-btn" disabled={loading}>حفظ الرقم</button>
+            </form>
+          ) : (
+            <>
+              <p style={{fontSize:'.95rem', color:'#94a3b8', lineHeight:1.8, margin:'0 0 32px'}}>
+                حسابك مسجل لدينا بنجاح، لكنك بحاجة إلى موافقة المشرف للوصول إلى محتوى الدورة.
+              </p>
+              <button onClick={handleRequestAccess} className="ag-btn" disabled={loading}>
+                {loading ? 'جاري الإرسال...' : 'طلب الانضمام للكورس'}
+              </button>
+            </>
+          )}
 
           <button type="button" onClick={handleLogout} className="ag-logout">
             تسجيل الخروج
@@ -241,7 +444,9 @@ export default function AccessGate({ children }: { children: React.ReactNode }) 
           @keyframes pulse { 0% { opacity:1; } 50% { opacity:.5; } 100% { opacity:1; } }
         `}</style>
         <div className="ag-card">
-          <div style={{fontSize:'3.5rem', marginBottom:'24px'}} className="pulse">⏳</div>
+          <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'center' }} className="pulse">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          </div>
           <h2 style={{fontSize:'1.6rem', fontWeight:800, color:'#f8fafc', margin:'0 0 12px'}}>جاري المراجعة</h2>
           <p style={{fontSize:'.95rem', color:'#94a3b8', lineHeight:1.8, margin:'0 0 24px'}}>
             تم إرسال طلبك بنجاح! يرجى الانتظار لحين قيام المشرف بمراجعة حسابك والموافقة عليه.

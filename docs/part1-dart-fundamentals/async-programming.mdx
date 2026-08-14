@@ -13,7 +13,7 @@ import SummaryBox from '@site/src/components/SummaryBox';
 
 ---
 
-## 🎯 أهداف الدرس (Learning Objectives)
+##  أهداف الدرس (Learning Objectives)
 
 1. **فهم حلقة الأحداث (Event Loop):** استيعاب كيفية إدارة Dart للمهام عبر طابوري الأحداث: `Microtask Queue` و `Event Queue`.
 2. **إتقان الـ Futures:** كتابة كود لاتزامني نظيف باستخدام `Future`، `async`، `await`، و `Future.wait`.
@@ -25,7 +25,7 @@ import SummaryBox from '@site/src/components/SummaryBox';
 
 ## 💻 الكود البرمجي أولاً (Code Example First)
 
-<span className="code-first-badge">⚡ Pure English Dart Code (MVVM & Clean Code)</span>
+<span className="code-first-badge"> Pure English Dart Code (MVVM & Clean Code)</span>
 
 ```dart
 // ==========================================
@@ -147,7 +147,7 @@ class NewsViewModel extends ChangeNotifier {
 
 ---
 
-## ⚡ نصائح الأداء والتحسين (Performance Tips)
+##  نصائح الأداء والتحسين (Performance Tips)
 
 :::tip المهام الثقيلة والمعالج (Isolates & compute)
 تنفذ Dart كودها على خيل واحد (Single Thread). إذا كان لديك عملية فك ضغط بيانات JSON هائلة أو معالجة صور تستغرق أكثر من 16 مللي ثانية، استخدم `compute(parseJsonFunction, rawJsonString)`. تنقل هذه الدالة المعالجة إلى **Isolate** خارجي لمنع تجميد واجهة المستخدم.
@@ -159,7 +159,7 @@ class NewsViewModel extends ChangeNotifier {
 
 ---
 
-## 🐛 أخطاء شائعة يجب تجنبها (Common Mistakes)
+##  أخطاء شائعة يجب تجنبها (Common Mistakes)
 
 ```dart
 // ❌ 1. مناداة notifyListeners بعد إغلاق الشاشة وتدمير الـ ViewModel
@@ -187,7 +187,7 @@ var results = await Future.wait([fetchUser(), fetchSettings()]); // يستغرق
 
 ---
 
-## 🎤 أسئلة وأجوبة المقابلات الشخصية (Interview Q&A)
+##  أسئلة وأجوبة المقابلات الشخصية (Interview Q&A)
 
 <details>
 <summary><strong>س1: كيف تعمل حلقة الأحداث (Event Loop) في لغة Dart وما الفرق بين طابور Microtask وطابور Event؟</strong></summary>
@@ -228,7 +228,7 @@ var results = await Future.wait([fetchUser(), fetchSettings()]); // يستغرق
 1. تُرجع `Stream<int>`.
 2. تقوم بإرسال الأرقام تنازلياً من `startFrom` حتى الوصول إلى `0` بفاصل ثانية واحدة بين كل حدث واستخدام `Future.delayed`.
 3. استخدم الكلمات المفتاحية `async*` و `yield`.
-4. في دالة `main()`: قم بالاستماع للـ Stream وطباعة النص `"Remaining seconds: $value"` واطبع `"Blast off! 🚀"` عند انتهاء التدفق.
+4. في دالة `main()`: قم بالاستماع للـ Stream وطباعة النص `"Remaining seconds: $value"` واطبع `"Blast off! "` عند انتهاء التدفق.
 
 </ExerciseBox>
 
@@ -256,7 +256,7 @@ void main() async {
     print('Remaining seconds: $value');
   }
 
-  print('Blast off! 🚀');
+  print('Blast off! ');
 }
 ```
 

@@ -74,19 +74,19 @@ function TechChip({label, color}: {label: string; color: string}) {
 
 /* ── Part card data ──────────────────────────────────────── */
 const parts = [
-  {n:1, icon:'🎯', ar:'أسس لغة Dart', en:'Dart Fundamentals', color:'#0ea5e9', lessons:9,
+  {n:1, icon:<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>, ar:'أسس لغة Dart', en:'Dart Fundamentals', color:'#0ea5e9', lessons:9,
    link:'/docs/part1-dart-fundamentals/variables-and-data-types', chips:['Variables','Null Safety','OOP','Generics','Streams']},
-  {n:2, icon:'📱', ar:'أساسيات Flutter', en:'Flutter Basics', color:'#a78bfa', lessons:7,
+  {n:2, icon:<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>, ar:'أساسيات Flutter', en:'Flutter Basics', color:'#a78bfa', lessons:7,
    link:'/docs/part2-flutter-basics/setup-and-architecture', chips:['Widget Tree','Layouts','go_router','Forms','Theming']},
-  {n:3, icon:'🧹', ar:'الكود النظيف', en:'Clean Code', color:'#22d3a0', lessons:4,
+  {n:3, icon:<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 7h-3a2 2 0 0 1-2-2V2z"/><path d="M9 18a6 6 0 1 1 12 0"/><path d="m9 18-3-3a10 10 0 0 0-5 8"/><path d="m15 22-6-4-4 6"/></svg>, ar:'الكود النظيف', en:'Clean Code', color:'#22d3a0', lessons:4,
    link:'/docs/part3-clean-code/clean-code-naming', chips:['Naming','SOLID','Feature-First','get_it']},
-  {n:4, icon:'🏗️', ar:'MVVM وإدارة الحالة', en:'MVVM Architecture', color:'#f59e0b', lessons:5,
+  {n:4, icon:<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><path d="M14 14V10a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v4"></path><path d="M8 8V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>, ar:'MVVM وإدارة الحالة', en:'MVVM Architecture', color:'#f59e0b', lessons:5,
    link:'/docs/part4-mvvm-state-management/intro-to-mvvm', chips:['MVVM','ChangeNotifier','Provider','ViewStatus']},
-  {n:5, icon:'🌐', ar:'التكامل مع الـ Backend', en:'Backend Integration', color:'#fb923c', lessons:5,
+  {n:5, icon:<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>, ar:'التكامل مع الـ Backend', en:'Backend Integration', color:'#fb923c', lessons:5,
    link:'/docs/part5-backend-integration/dio-and-interceptors', chips:['Dio','Repository','Failure','json_serializable']},
-  {n:6, icon:'🧪', ar:'الاختبارات', en:'Testing & QA', color:'#f472b6', lessons:2,
+  {n:6, icon:<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>, ar:'الاختبارات', en:'Testing & QA', color:'#f472b6', lessons:2,
    link:'/docs/part6-testing/unit-testing', chips:['Unit Tests','Mocking','Widget Testing']},
-  {n:7, icon:'🚀', ar:'المشروع TaskFlow Pro', en:'Capstone Project', color:'#34d399', lessons:5,
+  {n:7, icon:<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5-4 5-4"></path><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 4-5 4-5"></path></svg>, ar:'المشروع TaskFlow Pro', en:'Capstone Project', color:'#34d399', lessons:5,
    link:'/docs/part7-capstone-project/project-setup', chips:['Full App','MVVM','Tests','Production']},
 ];
 
@@ -97,7 +97,7 @@ export default function Home() {
   useMouseGlow(heroRef);
 
   return (
-    <Layout title="Home 🚀" description="Dart & Flutter Pro Course">
+    <Layout title="Home" description="Dart & Flutter Pro Course">
 
       {/* ═══════════════ HERO ═══════════════ */}
       <section className="hero-section" ref={heroRef}>
@@ -159,7 +159,9 @@ export default function Home() {
               <span className="btn-icon">⚡</span> Start Learning <span style={{opacity:0.5, margin:'0 8px'}}>|</span> <span dir="rtl">ابدأ التعلم</span>
             </Link>
             <Link to='/docs/part4-mvvm-state-management/intro-to-mvvm' className="btn btn-secondary" dir="ltr">
-              <span className="btn-icon">🏗️</span> MVVM Architecture <span style={{opacity:0.5, margin:'0 8px'}}>|</span> <span dir="rtl">المعمارية</span>
+              <span className="btn-icon">
+                <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><path d="M14 14V10a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v4"></path><path d="M8 8V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              </span> MVVM Architecture <span style={{opacity:0.5, margin:'0 8px'}}>|</span> <span dir="rtl">المعمارية</span>
             </Link>
           </div>
         </div>
@@ -259,7 +261,10 @@ export default function Home() {
 
         {/* Course Roadmap */}
         <div className="section-header reveal-on-scroll" style={{marginTop: '6rem'}}>
-          <span className="badge" dir="ltr">🗺️ Course Roadmap</span>
+          <span className="badge" dir="ltr">
+            <svg width="1.1em" height="1.1em" style={{marginRight:'6px', verticalAlign:'text-bottom'}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg> 
+            Course Roadmap
+          </span>
           <h2 className="section-title" dir="ltr">
             33 Lessons <span style={{opacity:0.3}}>·</span> 7 Parts
             <span className="section-subtitle" dir="rtl">33 درساً في 7 أجزاء</span>
@@ -328,7 +333,9 @@ export default function Home() {
             <span dir="rtl" style={{display:'block', marginTop:'6px'}}>33 درساً · من الصفر للاحتراف · MVVM + كود نظيف</span>
           </p>
           <Link to='/docs/part1-dart-fundamentals/variables-and-data-types' className="btn btn-primary btn-large btn-glow" dir="ltr">
-            <span className="btn-icon">🚀</span> Start for Free <span style={{opacity:0.5, margin:'0 8px'}}>|</span> <span dir="rtl">ابدأ مجاناً الآن</span>
+            <span className="btn-icon">
+              <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5-4 5-4"></path><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 4-5 4-5"></path></svg>
+            </span> Start for Free <span style={{opacity:0.5, margin:'0 8px'}}>|</span> <span dir="rtl">ابدأ مجاناً الآن</span>
           </Link>
         </div>
       </main>

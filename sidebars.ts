@@ -4,7 +4,7 @@ const sidebars: SidebarsConfig = {
   courseSidebar: [
     {
       type: 'category',
-      label: '🎯 Part 1 - Dart Fundamentals',
+      label: ' Part 1 - Dart Fundamentals',
       collapsed: false,
       items: [
         { type: 'doc', id: 'part1-dart-fundamentals/variables-and-data-types', label: '1.1 Variables & Data Types' },
@@ -20,7 +20,7 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
-      label: '📱 Part 2 - Flutter Basics',
+      label: ' Part 2 - Flutter Basics',
       collapsed: true,
       items: [
         { type: 'doc', id: 'part2-flutter-basics/setup-and-architecture', label: '2.1 Setup & Architecture' },
@@ -34,7 +34,7 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
-      label: '🧹 Part 3 - Clean Code',
+      label: ' Part 3 - Clean Code',
       collapsed: true,
       items: [
         { type: 'doc', id: 'part3-clean-code/clean-code-naming', label: '3.1 Clean Naming Conventions' },
@@ -45,7 +45,7 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
-      label: '🏗️ Part 4 - MVVM & State Management',
+      label: ' Part 4 - MVVM & State Management',
       collapsed: true,
       items: [
         { type: 'doc', id: 'part4-mvvm-state-management/intro-to-mvvm', label: '4.1 Introduction to MVVM' },
@@ -59,7 +59,7 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
-      label: '🌐 Part 5 - Backend Integration',
+      label: ' Part 5 - Backend Integration',
       collapsed: true,
       items: [
         { type: 'doc', id: 'part5-backend-integration/dio-and-interceptors', label: '5.1 Dio & Interceptors' },
@@ -71,7 +71,7 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
-      label: '🧪 Part 6 - Testing & QA',
+      label: ' Part 6 - Testing & QA',
       collapsed: true,
       items: [
         { type: 'doc', id: 'part6-testing/unit-testing', label: '6.1 Unit Testing - ViewModels & Repositories' },
@@ -80,7 +80,7 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
-      label: '🚀 Part 7 - Capstone: TaskFlow Pro',
+      label: ' Part 7 - Capstone: TaskFlow Pro',
       collapsed: true,
       items: [
         { type: 'doc', id: 'part7-capstone-project/project-setup', label: '7.1 Project Setup & Architecture' },

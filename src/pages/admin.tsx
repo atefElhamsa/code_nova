@@ -11,6 +11,7 @@ interface UserProfile {
   status: string;
   display_name: string | null;
   email: string | null;
+  phone: string | null;
   avatar_url: string | null;
   user_agent: string | null;
   is_blocked: boolean;
@@ -55,6 +56,7 @@ export default function AdminPage() {
   const [search,    setSearch]    = useState('');
   const [tab,       setTab]       = useState<'all'|'pending'|'active'|'blocked'>('all');
   const [savedPass, setSavedPass] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState<{id: string, name: string} | null>(null);
 
   useLayoutEffect(() => {
     ['nav.navbar','.navbar','footer.footer','.footer','.table-of-contents'].forEach(s => {
@@ -106,6 +108,17 @@ export default function AdminPage() {
       if (error) throw error;
       setData(prev => prev.map(s => s.id===id ? {...s, status:newStatus, is_blocked:block} : s));
     } catch {/**/}
+    finally { setBlocking(null); }
+  }, [savedPass]);
+
+  const deleteUser = useCallback(async (id: string) => {
+    setBlocking(id);
+    try {
+      const { error } = await supabase.rpc('admin_delete_user',
+        { p_password: savedPass, p_user_id: id });
+      if (error) throw error;
+      setData(prev => prev.filter(s => s.id !== id));
+    } catch { alert('حدث خطأ أثناء مسح المستخدم.'); }
     finally { setBlocking(null); }
   }, [savedPass]);
 
@@ -287,11 +300,11 @@ export default function AdminPage() {
 
         /* ── LUXURY MINIMALIST GRID TABLE ── */
         #ap .grid-tbl {
-          width:100%; min-width:760px;
+          width:100%; min-width:1080px;
           display:flex; flex-direction:column;
         }
         #ap .grid-hdr {
-          display:grid; grid-template-columns:26% 16% 14% 16% 14% 14%;
+          display:grid; grid-template-columns:25% 13% 12% 9% 12% 9% 20%;
           padding:16px 26px;
           background:linear-gradient(90deg, rgba(255,255,255,.01), rgba(255,255,255,.025) 50%, rgba(255,255,255,.01));
           border-top:1px solid rgba(255,255,255,.05);
@@ -300,7 +313,7 @@ export default function AdminPage() {
           text-align:right;
         }
         #ap .grid-row {
-          display:grid; grid-template-columns:26% 16% 14% 16% 14% 14%;
+          display:grid; grid-template-columns:25% 13% 12% 9% 12% 9% 20%;
           align-items:center;
           padding:18px 26px;
           border-bottom:1px solid rgba(255,255,255,.03);
@@ -345,6 +358,40 @@ export default function AdminPage() {
 
         /* Spinner */
         #ap .spin { border-radius:50%; animation:a-spin .7s linear infinite; flex-shrink:0; }
+
+        /* ── MODAL ── */
+        #ap .modal-overlay {
+          position:fixed; inset:0; z-index:999999;
+          background:rgba(8,13,26,.85); backdrop-filter:blur(8px);
+          display:flex; align-items:center; justify-content:center;
+          padding:20px;
+          animation:a-fade .2s ease;
+          direction: rtl;
+        }
+        #ap .modal-box {
+          width:min(400px, 100%); background:rgba(15,23,42,.95);
+          border:1px solid rgba(255,255,255,.1); border-radius:24px;
+          padding:32px 30px; text-align:center;
+          box-shadow:0 30px 60px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.05);
+          animation:a-pop .4s cubic-bezier(.16,1,.3,1);
+        }
+        #ap .modal-icon {
+          width:64px; height:64px; border-radius:50%; margin:0 auto 20px;
+          background:rgba(239,68,68,.1); border:1px solid rgba(239,68,68,.2);
+          display:flex; align-items:center; justify-content:center; font-size:28px;
+          box-shadow:0 0 30px rgba(239,68,68,.15);
+        }
+        #ap .modal-title { font-size:1.3rem; font-weight:800; color:#f8fafc; margin-bottom:10px; margin-top:0; }
+        #ap .modal-text { font-size:.9rem; color:#94a3b8; line-height:1.6; margin-bottom:28px; }
+        #ap .modal-actions { display:flex; gap:12px; }
+        #ap .mbtn {
+          flex:1; padding:12px; border-radius:12px; font-size:.9rem; font-weight:700;
+          font-family:inherit; cursor:pointer; transition:all .2s; border:none;
+        }
+        #ap .mbtn.cancel { background:rgba(255,255,255,.05); color:#cbd5e1; border:1px solid rgba(255,255,255,.1); }
+        #ap .mbtn.cancel:hover { background:rgba(255,255,255,.08); color:#fff; }
+        #ap .mbtn.danger { background:rgba(239,68,68,.9); color:#fff; box-shadow:0 8px 20px rgba(239,68,68,.3); }
+        #ap .mbtn.danger:hover { background:rgba(239,68,68,1); transform:translateY(-2px); }
 
         /* ── LOGIN ── */
         #ap .login-wrap { flex:1; display:flex; align-items:center; justify-content:center; padding:20px; }
@@ -431,11 +478,16 @@ export default function AdminPage() {
         {!authed ? (
           <div className="login-wrap">
             <div className="login-card">
-              <div className="login-emblem">🛡️</div>
+              <div className="login-emblem">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+              </div>
               <div className="login-title">لوحة التحكم</div>
               <div className="login-sub">أدخل كلمة مرور المشرف للمتابعة</div>
-              {authErr && <div className="login-err">⚠️ {authErr}</div>}
-              <label className="login-label">🔑 كلمة المرور</label>
+              {authErr && <div className="login-err">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                {authErr}
+              </div>}
+              <label className="login-label">كلمة المرور</label>
               <input className="login-inp" type="password" placeholder="••••••••••"
                 value={pass} autoFocus
                 onChange={e => { setPass(e.target.value); setAuthErr(''); }}
@@ -444,7 +496,7 @@ export default function AdminPage() {
               <button className="login-btn" onClick={login} disabled={logging}>
                 {logging
                   ? <div className="spin" style={{width:18,height:18,border:'2px solid rgba(255,255,255,.25)',borderTopColor:'#fff'}} />
-                  : <><span>🔓</span>دخول للوحة التحكم</>}
+                  : <><span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M13.8 12H3"/></svg></span>دخول للوحة التحكم</>}
               </button>
             </div>
           </div>
@@ -456,10 +508,10 @@ export default function AdminPage() {
             {/* Stats */}
             <div className="stats">
               {[
-                {cls:'c0', ico:'👥', num:C.all,     lbl:'المسجلين',    tag:'الكل',  d:0},
-                {cls:'c3', ico:'⏳', num:C.pending, lbl:'طلبات انضمام', tag:'جديد',   d:.07},
-                {cls:'c1', ico:'✅', num:C.active,  lbl:'نشطين',       tag:'مفعل',   d:.14},
-                {cls:'c2', ico:'🚫', num:C.blocked, lbl:'محظورين',     tag:'محظور', d:.21},
+                {cls:'c0', ico:<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>, num:C.all,     lbl:'المسجلين',    tag:'الكل',  d:0},
+                {cls:'c3', ico:<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>, num:C.pending, lbl:'طلبات انضمام', tag:'جديد',   d:.07},
+                {cls:'c1', ico:<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>, num:C.active,  lbl:'نشطين',       tag:'مفعل',   d:.14},
+                {cls:'c2', ico:<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>, num:C.blocked, lbl:'محظورين',     tag:'محظور', d:.21},
               ].map(s => (
                 <div key={s.cls} className={`stat ${s.cls}`} style={{animationDelay:`${s.d}s`}}>
                   <div className="stat-top">
@@ -475,7 +527,7 @@ export default function AdminPage() {
             {/* Toolbar */}
             <div className="toolbar">
               <div className="search-box">
-                <span className="search-ico">🔍</span>
+                <span className="search-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></span>
                 <input placeholder="ابحث بالاسم أو الإيميل..."
                   value={search} onChange={e => setSearch(e.target.value)} />
               </div>
@@ -511,7 +563,7 @@ export default function AdminPage() {
                 <div className="grid-tbl">
                   {/* Header */}
                   <div className="grid-hdr">
-                    {['المستخدم','تاريخ الانضمام','المتصفح','آخر ظهور','حالة الوصول','إجراء'].map((h, i) => (
+                    {['المستخدم','رقم الهاتف','تاريخ الانضمام','المتصفح','آخر ظهور','حالة الوصول','إجراء'].map((h, i) => (
                       <div key={h} style={i > 0 ? {textAlign: 'center'} : {}}>{h}</div>
                     ))}
                   </div>
@@ -519,7 +571,9 @@ export default function AdminPage() {
                   {/* Body */}
                   {rows.length===0 ? (
                     <div className="empty">
-                      <span className="empty-ico">{search?'🔍':'👥'}</span>
+                      <span className="empty-ico">
+                        {search ? <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg> : <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>}
+                      </span>
                       <div className="empty-txt">{search?'لا توجد نتائج مطابقة':'لا يوجد مستخدمين بعد'}</div>
                     </div>
                   ) : rows.map((s,i) => {
@@ -541,9 +595,20 @@ export default function AdminPage() {
                                 {s.display_name||'مجهول'}
                                 {isOnline(s.last_seen_at)&&!s.is_blocked&&<div className="online-dot"/>}
                               </div>
-                              <div className="u-sub">{s.email || 'بدون إيميل'}</div>
+                              <div className="u-sub">
+                                <span style={{opacity:0.8}}>{s.email || 'بدون إيميل'}</span>
+                              </div>
                             </div>
                           </div>
+                        </div>
+                        {/* Phone */}
+                        <div className="grid-cell" style={{display:'flex', justifyContent:'center', color:'#38bdf8', fontSize:'.88rem', fontWeight:700}} dir="ltr">
+                          {s.phone ? (
+                            <a href={`https://wa.me/${s.phone.replace(/\D/g, '')}`} target="_blank" rel="noreferrer" style={{color:'#38bdf8', textDecoration:'none', display:'flex', alignItems:'center', gap:'6px'}}>
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg> 
+                              {s.phone}
+                            </a>
+                          ) : <span style={{color:'#64748b', fontWeight:400}}>—</span>}
                         </div>
                         {/* Join Date */}
                         <div className="grid-cell" style={{color:'#94a3b8',fontSize:'.82rem', textAlign:'center'}} dir="rtl">{fmtDate(s.created_at)}</div>
@@ -564,23 +629,39 @@ export default function AdminPage() {
                           )}
                         </div>
                         {/* Action */}
-                        <div className="grid-cell" style={{display:'flex', gap:'8px', justifyContent:'center'}}>
+                        <div className="grid-cell" style={{display:'flex', gap:'6px', justifyContent:'center'}}>
                           {s.is_blocked ? (
                             <button className="abtn unblock" disabled={blocking===s.id} onClick={()=>updateUser(s.id, s.status, false)}>
-                              {blocking===s.id ? <div className="spin" style={{width:12,height:12,border:'2px solid rgba(255,255,255,.2)',borderTopColor:'currentColor'}}/> : '✅'} فك الحظر
+                              {blocking===s.id ? <div className="spin" style={{width:12,height:12,border:'2px solid rgba(255,255,255,.2)',borderTopColor:'currentColor'}}/> : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>} فك الحظر
                             </button>
                           ) : (
                             <>
                               {s.status === 'pending' && (
                                 <button className="abtn unblock" disabled={blocking===s.id} onClick={()=>updateUser(s.id, 'approved', false)}>
-                                  {blocking===s.id ? <div className="spin" style={{width:12,height:12,border:'2px solid rgba(255,255,255,.2)',borderTopColor:'currentColor'}}/> : '✅'} موافقة
+                                  {blocking===s.id ? <div className="spin" style={{width:12,height:12,border:'2px solid rgba(255,255,255,.2)',borderTopColor:'currentColor'}}/> : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>} موافقة
                                 </button>
                               )}
                               <button className="abtn block" disabled={blocking===s.id} onClick={()=>updateUser(s.id, s.status, true)}>
-                                {blocking===s.id ? <div className="spin" style={{width:12,height:12,border:'2px solid rgba(255,255,255,.2)',borderTopColor:'currentColor'}}/> : '🚫'} حظر
+                                {blocking===s.id ? <div className="spin" style={{width:12,height:12,border:'2px solid rgba(255,255,255,.2)',borderTopColor:'currentColor'}}/> : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>} حظر
                               </button>
                             </>
                           )}
+                          <button 
+                            className="abtn" 
+                            style={{background:'rgba(220,38,38,.12)', color:'#fca5a5', border:'1px solid rgba(220,38,38,.25)'}} 
+                            disabled={blocking===s.id} 
+                            onClick={()=>setConfirmDelete({id: s.id, name: s.display_name || s.email || 'المستخدم'})}
+                            title="مسح المستخدم نهائياً"
+                          >
+                            {blocking===s.id ? (
+                              <div className="spin" style={{width:12,height:12,border:'2px solid rgba(255,255,255,.2)',borderTopColor:'currentColor'}}/>
+                            ) : (
+                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line>
+                              </svg>
+                            )}
+                            مسح
+                          </button>
                         </div>
                       </div>
                     );
@@ -589,6 +670,26 @@ export default function AdminPage() {
               </div>
             </div>
 
+          </div>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {confirmDelete && (
+          <div className="modal-overlay">
+            <div className="modal-box">
+              <div className="modal-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+              </div>
+              <h3 className="modal-title">تأكيد المسح</h3>
+              <p className="modal-text">هل أنت متأكد من مسح حساب <strong>{confirmDelete.name}</strong> نهائياً؟<br/>لا يمكن التراجع عن هذا الإجراء.</p>
+              <div className="modal-actions">
+                <button className="mbtn cancel" onClick={() => setConfirmDelete(null)}>إلغاء</button>
+                <button className="mbtn danger" onClick={() => {
+                  deleteUser(confirmDelete.id);
+                  setConfirmDelete(null);
+                }}>نعم، امسح نهائياً</button>
+              </div>
+            </div>
           </div>
         )}
       </div>

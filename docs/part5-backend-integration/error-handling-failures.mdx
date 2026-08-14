@@ -13,7 +13,7 @@ import SummaryBox from '@site/src/components/SummaryBox';
 
 ---
 
-## 🎯 أهداف الدرس (Learning Objectives)
+##  أهداف الدرس (Learning Objectives)
 
 1. تعريف التسلسل الهرمي لكائنات Failure.
 2. تحويل DioException إلى ServerFailure.
@@ -59,7 +59,7 @@ ServerFailure parseDioError(DioException error) {
 
 ---
 
-## ⚡ نصائح الأداء والتحسين (Performance Tips)
+##  نصائح الأداء والتحسين (Performance Tips)
 
 :::tip تحويل الأخطاء في طبقة البيانات
 تحويل الأخطاء لـ Failure مبكراً في الـ Repository يحمي الـ ViewModel من استثناءات غير متوقعة.
@@ -67,7 +67,7 @@ ServerFailure parseDioError(DioException error) {
 
 ---
 
-## 🐛 أخطاء شائعة يجب تجنبها (Common Mistakes)
+##  أخطاء شائعة يجب تجنبها (Common Mistakes)
 
 ```dart
 // ❌ 1. إظهار نصوص الاستثناءات الإنجليزية الخام للمستخدم مثل DioError [bad response]
@@ -80,7 +80,7 @@ showSnackbar(failure.message); // رسالة مترجمة واضحة
 
 ---
 
-## 🎤 أسئلة وأجوبة المقابلات (Interview Q&A)
+##  أسئلة وأجوبة المقابلات (Interview Q&A)
 
 <details>
 <summary><strong>س1: لماذا نفضل استخدام Failure Objects على إلقاء exceptions في المعمارية النظيفة؟</strong></summary>

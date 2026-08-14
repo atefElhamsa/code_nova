@@ -16,7 +16,7 @@ import SummaryBox from '@site/src/components/SummaryBox';
 
 ---
 
-## 🎯 Learning Objectives
+##  Learning Objectives
 
 1. إتقان التعامل مع `List`, `Set`, و `Map` بجميع دوالها الأساسية.
 2. فهم المجموعات المتداخلة (Nested Collections) مثل `List<Map>` و `Map<String, List>`.
@@ -76,7 +76,7 @@ void main() {
 
   print(uniqueTags); // {flutter, dart, ui, mobile}
   
-  // ميزة الـ Set الكبرى: البحث سريع جداً جداً ⚡
+  // ميزة الـ Set الكبرى: البحث سريع جداً جداً 
   print(uniqueTags.contains('flutter')); // true
 }
 ```
@@ -287,14 +287,14 @@ print(total); // 35.5
 
 ---
 
-## ⚡ Performance Tips
+##  Performance Tips
 
 :::tip Use `Set` for lookups
 لو هتعمل `contains` كتير جداً عشان تدور هل العنصر موجود ولا لأ، حول الـ List لـ Set الأول.
 الـ List بتاخد O(n) (بطيئة في الداتا الكبيرة)، لكن الـ Set بتاخد O(1) (سريعة جداً!).
 ```dart
 List<String> largeList = get100kItems();
-Set<String> quickSearchSet = largeList.toSet(); ⚡
+Set<String> quickSearchSet = largeList.toSet(); 
 ```
 :::
 
@@ -304,7 +304,7 @@ Set<String> quickSearchSet = largeList.toSet(); ⚡
 
 ---
 
-## 🎤 Interview Questions & Answers
+##  Interview Questions & Answers
 
 <details>
 <summary><strong>Q1: إيه الفرق بين List و Set؟</strong></summary>
@@ -347,7 +347,7 @@ for (var entry in user.entries) {
 
 ---
 
-## 🐛 Common Mistakes
+##  Common Mistakes
 
 ```dart
 // ❌ 1 - Modifying a list during a standard loop

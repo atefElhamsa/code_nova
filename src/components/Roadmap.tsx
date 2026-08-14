@@ -10,7 +10,7 @@ interface Module {
   link: string;
   topics: string[];
   color: string;
-  icon: string;
+  icon: React.ReactNode;
 }
 
 const modules: Module[] = [
@@ -42,7 +42,7 @@ const modules: Module[] = [
     topics: ['Naming', 'SOLID', 'Feature-First', 'get_it DI'],
   },
   {
-    id: 4, icon: '🏗️', color: '#f59e0b',
+    id: 4, icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><path d="M14 14V10a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v4"></path><path d="M8 8V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>, color: '#f59e0b',
     titleAr: 'MVVM وإدارة الحالة',
     titleEn: 'MVVM & State Management',
     descAr: 'ChangeNotifier وProvider وفصل طبقة الـ View عن الـ ViewModel بصرامة تامة.',
@@ -69,7 +69,7 @@ const modules: Module[] = [
     topics: ['Unit Testing', 'Mocking', 'Widget Testing'],
   },
   {
-    id: 7, icon: '🚀', color: '#38bdf8',
+    id: 7, icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5-4 5-4"></path><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 4-5 4-5"></path></svg>, color: '#38bdf8',
     titleAr: 'المشروع التطبيقي الشامل',
     titleEn: 'Capstone: TaskFlow Pro',
     descAr: 'تطبيق كامل من الصفر للإنتاج مبني بـ MVVM + Clean Code + Tests.',

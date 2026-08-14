@@ -13,7 +13,7 @@ import SummaryBox from '@site/src/components/SummaryBox';
 
 ---
 
-## 🎯 أهداف الدرس (Learning Objectives)
+##  أهداف الدرس (Learning Objectives)
 
 1. فهم دورة حياة الـ ViewModel وتوقيت البناء والتنفيذ.
 2. استخدام dispose() لإغلاق StreamSubscriptions والـ Controllers.
@@ -76,7 +76,7 @@ void safeNotify() {
 
 ---
 
-## ⚡ نصائح الأداء والتحسين (Performance Tips)
+##  نصائح الأداء والتحسين (Performance Tips)
 
 :::tip إغلاق الترتيبات دائماً في dispose()
 كل `StreamSubscription` أو `Timer` ينبغي إلغاؤه فوراً في دالة `dispose()`.
@@ -84,7 +84,7 @@ void safeNotify() {
 
 ---
 
-## 🐛 أخطاء شائعة يجب تجنبها (Common Mistakes)
+##  أخطاء شائعة يجب تجنبها (Common Mistakes)
 
 ```dart
 // ❌ 1. مناداة notifyListeners() بعد انتهاء await دون التأكد من بقاء الشاشة حية
@@ -97,7 +97,7 @@ await fetchData(); if (hasListeners) notifyListeners();
 
 ---
 
-## 🎤 أسئلة وأجوبة المقابلات (Interview Q&A)
+##  أسئلة وأجوبة المقابلات (Interview Q&A)
 
 <details>
 <summary><strong>س1: ماذا يحدث إذا لم تُغلق StreamSubscription داخل دالة dispose()؟</strong></summary>

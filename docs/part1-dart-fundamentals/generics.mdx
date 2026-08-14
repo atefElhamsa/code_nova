@@ -13,7 +13,7 @@ import SummaryBox from '@site/src/components/SummaryBox';
 
 ---
 
-## 🎯 أهداف الدرس (Learning Objectives)
+##  أهداف الدرس (Learning Objectives)
 
 1. **فهم الرموز التجريدية للأنواع:** استيعاب رموز التجريد القياسية مثل `<T>` (Type) و `<K, V>` (Key, Value).
 2. **تطبيق قيود الأنواع (Type Constraints):** استخدام التقييد التجمعي `<T extends BaseEntity>` لضمان امتلاك البيانات لخصائص محددة.
@@ -24,7 +24,7 @@ import SummaryBox from '@site/src/components/SummaryBox';
 
 ## 💻 الكود البرمجي أولاً (Code Example First)
 
-<span className="code-first-badge">⚡ Pure English Dart Code (MVVM & Clean Code)</span>
+<span className="code-first-badge"> Pure English Dart Code (MVVM & Clean Code)</span>
 
 ```dart
 // ==========================================
@@ -105,7 +105,7 @@ abstract class BaseRepository<T extends BaseEntity> {
 
 ---
 
-## ⚡ نصائح الأداء والتحسين (Performance Tips)
+##  نصائح الأداء والتحسين (Performance Tips)
 
 :::tip تجنب استخدام dynamic داخل Generics
 احذر من استخدام `ApiResponse<dynamic>` أو `List<dynamic>`. التخلي عن النوع الصريح يفقدك حماية المترجم وقت التجميع (Compile-time Type Checks) ويؤدي لأخطاء `NoSuchMethodError` أثناء زمن التشغيل.
@@ -117,7 +117,7 @@ abstract class BaseRepository<T extends BaseEntity> {
 
 ---
 
-## 🐛 أخطاء شائعة يجب تجنبها (Common Mistakes)
+##  أخطاء شائعة يجب تجنبها (Common Mistakes)
 
 ```dart
 // ❌ 1. محاولة إنشاء كائن جديد من التجريد T مباشرة
@@ -152,7 +152,7 @@ class GoodStore<T extends BaseEntity> {
 
 ---
 
-## 🎤 أسئلة وأجوبة المقابلات الشخصية (Interview Q&A)
+##  أسئلة وأجوبة المقابلات الشخصية (Interview Q&A)
 
 <details>
 <summary><strong>س1: ما هي Reified Generics وكيف تتميز لغة Dart عن Java في هذا المفهوم؟</strong></summary>

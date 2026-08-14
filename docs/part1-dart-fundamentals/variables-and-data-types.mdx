@@ -13,7 +13,7 @@ import SummaryBox from '@site/src/components/SummaryBox';
 
 ---
 
-## 🎯 الأهداف التعليمية
+##  الأهداف التعليمية
 
 1. الإعلان عن المتغيرات باستخدام الكلمات المفتاحية (`var`، `final`، `const`) أو الأنواع الصريحة.
 2. التمييز بين أنواع البيانات الأساسية: (`int`, `double`, `String`, `bool`, `num`).
@@ -133,7 +133,7 @@ final String now = DateTime.now().toString(); // ✅ Use final instead
 | | `final` | `const` |
 |---|---|---|
 | وقت التحديد | Runtime (وقت التشغيل) | Compile-time (وقت البناء) |
-| الأداء | جيد | ⚡ أفضل |
+| الأداء | جيد |  أفضل |
 | مثال | `DateTime.now()` | `'AppName'`, `3.14` |
 
 ---
@@ -239,7 +239,7 @@ SALE! Price after 20% off: 239.99199999999998 EGP
 
 ---
 
-## ⚡ Performance Tips
+##  Performance Tips
 
 :::tip فضّل `const` على `final` دايماً لو ممكن
 الـ Dart بيعمل **canonicalization** للـ `const` values - يعني قيم `const` متطابقة بتشارك نفس المكان في الذاكرة بدل ما تنشأ مرتين:
@@ -280,7 +280,7 @@ print(totalCents / 100);  // 0.3 - display only
 
 ---
 
-## 🎤 Interview Questions & Answers
+##  Interview Questions & Answers
 
 <details>
 <summary><strong>Q1: ما الفرق بين `var` و `dynamic` في Dart؟</strong></summary>
@@ -378,7 +378,7 @@ String result = buffer.toString(); // 'Hello, World'
 
 ---
 
-## 🐛 Common Mistakes to Avoid
+##  Common Mistakes to Avoid
 
 ```dart
 // ❌ 1 - Using dynamic unnecessarily
