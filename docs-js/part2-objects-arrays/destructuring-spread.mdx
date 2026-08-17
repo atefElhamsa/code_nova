@@ -1,0 +1,264 @@
+---
+id: destructuring-spread
+title: "2.3 Destructuring & Spread/Rest"
+sidebar_label: "2.3 Destructuring & Spread"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 2.3 التفكيك (Destructuring) والمعامل Spread/Rest
+
+واحدة من أكثر الإضافات الثورية التي قدمتها نسخة ES6 لجافاسكريبت هي طُرق التفكيك (Destructuring) ومعاملات النقاط الثلاث `...` (Spread و Rest). هذه الأدوات تجعل كودك أقصر، أنظف، وأسهل بكثير في القراءة، وهي مستخدمة بكثافة قصوى في جميع مكتبات جافاسكريبت الحديثة.
+
+---
+
+##  الأهداف التعليمية
+
+1. تفكيك الكائنات (Object Destructuring) لاستخراج القيم بسهولة.
+2. تفكيك المصفوفات (Array Destructuring).
+3. استخدام المعامل `...` كـ Spread لنسخ ودمج المصفوفات والكائنات.
+4. استخدام المعامل `...` كـ Rest لتجميع المعاملات (Parameters) المتبقية.
+5. الإجابة على أسئلة المقابلات الشخصية حول استنساخ البيانات في جافاسكريبت.
+
+---
+
+## 1. تفكيك الكائنات (Object Destructuring)
+
+لنفترض أن لدينا كائناً يحتوي على بيانات مستخدم، ونريد استخراج الاسم والعمر لوضعهما في متغيرات.
+
+```javascript
+const user = {
+  name: "Ahmed",
+  age: 25,
+  country: "Egypt"
+};
+
+// الطريقة القديمة (طويلة ومملة)
+// const name = user.name;
+// const age = user.age;
+
+// الطريقة الحديثة (Destructuring)
+const { name, age } = user;
+
+console.log(name); // "Ahmed"
+console.log(age);  // 25
+```
+
+### استخراج قيمة غير موجودة وتعيين قيمة افتراضية
+```javascript
+// إذا لم يمتلك المستخدم خاصية 'role' اجعلها 'guest'
+const { name, role = "guest" } = user;
+console.log(role); // "guest"
+```
+
+---
+
+## 2. تفكيك المصفوفات (Array Destructuring)
+
+التفكيك يعمل أيضاً مع المصفوفات، ولكن بدلاً من الاعتماد على "أسماء المفاتيح"، فإنه يعتمد على **الترتيب (Position)**.
+
+```javascript
+const colors = ["Red", "Green", "Blue"];
+
+// يتم سحب العناصر بالترتيب
+const [firstColor, secondColor] = colors;
+
+console.log(firstColor);  // "Red"
+console.log(secondColor); // "Green"
+
+// لتخطي عنصر معين، نترك مكانه فارغاً
+const [,, thirdColor] = colors;
+console.log(thirdColor); // "Blue"
+```
+
+---
+
+## 3. معامل النشر (Spread Operator `...`)
+
+يقوم هذا المعامل بأخذ مصفوفة أو كائن، و "ينثر" أو يفرغ محتوياته في مكان جديد.
+
+### أ. مع المصفوفات (نسخ ودمج)
+```javascript
+const arr1 = [1, 2, 3];
+const arr2 = [4, 5];
+
+// دمج مصفوفتين بسهولة
+const combined = [...arr1, ...arr2]; 
+console.log(combined); // [1, 2, 3, 4, 5]
+
+// إضافة عناصر في البداية والنهاية
+const newArr = [0, ...arr1, 4];
+console.log(newArr); // [0, 1, 2, 3, 4]
+```
+
+### ب. مع الكائنات (نسخ وتعديل)
+```javascript
+const user = { name: "Ali", age: 20 };
+
+// إنشاء نسخة جديدة وتعديل العمر
+const updatedUser = {
+  ...user,
+  age: 21,
+  city: "Cairo"
+};
+
+console.log(updatedUser); 
+// { name: "Ali", age: 21, city: "Cairo" }
+```
+
+---
+
+## 4. معامل التجميع (Rest Parameter `...`)
+
+يبدو تماماً مثل الـ Spread، ولكنه **يفعل العكس**! بينما يقوم Spread بـ "نشر" القيم، يقوم Rest بـ "تجميع" القيم المتبقية ووضعها في مصفوفة جديدة. يستخدم غالباً في الدوال (Functions) أو أثناء التفكيك.
+
+### بداخل الدوال (لتجميع المعاملات)
+```javascript
+// لا نعرف كم عدد الأرقام التي سيرسلها المستخدم
+function sumAll(...numbers) {
+  // numbers أصبحت الآن مصفوفة تحتوي على كل المعاملات
+  return numbers.reduce((acc, curr) => acc + curr, 0);
+}
+
+console.log(sumAll(1, 2));       // 3
+console.log(sumAll(10, 20, 30)); // 60
+```
+
+### مع تفكيك المصفوفات
+```javascript
+const scores = [90, 85, 80, 75, 70];
+
+const [first, second, ...restScores] = scores;
+
+console.log(first);      // 90
+console.log(second);     // 85
+console.log(restScores); // [80, 75, 70] (تم تجميع الباقي في مصفوفة)
+```
+
+---
+
+## 🚀 Performance & Pro Tips
+
+:::tip التفكيك المتداخل (Nested Destructuring)
+يمكنك استخراج بيانات من داخل كائن موجود بداخل كائن آخر بخطوة واحدة!
+```javascript
+const profile = {
+  user: "Mona",
+  address: {
+    city: "Alexandria",
+    zip: 21511
+  }
+};
+
+const { address: { city } } = profile;
+console.log(city); // "Alexandria"
+```
+:::
+
+:::tip الـ Spread يقوم بنسخ سطحي (Shallow Copy)
+عندما تنسخ كائناً باستخدام `...`، يتم نسخ الخصائص السطحية فقط. إذا كان الكائن يحتوي على مصفوفة بداخله أو كائن آخر، سيتم نسخ الـ "Reference" الخاص به وليس القيمة. إذا قمت بتعديل الكائن الداخلي في النسخة، سيتغير في الكائن الأصلي أيضاً!
+لعمل نسخ عميق (Deep Copy)، يفضل استخدام مكتبات خارجية (مثل Lodash) أو `structuredClone()` في المتصفحات الحديثة.
+:::
+
+---
+
+##  أسئلة المقابلات الشخصية (Interview Questions)
+
+<details>
+<summary><strong>Q1: ما هو الفرق بين المعامل Spread والمعامل Rest بالرغم من أنهما يكتبان بنفس الطريقة `...` ؟</strong></summary>
+
+- **Spread:** يستخدم **لتفكيك** ونشر عناصر المصفوفة أو خصائص الكائن في أماكن جديدة. (يأخذ حزمة ويفككها).
+- **Rest:** يستخدم **لتجميع** العناصر المتعددة ووضعها في مصفوفة واحدة (يأخذ عناصر مفككة ويجمعها في حزمة). يُستخدم عادة كـ Parameter أخير في الدوال أو كمتغير أخير في التفكيك.
+</details>
+
+<details>
+<summary><strong>Q2: كيف يمكنك تبديل (Swap) قيمتين لمتغيرين في جافاسكريبت بدون استخدام متغير وسيط (Temp)؟</strong></summary>
+
+باستخدام تفكيك المصفوفات (Array Destructuring)!
+
+```javascript
+let a = 1;
+let b = 2;
+
+// تبديل القيم بسطر واحد
+[a, b] = [b, a];
+
+console.log(a); // 2
+console.log(b); // 1
+```
+</details>
+
+---
+
+##  أخطاء شائعة تجنبها (Common Mistakes)
+
+```javascript
+// ❌ 1 - وضع الـ Rest في البداية أو المنتصف
+function printInfo(...others, lastArg) { } // ❌ SyntaxError: Rest parameter must be last formal parameter
+
+// ✅ يجب أن يكون دائماً في النهاية
+function printInfo(firstArg, ...others) { }
+
+// ❌ 2 - نسيان أن التفكيك في المصفوفات يعتمد على الترتيب
+const names = ["Ali", "Sara"];
+const [sara] = names; // ❌ الكود سيعطيك "Ali" لأنك طلبت أول عنصر وأسميته sara!
+
+// ✅
+const [, saraName] = names; // استخدام الفاصلة لتخطي العنصر الأول
+```
+
+---
+
+<ExerciseBox title="🏋️ تمرين عملي (Exercise)">
+
+اكتب كود جافاسكريبت يقوم بما يلي:
+1. قم بإنشاء كائنين: `defaults` (يحتوي على `theme: "dark"`, `language: "en"`) و `userSettings` (يحتوي على `language: "ar"`, `notifications: true`).
+2. استخدم المعامل **Spread** لإنشاء كائن جديد يسمى `finalSettings` يدمج الاثنين معاً (يجب أن تتغلب `userSettings` على `defaults` إذا كان هناك تشابه).
+3. استخدم الـ **Destructuring** لاستخراج `theme` و `notifications` من `finalSettings` واطبعهما.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل (Solution)</strong></summary>
+
+```javascript
+const defaults = {
+  theme: "dark",
+  language: "en"
+};
+
+const userSettings = {
+  language: "ar",
+  notifications: true
+};
+
+// 1. الدمج باستخدام Spread
+// نضع defaults أولاً، ثم userSettings لكي تقوم بالكتابة فوق القيم المتشابهة (مثل language)
+const finalSettings = {
+  ...defaults,
+  ...userSettings
+};
+
+console.log(finalSettings); 
+// { theme: "dark", language: "ar", notifications: true }
+
+// 2. التفكيك
+const { theme, notifications } = finalSettings;
+
+console.log(theme);         // "dark"
+console.log(notifications); // true
+```
+
+</details>
+
+---
+
+<SummaryBox title="📌 ملخص الدرس (Summary)">
+
+- **Destructuring:** طريقة لاستخراج البيانات من الكائنات `{}` والمصفوفات `[]` ووضعها في متغيرات بشكل مباشر وأنيق.
+- التفكيك في الكائنات يعتمد على **اسم المفتاح**، وفي المصفوفات يعتمد على **الترتيب**.
+- **Spread (`...`):** ينسخ وينثر عناصر المصفوفة أو الكائن، مفيد جداً للدمج والنسخ.
+- **Rest (`...`):** يجمع الباقي، ويستخدم في استلام عدد غير محدود من المعاملات في الدوال، أو جمع ما تبقى من تفكيك المصفوفات.
+
+</SummaryBox>

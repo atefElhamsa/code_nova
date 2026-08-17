@@ -1,0 +1,245 @@
+---
+id: control-flow
+title: "1.3 Control Flow (if, switch, loops)"
+sidebar_label: "1.3 Control Flow"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 1.3 التحكم في مسار البرنامج (Control Flow)
+
+بدون أدوات التحكم في مسار البرنامج، سينفذ الكمبيوتر الأكواد سطراً بعد سطر من البداية للنهاية. في هذا الدرس، ستتعلم كيف تجعل برنامجك "يتخذ قرارات" وينفذ أكواد معينة بذكاء بناءً على شروط، أو يكرر مهاماً (Loops) لتقليل الجهد.
+
+---
+
+##  الأهداف التعليمية
+
+1. استخدام `if/else` لاتخاذ القرارات.
+2. فهم المعامل الثلاثي (Ternary Operator) كبديل مختصر للـ `if`.
+3. استخدام `switch` للحالات المتعددة.
+4. التكرار باستخدام حلقات `for` و `while`.
+5. التمييز بين `break` و `continue` في الحلقات.
+
+---
+
+## 1. اتخاذ القرارات (If / Else)
+
+الشكل الأساسي للتحكم هو الجملة الشرطية `if`. تعني ببساطة: "إذا كان الشرط صحيحاً، نفذ الكود، وإلا (else) افعل شيئاً آخر."
+
+```javascript
+let age = 20;
+
+if (age >= 18) {
+  console.log("You can drive!");
+} else {
+  console.log("You are too young to drive.");
+}
+```
+
+### استخدام `else if` لأكثر من شرط
+```javascript
+let score = 85;
+
+if (score >= 90) {
+  console.log("Grade: A");
+} else if (score >= 80) {
+  console.log("Grade: B");
+} else {
+  console.log("Grade: C or below");
+}
+```
+
+---
+
+## 2. المعامل الثلاثي (Ternary Operator)
+
+هو نسخة مختصرة جداً لـ `if/else` تُكتب في سطر واحد. يستخدم كثيراً في React وكتابة الكود الحديث.
+صيغته: `Condition ? True Value : False Value`
+
+```javascript
+let age = 20;
+
+// الطريقة الطويلة (if/else)
+let status;
+if (age >= 18) {
+  status = "Adult";
+} else {
+  status = "Minor";
+}
+
+// الطريقة الاحترافية (Ternary Operator)
+let proStatus = age >= 18 ? "Adult" : "Minor";
+
+console.log(proStatus); // "Adult"
+```
+
+> ✅ **قاعدة الكود النظيف (Clean Code):** استخدم المعامل الثلاثي للقرارات البسيطة فقط التي تعيد قيمة. إذا كان الشرط معقداً جداً، استخدم `if/else` لأنه أسهل في القراءة.
+
+---
+
+## 3. حالات متعددة مع `Switch`
+
+إذا كان لديك متغير وتريد التحقق من قيمته ضد عدة خيارات محددة، `switch` هو الحل الأفضل والأسرع.
+
+```javascript
+let day = "Monday";
+
+switch (day) {
+  case "Monday":
+    console.log("Start of the work week");
+    break; // لا تنسى الـ break وإلا سيكمل لأسفل!
+  case "Friday":
+    console.log("Weekend is almost here");
+    break;
+  case "Saturday":
+  case "Sunday":
+    console.log("It's the weekend!");
+    break;
+  default:
+    console.log("Regular work day");
+}
+```
+
+---
+
+## 4. الحلقات التكرارية (Loops)
+
+تستخدم الحلقات لتكرار كود معين أكثر من مرة بدون إعادة كتابته.
+
+### أ. حلقة `for`
+تستخدم عندما **تعرف عدد مرات التكرار** مسبقاً.
+
+```javascript
+// يبدأ من 1، ينتهي عند 5، يزداد بمقدار 1 كل مرة
+for (let i = 1; i <= 5; i++) {
+  console.log(`Iteration number: ${i}`);
+}
+```
+
+### ب. حلقة `while`
+تستخدم عندما تريد التكرار **طالما أن الشرط صحيح** (وقد لا تعرف كم مرة بالضبط سيتكرر).
+
+```javascript
+let count = 5;
+
+while (count > 0) {
+  console.log(`Countdown: ${count}`);
+  count--; // مهم جداً! لكي لا تدخل في تكرار لا نهائي
+}
+```
+
+---
+
+## 5. `break` و `continue`
+
+- **`break`**: تكسر (تنهي) الحلقة التكرارية فوراً وتخرج منها.
+- **`continue`**: تتخطى الدورة الحالية وتقفز للدورة التي تليها مباشرة.
+
+```javascript
+for (let i = 1; i <= 5; i++) {
+  if (i === 3) {
+    continue; // سيتخطى الرقم 3 ولن يطبعه
+  }
+  if (i === 5) {
+    break; // سيتوقف تماماً قبل طباعة الرقم 5
+  }
+  console.log(i); 
+}
+// الناتج: 1, 2, 4
+```
+
+---
+
+## 🚀 Performance & Pro Tips
+
+:::tip الحلقات اللانهائية (Infinite Loops)
+من أسوأ الأخطاء التي تدمر الأداء (وأحياناً تعلق المتصفح) هو نسيان تحديث المتغير داخل `while` loop، مما يؤدي إلى حلقة لا تنتهي أبداً. تأكد دائماً من وجود شرط للخروج!
+:::
+
+:::tip تجنب المتغيرات العامة في الـ Loops
+استخدم دائماً `let` داخل `for` loop لكي يكون المتغير (مثل `i`) معزولاً بداخل الـ Loop فقط (Block Scope) ولا يؤثر على باقي أجزاء البرنامج. لا تستخدم `var` هنا أبداً.
+:::
+
+---
+
+##  أسئلة المقابلات الشخصية (Interview Questions)
+
+<details>
+<summary><strong>Q1: متى يجب استخدام `switch` بدلاً من `if/else`؟</strong></summary>
+
+- استخدم `if/else` عند فحص **نطاقات** (مثل `age > 18`) أو شروط معقدة.
+- استخدم `switch` عندما تقارن متغيراً واحداً **بقيم محددة وثابتة** (مثل فحص حالة الطلب `pending`, `success`, `failed`). الـ `switch` أسهل في القراءة في هذه الحالة.
+</details>
+
+<details>
+<summary><strong>Q2: ماذا سيحدث إذا نسيت كتابة `break` داخل حالة `case` في `switch`؟</strong></summary>
+
+سيحدث ما يُعرف بـ **Fall-through**. سيقوم البرنامج بتنفيذ الكود الخاص بالحالة الصحيحة، وسيكمل تنفيذ كل الحالات (Cases) التي تحتها أيضاً بغض النظر عما إذا كانت صحيحة أم لا، حتى يصطدم بـ `break` أو ينتهي الـ `switch`.
+</details>
+
+---
+
+##  أخطاء شائعة تجنبها (Common Mistakes)
+
+```javascript
+// ❌ 1 - نسيان علامة = للمقارنة
+let x = 10;
+if (x = 5) { // هذا ليس فحصاً! هذا تعيين (Assignment)، وسيتم اعتباره true لأن 5 تعتبر Truthy!
+  console.log("X is 5");
+}
+
+// ✅
+if (x === 5) { }
+
+// ❌ 2 - نسيان الـ break في الـ switch
+switch(status) {
+  case "active":
+    console.log("Is active");
+    // نسينا الـ break هنا
+  case "banned":
+    console.log("Is banned"); // سيتم طباعة هذا أيضاً إذا كان active!
+}
+```
+
+---
+
+<ExerciseBox title="🏋️ تمرين عملي (Exercise)">
+
+اكتب كود جافاسكريبت يقوم بما يلي:
+1. استخدم حلقة `for` لتكرار الأرقام من 1 إلى 10.
+2. داخل الحلقة، استخدم `if/else` أو المعامل الثلاثي.
+3. إذا كان الرقم زوجياً (يمكن معرفته باستخدام `% 2 === 0`)، اطبع `"Even"`.
+4. إذا كان الرقم فردياً، اطبع `"Odd"`.
+5. توقف تماماً (`break`) إذا وصل الرقم إلى 8.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل (Solution)</strong></summary>
+
+```javascript
+for (let i = 1; i <= 10; i++) {
+  // التوقف التام عند الرقم 8
+  if (i === 8) {
+    break;
+  }
+  
+  // فحص هل الرقم زوجي أم فردي باستخدام المعامل الثلاثي
+  let type = (i % 2 === 0) ? "Even" : "Odd";
+  console.log(`Number ${i} is ${type}`);
+}
+```
+
+</details>
+
+---
+
+<SummaryBox title="📌 ملخص الدرس (Summary)">
+
+- `if/else`: الطريقة الأساسية للتحكم وتوجيه البرنامج بناءً على شروط منطقية.
+- المعامل الثلاثي `? :`: كتابة مختصرة وسريعة للـ `if` البسيطة.
+- `switch`: خيار ممتاز لقراءة أكواد تقارن قيمة معينة مع خيارات كثيرة ومحددة.
+- الحلقات (`for`, `while`): تستخدم للتكرار وأتمتة المهام، مع استخدام `break` للهروب، و `continue` للقفز وتخطي دَورة.
+
+</SummaryBox>

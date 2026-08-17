@@ -3,8 +3,8 @@ import type * as Preset from '@docusaurus/preset-classic';
 import {themes as prismThemes} from 'prism-react-renderer';
 
 const config: Config = {
-  title: 'Dart & Flutter Pro',
-  tagline: 'The complete guide to Dart & Flutter',
+  title: 'CodeNova',
+  tagline: 'Master modern development',
   favicon: 'img/logo.svg',
 
   url: 'https://doc-flutter.local',
@@ -45,10 +45,34 @@ const config: Config = {
     ],
   ],
 
+  plugins: [
+    [
+      '@docusaurus/plugin-content-docs',
+      {
+        id: 'javascript',
+        path: 'docs-js',
+        routeBasePath: 'docs-js',
+        sidebarPath: './sidebars-js.ts',
+      },
+    ],
+  ],
+
   themeConfig: {
     image: 'img/docusaurus-social-card.jpg',
+    footer: {
+      copyright: `Copyright © ${new Date().getFullYear()} CodeNova. Built with Docusaurus.`,
+    },
     navbar: {
-      items: [],
+      title: 'CodeNova',
+      logo: {
+        alt: 'Logo',
+        src: 'img/logo.svg', // Ensure you have a logo or it might break, fallback to empty string if not needed but doc_flutter probably has it
+      },
+      items: [
+        {to: '/flutter', label: 'Flutter Course', position: 'left'},
+        {to: '/javascript', label: 'JavaScript Course', position: 'left'},
+        {to: '/', label: 'Hub', position: 'right'},
+      ],
     },
     colorMode: {
       defaultMode: 'dark',

@@ -1,0 +1,255 @@
+---
+id: data-types-operators
+title: "1.2 Data Types & Operators"
+sidebar_label: "1.2 Types & Operators"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 1.2 أنواع البيانات والمعاملات (Data Types & Operators)
+
+بعد أن تعلمنا كيفية إنشاء المتغيرات، من المهم جداً أن نعرف **نوع البيانات** التي نضعها داخل هذه المتغيرات وكيفية إجراء العمليات الحسابية والمنطقية عليها.
+
+---
+
+##  الأهداف التعليمية
+
+1. التمييز بين أنواع البيانات الأساسية (Primitive Types) في جافاسكريبت.
+2. فهم الفرق بين `undefined` و `null`.
+3. استخدام المعاملات الحسابية (Arithmetic Operators) بشكل صحيح.
+4. فهم الفرق الجوهري بين `==` و `===` (سؤال أساسي في المقابلات).
+5. التعرف على الإكراه النوعي (Type Coercion) وكيفية تجنب أخطائه.
+
+---
+
+## 1. أنواع البيانات الأساسية (Primitive Data Types)
+
+في جافاسكريبت، هناك **7 أنواع أساسية** للبيانات، أهمها للمبتدئين هي الخمسة الأولى:
+
+### 1. `String` (النصوص)
+يُستخدم لتخزين الكلمات أو الجمل، ويُكتب بين علامتي تنصيص (`" "`، `' '`، أو `` ` ` ``).
+
+```javascript
+let firstName = "Ahmed";
+let lastName = 'Ali';
+let message = `Hello, ${firstName}!`; // Template Literal (حديث)
+```
+
+### 2. `Number` (الأرقام)
+في جافاسكريبت، لا يوجد فرق بين الأرقام الصحيحة (`int`) والأرقام العشرية (`double` أو `float`)، كلها تعتبر `Number`.
+
+```javascript
+let age = 25;       // رقم صحيح
+let price = 99.99;  // رقم عشري
+let temperature = -5; // رقم سالب
+```
+
+### 3. `Boolean` (المنطقي)
+له قيمتان فقط: `true` (صحيح) أو `false` (خطأ). يستخدم عادة في الشروط والمنطق.
+
+```javascript
+let isStudent = true;
+let isGraduated = false;
+```
+
+### 4. `Undefined` (غير معرّف)
+هو القيمة الافتراضية لأي متغير قمت بإنشائه ولم تعطه قيمة بعد.
+
+```javascript
+let myVar;
+console.log(myVar); // undefined
+```
+
+### 5. `Null` (فارغ عمداً)
+تستخدمه عندما تريد تحديد أن هذا المتغير حالياً "فارغ" أو لا يحتوي على شيء، بشكل متعمد منك (وليس من جافاسكريبت).
+
+```javascript
+let currentScore = null; // لا يوجد سكور حالياً
+```
+
+---
+
+## 2. المعاملات الحسابية (Arithmetic Operators)
+
+مثل أي آلة حاسبة، يمكنك استخدام جافاسكريبت لإجراء العمليات الحسابية:
+
+```javascript
+let x = 10;
+let y = 3;
+
+console.log(x + y); // 13 (جمع)
+console.log(x - y); // 7  (طرح)
+console.log(x * y); // 30 (ضرب)
+console.log(x / y); // 3.3333333333333335 (قسمة)
+console.log(x % y); // 1  (باقي القسمة - Modulus)
+console.log(x ** y); // 1000 (الأس - 10 أُس 3)
+```
+
+---
+
+## 3. المعاملات المنطقية ومعاملات المقارنة (Comparison)
+
+أهم جزء في أي لغة برمجة هو مقارنة القيم. النتيجة دائماً تكون `Boolean` (`true` أو `false`).
+
+```javascript
+let a = 10;
+let b = 20;
+
+console.log(a > b);  // false
+console.log(a <= b); // true
+console.log(a !== b); // true (هل a لا يساوي b؟)
+```
+
+### ⚠️ الفرق الخطير بين <code dir="ltr">==</code> و <code dir="ltr">===</code>
+
+> ✅ **قاعدة الكود النظيف (Clean Code):** **استخدم دائماً `===` ولا تستخدم `==` أبداً.**
+
+- **`==` (Loose Equality):** تقارن **القيمة فقط**، وتحاول تحويل الأنواع لتتطابق (Type Coercion).
+- **`===` (Strict Equality):** تقارن **القيمة والنوع معاً**، ولا تقوم بأي تحويل.
+
+```javascript
+// ❌ سيء جداً ويؤدي إلى أخطاء غريبة
+console.log(5 == "5"); // true! (جافاسكريبت حولت النص لرقم لمقارنتهما)
+console.log(0 == false); // true!
+
+// ✅ الطريقة الاحترافية والصحيحة
+console.log(5 === "5"); // false (لأن الأول Number والثاني String)
+console.log(0 === false); // false
+```
+
+---
+
+## 4. الإكراه النوعي (Type Coercion)
+
+بما أن جافاسكريبت لغة مرنة، فهي تحاول غالباً "مساعدتك" (أو توريطك) عبر تحويل أنواع البيانات تلقائياً.
+
+```javascript
+// عملية جمع نص مع رقم
+let result = "10" + 5; 
+console.log(result); // "105" (قامت بتحويل الـ 5 إلى نص ولصقتهما!)
+
+// عملية ضرب نص مع رقم
+let multi = "10" * 5;
+console.log(multi); // 50 (قامت بتحويل النص إلى رقم وضربتهما!)
+```
+
+لتحويل النص إلى رقم صراحة وبشكل آمن، استخدم `Number()`:
+```javascript
+let strValue = "10";
+let numValue = Number(strValue); // 10
+```
+
+---
+
+## 🚀 Performance & Pro Tips
+
+:::tip التعرف على النوع باستخدام `typeof`
+للتحقق من نوع المتغير أثناء تشغيل الكود، استخدم معامل `typeof`.
+```javascript
+console.log(typeof "Hello"); // "string"
+console.log(typeof 42);      // "number"
+console.log(typeof true);    // "boolean"
+console.log(typeof undefined);// "undefined"
+console.log(typeof null);    // "object" (⚠️ هذا خطأ تاريخي في لغة JS لا يمكنهم إصلاحه!)
+```
+:::
+
+:::tip الزيادة السريعة (Increment)
+بدلاً من كتابة `x = x + 1`، يمكنك استخدام:
+```javascript
+let counter = 0;
+counter++; // 1
+counter += 5; // 6 (يكافئ counter = counter + 5)
+```
+:::
+
+---
+
+##  أسئلة المقابلات الشخصية (Interview Questions)
+
+<details>
+<summary><strong>Q1: ما هو الفرق بين `null` و `undefined` في جافاسكريبت؟</strong></summary>
+
+- `undefined`: هي القيمة الافتراضية لأي متغير لم يتم تعيين قيمة له بعد. (يعني النظام هو من قام بوضعها).
+- `null`: هي قيمة **مقصودة** يضعها المبرمج ليخبر البرنامج أن هذا المتغير "فارغ حالياً".
+
+```javascript
+let x; // x is undefined
+let y = null; // y is intentionally empty
+```
+</details>
+
+<details>
+<summary><strong>Q2: لماذا النتيجة `0.1 + 0.2 === 0.3` هي `false`؟</strong></summary>
+
+هذه المشكلة (Floating Point Precision) ليست خاصة بجافاسكريبت فقط، بل بكل لغات البرمجة الحديثة. أجهزة الكمبيوتر تستخدم النظام الثنائي (Binary)، وبعض الأرقام العشرية (مثل 0.1) ليس لها تمثيل دقيق 100% في النظام الثنائي.
+نتيجة `0.1 + 0.2` في جافاسكريبت هي `0.30000000000000004`، ولذلك لا تتساوى مع `0.3`.
+
+**الحل:** إذا كنت تتعامل مع الأموال، قم بضرب القيمة في 100 لتحويلها إلى أرقام صحيحة (Cents) ثم اقسمها لاحقاً.
+</details>
+
+---
+
+##  أخطاء شائعة تجنبها (Common Mistakes)
+
+```javascript
+// ❌ 1 - استخدام == بدلاً من ===
+if (age == "18") { }
+
+// ✅ 
+if (age === 18) { }
+
+// ❌ 2 - نسيان تحويل النصوص لأرقام قبل جمعها
+let val1 = "10";
+let val2 = "20";
+console.log(val1 + val2); // "1020" بدلاً من 30!
+
+// ✅
+console.log(Number(val1) + Number(val2)); // 30
+```
+
+---
+
+<ExerciseBox title="🏋️ تمرين عملي (Exercise)">
+
+اكتب كود جافاسكريبت يقوم بما يلي:
+1. قم بإنشاء متغير لنص يمثل رقماً (مثلاً `"50"`).
+2. قم بإنشاء متغير لرقم حقيقي (مثلاً `20`).
+3. اجمع المتغيرين بحيث تكون النتيجة `70` وليس `"5020"`.
+4. اطبع نتيجة مقارنة (هل الرقم الأول أكبر من الثاني؟) واستخدم `typeof` للتأكد من أن النتيجة هي `boolean`.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل (Solution)</strong></summary>
+
+```javascript
+// 1. نص يمثل رقم
+const stringNumber = "50";
+
+// 2. رقم حقيقي
+const actualNumber = 20;
+
+// 3. نقوم بتحويل النص إلى رقم باستخدام Number() قبل الجمع
+const sum = Number(stringNumber) + actualNumber;
+console.log(sum); // 70
+
+// 4. المقارنة
+const isGreater = Number(stringNumber) > actualNumber;
+console.log(isGreater); // true
+console.log(typeof isGreater); // "boolean"
+```
+
+</details>
+
+---
+
+<SummaryBox title="📌 ملخص الدرس (Summary)">
+
+- أنواع البيانات في JS تنقسم إلى Primitive (أرقام، نصوص، منطقي، Null، Undefined) و Objects.
+- تجنب تماماً استخدام `==` واستخدم دائماً `===` لتجنب الأخطاء الغريبة.
+- احذر من `+` مع النصوص لأنها تقوم بلصق النصوص (Concatenation) بدلاً من جمع الأرقام.
+- استخدم `Number()` للتحويل الآمن من نصوص إلى أرقام، واستخدم `typeof` لمعرفة نوع البيانات.
+
+</SummaryBox>

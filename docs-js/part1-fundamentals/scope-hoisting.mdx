@@ -1,0 +1,224 @@
+---
+id: scope-hoisting
+title: "1.5 Scope & Hoisting"
+sidebar_label: "1.5 Scope & Hoisting"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 1.5 النطاق (Scope) والرفع (Hoisting)
+
+لماذا يظهر أحياناً خطأ أن "المتغير غير معرّف" بالرغم من أنك متأكد أنك قمت بتعريفه؟ الإجابة تكمن في فهم الـ **Scope** (المكان الذي يعيش فيه المتغير) والـ **Hoisting** (طريقة جافاسكريبت الغريبة في قراءة الكود قبل تنفيذه).
+
+---
+
+##  الأهداف التعليمية
+
+1. التمييز بين النطاق العام (Global Scope) والمحلي (Local Scope).
+2. فهم الفرق الجوهري بين Block Scope (`let`, `const`) و Function Scope (`var`).
+3. استيعاب مفهوم الرفع (Hoisting) وكيف تتعامل لغة جافاسكريبت مع المتغيرات والدوال في الخلفية.
+4. التعرف على الـ Temporal Dead Zone (TDZ).
+5. الإجابة على أصعب أسئلة المقابلات عن نطاق المتغيرات.
+
+---
+
+## 1. ما هو النطاق (Scope)؟
+
+النطاق هو ببساطة **الحدود التي يكون فيها المتغير مرئياً وقابلاً للاستخدام**. 
+
+### أ. النطاق العام (Global Scope)
+أي متغير تقوم بتعريفه خارج أي دالة أو `{}`، يصبح متاحاً للبرنامج بالكامل.
+
+```javascript
+let globalName = "CodeNova";
+
+function showName() {
+  console.log(globalName); // يعمل بشكل ممتاز، لأنه متغير عام
+}
+```
+
+### ب. النطاق المحلي (Local Scope)
+إذا قمت بتعريف المتغير بداخل دالة `function`، فهو ملك لهذه الدالة فقط ولا يمكن لأي شخص خارج الدالة رؤيته.
+
+```javascript
+function calculateSecret() {
+  let secretCode = "XYZ123"; // يعيش داخل الدالة فقط
+  console.log(secretCode);
+}
+
+calculateSecret();
+console.log(secretCode); // ❌ ReferenceError: secretCode is not defined
+```
+
+---
+
+## 2. الـ Block Scope (ميزة الـ let والـ const)
+
+قبل ظهور `let` و `const`، كانت جافاسكريبت لا تعترف إلا بنطاق الدوال (Function Scope) للمتغيرات المعرفة بـ `var`. هذا يعني أن استخدام أقواس `{}` مع `if` أو `for` لم يكن يحمي المتغيرات من التسرب!
+
+```javascript
+if (true) {
+  var oldWay = "I am leaking!";
+  let newWay = "I am safe!";
+}
+
+console.log(oldWay); // "I am leaking!" (كارثة، المتغير تسرب خارج الـ if)
+console.log(newWay); // ❌ ReferenceError: newWay is not defined (ممتاز، تمت حمايته)
+```
+
+> ✅ **قاعدة الكود النظيف (Clean Code):** دائماً استخدم `let` و `const` لمنع تسرب المتغيرات خارج الأقواس الخاصة بها (Block Scope)، فهذا يمنع التداخل غير المتوقع بين المتغيرات التي تحمل نفس الاسم.
+
+---
+
+## 3. ما هو الرفع (Hoisting)؟
+
+جافاسكريبت لا تقوم بقراءة الكود وتنفيذه مباشرة من أعلى لأسفل. بل تقوم بـ **دورتين (Two Passes)**:
+1. دورة الذاكرة: تبحث عن كل المتغيرات والدوال وتقوم بـ "رفعها" (Hoisting) لأعلى الذاكرة.
+2. دورة التنفيذ: تنفذ الكود فعلياً.
+
+### رفع الدوال (Function Hoisting)
+يمكنك استدعاء الـ Function Declaration قبل أن تقوم بكتابتها بفضل الرفع!
+
+```javascript
+sayHello(); // سيتم طباعة "Hello" بنجاح!
+
+function sayHello() {
+  console.log("Hello!");
+}
+```
+
+### رفع المتغيرات بـ `var`
+يتم رفع المتغير ولكن كـ `undefined`، مما يسبب أخطاء صامتة (Silent Bugs) خطيرة جداً!
+
+```javascript
+console.log(playerName); // undefined! (لا يوجد خطأ، ولكن القيمة مفقودة)
+var playerName = "Ahmed";
+```
+
+### رفع المتغيرات بـ `let` و `const` والـ TDZ
+يتم رفعهم أيضاً! ولكن لغة جافاسكريبت الحديثة تمنعك من استخدامهم قبل سطر التعريف، وتضعهم في منطقة محظورة تسمى **Temporal Dead Zone (TDZ)**.
+
+```javascript
+console.log(score); // ❌ ReferenceError: Cannot access 'score' before initialization
+let score = 100;
+```
+
+---
+
+## 🚀 Performance & Pro Tips
+
+:::tip تقليل المتغيرات العامة (Global Variables)
+كثرة المتغيرات العامة تستهلك الذاكرة باستمرار لأنها لا يتم تدميرها (Garbage Collected) إلا عند إغلاق التطبيق. كما أنها ترفع احتمالية "الاصطدام" (Naming Collisions). حاول دائماً تغليف متغيراتك داخل دوال أو بلوكات (Modules).
+:::
+
+:::tip رفع دوال التعبير (Function Expressions)
+إذا قمت بتعريف الدالة بداخل متغير (مثلاً باستخدام `const add = () => {}`)، فإنها تتبع قواعد رفع المتغيرات، أي أنك **لا تستطيع** استدعاءها قبل السطر الذي كُتبت فيه.
+:::
+
+---
+
+##  أسئلة المقابلات الشخصية (Interview Questions)
+
+<details>
+<summary><strong>Q1: ماذا سيطبع الكود التالي ولماذا؟</strong></summary>
+
+```javascript
+var a = 1;
+function test() {
+  console.log(a);
+  var a = 2;
+}
+test();
+```
+
+**الإجابة:** سيطبع `undefined`! 
+بسبب الـ Hoisting، يقوم محرك جافاسكريبت برفع تعريف `var a` إلى أعلى الدالة `test` قبل التنفيذ الفعلي، لكن **بدون قيمتها**. لذا في وقت طباعة `console.log(a)`، يكون المتغير موجوداً ولكنه `undefined`، ولم يتم إعطاؤه القيمة `2` بعد.
+</details>
+
+<details>
+<summary><strong>Q2: ما هي منطقة الموت المؤقتة (Temporal Dead Zone)؟</strong></summary>
+
+هي الفترة بين بداية الـ Block (أو الـ Scope) وحتى السطر الذي تم فيه تهيئة (Initialize) المتغير المُعرّف بـ `let` أو `const`. إذا حاولت الوصول للمتغير داخل هذه المنطقة، سيرمي المحرك خطأ `ReferenceError` لحمايتك من الأخطاء العشوائية.
+</details>
+
+---
+
+##  أخطاء شائعة تجنبها (Common Mistakes)
+
+```javascript
+// ❌ 1 - تسريب العداد (Loop Counter Leak) باستخدام var
+for (var i = 0; i < 5; i++) { }
+console.log(i); // 5 (تسرب المتغير i خارج الحلقة!)
+
+// ✅
+for (let j = 0; j < 5; j++) { }
+// console.log(j); // Error: j is not defined (صحيح ومحمي)
+
+// ❌ 2 - محاولة استدعاء Arrow Function قبل تعريفها
+calculate(10); // ReferenceError!
+const calculate = (x) => x * 2;
+```
+
+---
+
+<ExerciseBox title="🏋️ تمرين عملي (Exercise)">
+
+لديك الكود التالي المكتوب بالطريقة القديمة السيئة، قم بإصلاحه ليصبح كوداً حديثاً وآمناً وخالياً من مشاكل الـ Scope والـ Hoisting:
+
+```javascript
+printMessage();
+
+var message = "Hello World";
+var status = "active";
+
+if (status === "active") {
+  var discount = 50;
+}
+
+console.log(discount); // يجب ألا يكون متاحاً هنا!
+
+function printMessage() {
+  console.log(message); // يطبع undefined
+}
+```
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل (Solution)</strong></summary>
+
+```javascript
+// 1. استخدام const بدلاً من var للمتغيرات التي لا تتغير
+const message = "Hello World";
+const status = "active";
+
+// 2. الدالة يتم استدعاؤها *بعد* تعريف المتغيرات، لتجنب طباعة undefined
+function printMessage() {
+  console.log(message); 
+}
+
+printMessage(); // يطبع "Hello World"
+
+// 3. استخدام let داخل الـ if، لتفعيل خاصية הـ Block Scope
+if (status === "active") {
+  let discount = 50;
+  // خصم متاح فقط داخل هذه الأقواس
+}
+
+// 4. السطر التالي سيظهر خطأ (كما هو مطلوب لحماية المتغير)
+// console.log(discount); 
+```
+
+</details>
+
+---
+
+<SummaryBox title="📌 ملخص الدرس (Summary)">
+
+- **Global Scope:** متاح في كل مكان (تجنب الإكثار منه).
+- **Block Scope (`let`, `const`):** محمي داخل الأقواس `{}` وهو المعيار في الكود الحديث.
+- **Hoisting:** نقل تعريفات المتغيرات والدوال لأعلى قبل التنفيذ.
+- استدعاء دوال `function` التقليدية مسموح قبل كتابتها بسبب الـ Hoisting الكامل، بينما الـ `let` والـ `const` تقعان في الـ TDZ إذا حاولت استخدامهما قبل التعريف.
+
+</SummaryBox>

@@ -1,0 +1,258 @@
+---
+id: objects
+title: "2.1 Object Literals & Methods"
+sidebar_label: "2.1 Objects & Methods"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 2.1 الكائنات (Objects) والميثودز (Methods)
+
+إذا كانت المتغيرات العادية تخزن قيمة واحدة فقط، فإن الكائنات (Objects) تسمح لك بتخزين مجموعة كبيرة من البيانات المرتبطة ببعضها (مثل بيانات مستخدم، أو معلومات منتج) داخل متغير واحد منظم، تماماً مثل الـ Map في لغة Dart. 
+
+---
+
+##  الأهداف التعليمية
+
+1. إنشاء الكائنات (Objects) بطريقة الـ Literal.
+2. الوصول إلى خصائص الكائن (Properties) بطريقتي `Dot Notation` و `Bracket Notation`.
+3. إضافة، تعديل، وحذف الخصائص من الكائن.
+4. كتابة واستخدام الدوال داخل الكائنات (Methods).
+5. الإجابة على أسئلة المقابلات المتقدمة حول الكائنات.
+
+---
+
+## 1. ما هو الكائن (Object)؟
+
+الكائن هو مجموعة من **المفاتيح والقيم (Key-Value Pairs)**. المفتاح (Key) يكون دائماً عبارة عن نص (String)، والقيمة يمكن أن تكون أي شيء (رقم، نص، مصفوفة، دالة، أو حتى كائن آخر).
+
+```javascript
+const user = {
+  firstName: "Ahmed",
+  lastName: "Ali",
+  age: 25,
+  isAdmin: true
+};
+```
+
+---
+
+## 2. الوصول إلى خصائص الكائن
+
+يوجد طريقتان للوصول للبيانات داخل الكائن:
+
+### أ. طريقة النقطة (Dot Notation)
+وهي الطريقة الأسهل والأكثر شيوعاً واستخداماً.
+
+```javascript
+console.log(user.firstName); // "Ahmed"
+console.log(user.age);       // 25
+```
+
+### ب. الأقواس المربعة (Bracket Notation)
+تستخدم هذه الطريقة إذا كان اسم المفتاح (Key) موجوداً بداخل **متغير آخر**، أو كان اسم المفتاح يحتوي على مسافات (وهو أمر غير مفضل).
+
+```javascript
+const user = { "first name": "Ahmed", age: 25 };
+
+// console.log(user.first name); // ❌ خطأ قواعدي
+console.log(user["first name"]); // "Ahmed"
+
+// استخدام متغير للوصول للقيمة (مهم جداً!)
+let keyToFind = "age";
+console.log(user[keyToFind]); // 25 (يبحث عن user.age)
+```
+
+---
+
+## 3. تعديل وإضافة وحذف الخصائص
+
+الكائنات في جافاسكريبت مرنة جداً (Dynamic)، يمكنك تغيير هيكلها في أي وقت!
+
+```javascript
+const product = {
+  name: "Laptop",
+  price: 1500
+};
+
+// 1. التعديل (Update)
+product.price = 1200; 
+
+// 2. الإضافة (Add)
+product.brand = "Apple"; 
+
+// 3. الحذف (Delete)
+delete product.name;
+
+console.log(product); // { price: 1200, brand: 'Apple' }
+```
+
+> ✅ **قاعدة الكود النظيف (Clean Code):** بالرغم من أن جافاسكريبت تسمح لك بتعديل الكائنات في أي وقت، إلا أن الممارسة الأفضل هي تعريف كل الخصائص التي ستحتاجها مسبقاً (حتى لو كانت `null` أو `undefined`) لتجعل الكود أسهل في القراءة والتوقع.
+
+---
+
+## 4. الدوال داخل الكائنات (Methods)
+
+إذا قمنا بتعريف دالة (Function) كقيمة لأحد مفاتيح الكائن، فإننا نسميها **Method**. 
+
+```javascript
+const car = {
+  brand: "Toyota",
+  model: "Camry",
+  startEngine: function() {
+    console.log("Vroom Vroom! Engine started.");
+  }
+};
+
+car.startEngine(); // "Vroom Vroom! Engine started."
+```
+
+### الطريقة الحديثة لكتابة الـ Methods (ES6)
+يمكنك اختصار كلمة `function`:
+
+```javascript
+const car = {
+  brand: "Toyota",
+  // طريقة حديثة ومختصرة
+  startEngine() {
+    console.log("Engine started.");
+  }
+};
+```
+
+---
+
+## 🚀 Performance & Pro Tips
+
+:::tip Object.keys() و Object.values()
+إذا أردت الحصول على جميع المفاتيح أو القيم من كائن كـ Array (مصفوفة) لتتمكن من عمل Loop عليها، استخدم هذه الدوال المدمجة:
+```javascript
+const user = { name: "Ahmed", age: 25 };
+console.log(Object.keys(user));   // ["name", "age"]
+console.log(Object.values(user)); // ["Ahmed", 25]
+```
+:::
+
+:::tip حماية الكائنات بـ Object.freeze()
+تذكر أن تعريف الكائن بـ `const` لا يمنعك من تعديل خصائصه الداخلية! لمنع أي تعديل (إضافة، تغيير، حذف)، استخدم `freeze`:
+```javascript
+const config = { apiURL: "https://api.com" };
+Object.freeze(config);
+config.apiURL = "https://hacked.com"; // ❌ لن يتغير شيء!
+```
+:::
+
+---
+
+##  أسئلة المقابلات الشخصية (Interview Questions)
+
+<details>
+<summary><strong>Q1: ماذا يحدث إذا حاولت الوصول لخاصية (Property) غير موجودة في الكائن؟</strong></summary>
+
+سترد جافاسكريبت بـ `undefined`. هذا يختلف عن بعض اللغات الأخرى التي قد تنهي البرنامج بـ Error أو Exception.
+```javascript
+const user = { name: "Ali" };
+console.log(user.age); // undefined
+```
+</details>
+
+<details>
+<summary><strong>Q2: كيف تتحقق مما إذا كانت خاصية معينة موجودة بالفعل بداخل الكائن؟</strong></summary>
+
+يمكنك استخدام المعامل `in` أو دالة `hasOwnProperty`.
+```javascript
+const user = { name: "Ali", age: 25 };
+
+console.log("age" in user); // true
+console.log("email" in user); // false
+```
+</details>
+
+---
+
+##  أخطاء شائعة تجنبها (Common Mistakes)
+
+```javascript
+// ❌ 1 - نسيان الفاصلة (Comma) بين خصائص الكائن
+const user = {
+  name: "Ahmed"
+  age: 25 // SyntaxError: missing } after property list
+};
+
+// ✅
+const user = {
+  name: "Ahmed",
+  age: 25
+};
+
+// ❌ 2 - استخدام الـ Bracket Notation بشكل خاطئ
+const key = "name";
+console.log(user.key); // undefined (يبحث عن خاصية اسمها الحرفي 'key'!)
+
+// ✅ 
+console.log(user[key]); // "Ahmed" (يقرأ قيمة المتغير key ويبحث عن 'name')
+```
+
+---
+
+<ExerciseBox title="🏋️ تمرين عملي (Exercise)">
+
+اكتب كود جافاسكريبت يقوم بالآتي:
+1. قم بإنشاء كائن اسمه `smartphone` يحتوي على الخصائص التالية:
+   - `brand` (مثلاً "Samsung")
+   - `price` (مثلاً 1000)
+   - `isOnSale` (قيمة منطقية `false`)
+2. أضف خاصية جديدة للكائن تسمى `color` وقيمتها `"Black"`.
+3. قم بتغيير السعر `price` إلى `800`.
+4. أضف Method تسمى `checkSale` تقوم بفحص الـ `isOnSale` وتطبع "Discount applied" إذا كانت `true`.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل (Solution)</strong></summary>
+
+```javascript
+// 1. إنشاء الكائن
+const smartphone = {
+  brand: "Samsung",
+  price: 1000,
+  isOnSale: false,
+  
+  // 4. الـ Method 
+  checkSale() {
+    if (this.isOnSale === true) {
+      console.log("Discount applied");
+    } else {
+      console.log("No discount");
+    }
+  }
+};
+
+// 2. إضافة خاصية اللون
+smartphone.color = "Black";
+
+// 3. تعديل السعر
+smartphone.price = 800;
+
+// استدعاء الـ Method لاختبارها
+smartphone.checkSale(); // "No discount"
+
+// تغيير حالة التخفيض واستدعاء الدالة مجدداً
+smartphone.isOnSale = true;
+smartphone.checkSale(); // "Discount applied"
+```
+
+</details>
+
+---
+
+<SummaryBox title="📌 ملخص الدرس (Summary)">
+
+- الكائنات (Objects) تخزن البيانات باستخدام **المفتاح والقيمة (Key-Value Pairs)**.
+- الوصول العادي يتم عبر النقطة `object.key`.
+- الوصول الديناميكي (بواسطة المتغيرات) يتم عبر الأقواس المربعة `object[keyVar]`.
+- الـ Methods هي ببساطة دوال تعيش بداخل الكائنات.
+- الكائنات ديناميكية، حيث يمكنك تعديل وإضافة وحذف الخصائص في أي لحظة.
+
+</SummaryBox>

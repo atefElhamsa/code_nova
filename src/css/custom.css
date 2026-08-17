@@ -1416,3 +1416,216 @@ code:not([class]) {
 .mobile-blocker {
   display: none;
 }
+
+/* Fix RTL inline code padding overflow */
+code {
+  direction: ltr;
+  unicode-bidi: isolate;
+  display: inline-block;
+  vertical-align: baseline;
+}
+
+/* ================================================================
+   COURSE GATE OVERLAY
+   ================================================================ */
+.course-gate-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999999;
+  background: rgba(4, 8, 15, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  animation: fadeIn 0.4s ease-out;
+}
+
+.course-gate-container {
+  background: rgba(11, 20, 37, 0.7);
+  border: 1px solid rgba(14, 165, 233, 0.2);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  border-radius: 24px;
+  padding: 3rem 2.5rem;
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+  animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.course-gate-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--brand), transparent);
+  opacity: 0.7;
+}
+
+.gate-icon-wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: rgba(14, 165, 233, 0.1);
+  border: 1px solid rgba(14, 165, 233, 0.2);
+  margin-bottom: 1.5rem;
+  box-shadow: 0 0 20px rgba(14, 165, 233, 0.2);
+}
+
+.gate-icon {
+  font-size: 2rem;
+}
+
+.gate-title {
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: #fff;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.5px;
+}
+
+.gate-subtitle {
+  font-size: 0.95rem;
+  color: #94a3b8;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+}
+
+.device-code-display {
+  background: rgba(4, 8, 15, 0.6);
+  border: 2px dashed rgba(14, 165, 233, 0.4);
+  padding: 1rem 1.2rem;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 1.8rem;
+  font-weight: 800;
+  font-family: var(--ifm-font-family-monospace);
+  text-align: center;
+  letter-spacing: 4px;
+  margin: 1.5rem 0;
+  box-shadow: 0 0 15px rgba(14, 165, 233, 0.1);
+}
+
+.gate-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.gate-input {
+  background: rgba(4, 8, 15, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1rem 1.2rem;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 1.1rem;
+  font-family: var(--ifm-font-family-monospace);
+  text-align: center;
+  transition: all 0.3s ease;
+  letter-spacing: 2px;
+}
+
+.gate-input:focus {
+  outline: none;
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+  background: rgba(4, 8, 15, 0.8);
+}
+
+.gate-input.input-error {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.gate-error-message {
+  color: #ef4444;
+  font-size: 0.85rem;
+  margin-top: -0.5rem;
+  text-align: right;
+  font-weight: 500;
+}
+
+.gate-btn {
+  background: linear-gradient(135deg, var(--brand) 0%, var(--brand-dark) 100%);
+  color: #fff;
+  border: none;
+  padding: 1rem;
+  border-radius: 12px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 10px 20px rgba(14, 165, 233, 0.3);
+}
+
+.gate-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 25px rgba(14, 165, 233, 0.4);
+}
+
+.gate-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.gate-btn.verifying {
+  opacity: 0.8;
+  cursor: not-allowed;
+  background: #334155;
+  box-shadow: none;
+}
+
+.gate-footer {
+  margin-top: 2rem;
+  font-size: 0.95rem;
+  color: #94a3b8;
+}
+
+.gate-footer p {
+  margin-bottom: 1rem;
+}
+
+.gate-contact-links {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.contact-btn {
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  color: #fff !important;
+  text-decoration: none !important;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.contact-btn.whatsapp {
+  background: rgba(37, 211, 102, 0.15);
+  border: 1px solid rgba(37, 211, 102, 0.3);
+  color: #25d366 !important;
+}
+
+.contact-btn.whatsapp:hover {
+  background: rgba(37, 211, 102, 0.25);
+  transform: translateY(-2px);
+}
+
+.contact-btn.telegram {
+  background: rgba(0, 136, 204, 0.15);
+  border: 1px solid rgba(0, 136, 204, 0.3);
+  color: #0088cc !important;
+}
+
+.contact-btn.telegram:hover {
+  background: rgba(0, 136, 204, 0.25);
+  transform: translateY(-2px);
+}

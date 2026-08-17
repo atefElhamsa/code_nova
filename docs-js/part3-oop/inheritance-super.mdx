@@ -1,0 +1,252 @@
+---
+id: inheritance-super
+title: "3.2 Inheritance & Super"
+sidebar_label: "3.2 Inheritance"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 3.2 الوراثة (Inheritance) والكلمة `super`
+
+من أهم مبادئ البرمجة كائنية التوجه (OOP) هو مبدأ **الوراثة (Inheritance)**. بدلاً من إعادة كتابة نفس الكود مراراً وتكراراً، يتيح لك هذا المبدأ إنشاء فئة (Class) جديدة ترث كل الخصائص والدوال من فئة أخرى موجودة مسبقاً، مع إمكانية التعديل عليها أو إضافة خصائص جديدة.
+
+---
+
+##  الأهداف التعليمية
+
+1. فهم مبدأ الوراثة ولماذا نستخدمه لتقليل تكرار الكود (DRY Principle).
+2. استخدام الكلمة المحجوزة `extends` لربط الفئات.
+3. استخدام الكلمة المحجوزة `super` لاستدعاء الـ constructor الخاص بالأب.
+4. فهم التغلب على الدوال (Method Overriding).
+
+---
+
+## 1. مشكلة تكرار الكود (بدون الوراثة)
+
+لنفترض أن لدينا نظاماً للسيارات، ولدينا سيارة عادية `Car` وشاحنة `Truck`.
+
+```javascript
+class Car {
+  constructor(brand, speed) {
+    this.brand = brand;
+    this.speed = speed;
+  }
+  drive() { console.log(`Driving at ${this.speed} km/h`); }
+}
+
+class Truck {
+  constructor(brand, speed, capacity) {
+    // تكرار نفس كود الـ Car!
+    this.brand = brand;
+    this.speed = speed;
+    this.capacity = capacity;
+  }
+  drive() { console.log(`Driving at ${this.speed} km/h`); } // تكرار!
+  loadCargo() { console.log(`Loading ${this.capacity} tons`); }
+}
+```
+
+لاحظ كمية الأكواد المتكررة. هنا يأتي دور الوراثة لإنقاذنا!
+
+---
+
+## 2. استخدام الوراثة (extends)
+
+لكي نجعل `Truck` ترث من `Car` (أي أن الـ `Truck` هي في الأساس `Car` مضافاً إليها بعض الأشياء)، نستخدم كلمة `extends`.
+
+ولكن لكي نمرر البيانات (`brand` و `speed`) للفئة الأب (`Car`) لتقوم بتهيئتها بدلاً منا، نستخدم كلمة **`super`**.
+
+```javascript
+// الفئة الأب (Parent Class / Super Class)
+class Car {
+  constructor(brand, speed) {
+    this.brand = brand;
+    this.speed = speed;
+  }
+
+  drive() {
+    console.log(`${this.brand} is driving at ${this.speed} km/h`);
+  }
+}
+
+// الفئة الابن (Child Class / Sub Class)
+class Truck extends Car {
+  constructor(brand, speed, capacity) {
+    // 1. يجب استدعاء super أولاً لتشغيل الـ constructor الخاص بالأب
+    super(brand, speed); 
+    
+    // 2. الآن يمكننا إضافة الخصائص الخاصة بالشاحنة فقط
+    this.capacity = capacity;
+  }
+
+  loadCargo() {
+    console.log(`Loading ${this.capacity} tons into the ${this.brand}`);
+  }
+}
+
+const myTruck = new Truck("Volvo", 90, 20);
+
+// نستطيع استخدام دوال الأب!
+myTruck.drive(); // "Volvo is driving at 90 km/h"
+// ونستطيع استخدام دوال الابن
+myTruck.loadCargo(); // "Loading 20 tons into the Volvo"
+```
+
+---
+
+## 3. التغلب على الدوال (Method Overriding)
+
+ماذا لو كانت الشاحنة `Truck` ترث الدالة `drive` من الأب، ولكننا نريد أن تطبع الشاحنة رسالة مختلفة تماماً عند القيادة؟
+كل ما عليك فعله هو **إعادة كتابة الدالة بنفس الاسم** داخل فئة الابن. جافاسكريبت ستعطي الأولوية دائماً لدالة الابن.
+
+```javascript
+class Truck extends Car {
+  constructor(brand, speed, capacity) {
+    super(brand, speed);
+    this.capacity = capacity;
+  }
+
+  // هذه الدالة ستلغي (تتغلب على) دالة drive الموجودة في الأب
+  drive() {
+    console.log(`The heavy ${this.brand} truck is driving slowly at ${this.speed} km/h`);
+  }
+}
+
+const heavyTruck = new Truck("Scania", 80, 40);
+heavyTruck.drive(); // سيطبع الرسالة الجديدة الخاصة بـ Truck
+```
+
+---
+
+## 🚀 Performance & Pro Tips
+
+:::tip استدعاء دالة الأب داخل دالة الابن
+إذا قمت بعمل Overriding لدالة، ولكنك ما زلت تريد تنفيذ كود الأب **ثم** تكمل عليه، يمكنك استخدام `super.methodName()`.
+```javascript
+class Truck extends Car {
+  // ...
+  drive() {
+    super.drive(); // سيطبع كود الأب أولاً
+    console.log("...and carrying heavy load!"); // ثم يطبع هذه
+  }
+}
+```
+:::
+
+:::tip تجنب الوراثة العميقة جداً
+في الهندسة البرمجية الحديثة (مثل React)، يُفضل استخدام **التركيب (Composition)** بدلاً من سلسلة وراثة طويلة ومعقدة (Class A يرث B الذي يرث C الذي يرث D). الوراثة العميقة تجعل الكود متشابكاً وصعب التعديل.
+:::
+
+---
+
+##  أسئلة المقابلات الشخصية (Interview Questions)
+
+<details>
+<summary><strong>Q1: ماذا يحدث إذا لم نكتب الدالة `constructor` بداخل الـ Child Class؟</strong></summary>
+
+ستقوم جافاسكريبت أوتوماتيكياً بتوليد `constructor` افتراضي يقوم باستدعاء `super` وتمرير كل الـ Arguments المتاحة.
+لذا، إذا كان الابن لا يمتلك أي خصائص جديدة إضافية عن الأب، لست مضطراً لكتابة `constructor` أصلاً!
+</details>
+
+<details>
+<summary><strong>Q2: ما هو الخطأ في هذا الكود: `this.name = name; super(name);`؟</strong></summary>
+
+الخطأ القاتل (ReferenceError) أنك تحاول استخدام `this` **قبل** أن تستدعي `super()`. في لغة جافاسكريبت، الفئة الأب هي من يقوم بتهيئة الكائن في الذاكرة، لذا يجب أن يكون `super()` هو **أول سطر دائماً** داخل الـ `constructor` الخاص بالفئة الابن، قبل أي استخدام للكلمة `this`.
+</details>
+
+---
+
+##  أخطاء شائعة تجنبها (Common Mistakes)
+
+```javascript
+class Animal {
+  constructor(name) { this.name = name; }
+}
+
+class Dog extends Animal {
+  constructor(name, breed) {
+    // ❌ 1 - استخدام this قبل super
+    this.breed = breed; 
+    super(name); // ReferenceError!
+  }
+}
+
+class Cat extends Animal {
+  constructor(name, color) {
+    // ❌ 2 - نسيان super تماماً
+    this.color = color; // ReferenceError!
+  }
+}
+
+// ✅ الطريقة الصحيحة
+class Bird extends Animal {
+  constructor(name, canFly) {
+    super(name); // 1. استدعاء الأب أولاً
+    this.canFly = canFly; // 2. ثم استخدام this
+  }
+}
+```
+
+---
+
+<ExerciseBox title="🏋️ تمرين عملي (Exercise)">
+
+قم بكتابة كود جافاسكريبت يحقق ما يلي:
+1. أنشئ فئة أب تسمى `Employee` تحتوي على خصائص `name` و `salary`، وتحتوي على Method تسمى `work()` تطبع `"I am working"`.
+2. أنشئ فئة ابن تسمى `Manager` ترث من `Employee`، وتحتوي على خاصية إضافية تسمى `department`.
+3. بداخل الـ `Manager`، قم بعمل Override للدالة `work()` بحيث تستدعي أولاً دالة الأب `super.work()`، ثم تطبع بعدها `"And I manage the [department] department"`.
+4. أنشئ كائناً من الـ `Manager` واستدعِ دالته للتحقق من النتيجة.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل (Solution)</strong></summary>
+
+```javascript
+// 1. الفئة الأب
+class Employee {
+  constructor(name, salary) {
+    this.name = name;
+    this.salary = salary;
+  }
+
+  work() {
+    console.log(`${this.name} is working.`);
+  }
+}
+
+// 2. الفئة الابن
+class Manager extends Employee {
+  constructor(name, salary, department) {
+    super(name, salary); // يجب أن يكون أول سطر
+    this.department = department;
+  }
+
+  // 3. التغلب على الدالة مع الاحتفاظ بسلوك الأب
+  work() {
+    super.work(); // استدعاء دالة الأب
+    console.log(`And I manage the ${this.department} department.`);
+  }
+}
+
+// 4. التجربة
+const myManager = new Manager("Ahmed", 10000, "IT");
+myManager.work();
+// المخرجات المتوقعة:
+// Ahmed is working.
+// And I manage the IT department.
+```
+
+</details>
+
+---
+
+<SummaryBox title="📌 ملخص الدرس (Summary)">
+
+- **extends:** كلمة مفتاحية تجعل فئة (ابن) ترث كل شيء من فئة (أب).
+- **super:** تستخدم داخل `constructor` الابن لتنفيذ `constructor` الأب. يجب أن تكون هي **أول سطر**.
+- **Method Overriding:** كتابة دالة في الابن بنفس اسم دالة في الأب لإلغائها أو تغيير سلوكها.
+- الوراثة تقلل تكرار الكود، ولكن يفضل عدم المبالغة فيها وجعلها معقدة (عميقة).
+
+</SummaryBox>

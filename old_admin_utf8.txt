@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useCallback, useLayoutEffect } from 'react';
+﻿import React, { useState, useEffect, useCallback, useLayoutEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { supabase as codesSupabase } from '../lib/supabaseClient';
 
 const SUPABASE_URL = 'https://rkncoqjqfdpgvgcvkpxg.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_zVjzVEKeyjH8qtPKS9pJGA_1OSruxJH';
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-const PASS_KEY = 'admin_panel_password';
+const supabase     = createClient(SUPABASE_URL, SUPABASE_KEY);
+const PASS_KEY     = 'admin_panel_password';
 
 interface UserProfile {
   id: string;
@@ -23,54 +22,48 @@ interface UserProfile {
 
 const relTime = (iso: string) => {
   const m = Math.floor((Date.now() - +new Date(iso)) / 60000);
-  if (m < 1) return 'الآن';
-  if (m < 60) return `${m}د`;
-  if (m < 1440) return `${Math.floor(m / 60)}س`;
-  return `${Math.floor(m / 1440)}ي`;
+  if (m < 1) return '╪º┘ä╪ó┘å';
+  if (m < 60) return `${m}╪»`;
+  if (m < 1440) return `${Math.floor(m/60)}╪│`;
+  return `${Math.floor(m/1440)}┘è`;
 };
 const fmtDate = (iso: string) =>
-  new Date(iso).toLocaleString('ar-EG', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  new Date(iso).toLocaleString('ar-EG', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
 const isOnline = (iso: string) => Date.now() - +new Date(iso) < 120_000;
-const getBrowser = (ua: string | null) => {
-  if (!ua) return '—';
-  if (ua.includes('Edg')) return 'Edge';
-  if (ua.includes('Chrome')) return 'Chrome';
+const getBrowser = (ua: string|null) => {
+  if (!ua) return 'ΓÇö';
+  if (ua.includes('Edg'))     return 'Edge';
+  if (ua.includes('Chrome'))  return 'Chrome';
   if (ua.includes('Firefox')) return 'Firefox';
-  if (ua.includes('Safari')) return 'Safari';
+  if (ua.includes('Safari'))  return 'Safari';
   return 'Browser';
 };
 const colorAvatar = (str: string) => {
-  const colors = ['#38bdf8', '#34d399', '#a78bfa', '#fb923c', '#f472b6', '#fbbf24'];
+  const colors = ['#38bdf8','#34d399','#a78bfa','#fb923c','#f472b6','#fbbf24'];
   let h = 0;
   for (let i = 0; i < str.length; i++) h = str.charCodeAt(i) + ((h << 5) - h);
   return colors[Math.abs(h) % colors.length];
 };
 
 export default function AdminPage() {
-  const [pass, setPass] = useState('');
-  const [authed, setAuthed] = useState(false);
-  const [authErr, setAuthErr] = useState('');
-  const [logging, setLogging] = useState(false);
-  const [data, setData] = useState<UserProfile[]>([]);
-  const [fetching, setFetching] = useState(false);
-  const [blocking, setBlocking] = useState<string | null>(null);
-  const [search, setSearch] = useState('');
-  const [tab, setTab] = useState<'all' | 'pending' | 'active' | 'blocked' | 'codes'>('all');
+  const [pass,      setPass]      = useState('');
+  const [authed,    setAuthed]    = useState(false);
+  const [authErr,   setAuthErr]   = useState('');
+  const [logging,   setLogging]   = useState(false);
+  const [data,      setData]      = useState<UserProfile[]>([]);
+  const [fetching,  setFetching]  = useState(false);
+  const [blocking,  setBlocking]  = useState<string|null>(null);
+  const [search,    setSearch]    = useState('');
+  const [tab,       setTab]       = useState<'all'|'pending'|'active'|'blocked'>('all');
   const [savedPass, setSavedPass] = useState('');
-  const [confirmDelete, setConfirmDelete] = useState<{ id: string, name: string } | null>(null);
-
-  // States for Code Generator
-  const [accessCodes, setAccessCodes] = useState<any[]>([]);
-  const [codesLoading, setCodesLoading] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [selectedCourse, setSelectedCourse] = useState('all');
+  const [confirmDelete, setConfirmDelete] = useState<{id: string, name: string} | null>(null);
 
   useLayoutEffect(() => {
-    ['nav.navbar', '.navbar', 'footer.footer', '.footer', '.table-of-contents'].forEach(s => {
-      const el = document.querySelector(s) as HTMLElement | null;
+    ['nav.navbar','.navbar','footer.footer','.footer','.table-of-contents'].forEach(s => {
+      const el = document.querySelector(s) as HTMLElement|null;
       if (el) el.style.display = 'none';
     });
-    const w = document.querySelector('.main-wrapper') as HTMLElement | null;
+    const w = document.querySelector('.main-wrapper') as HTMLElement|null;
     if (w) w.style.cssText = 'padding:0!important;margin:0!important;';
     document.body.style.cssText = 'overflow:hidden;margin:0;background:#080d1a;';
     return () => { document.body.style.cssText = ''; if (w) w.style.cssText = ''; };
@@ -88,12 +81,13 @@ export default function AdminPage() {
       if (error) throw error;
       setData(res || []);
     } catch (e: unknown) {
-      if ((e as { message?: string })?.message?.includes('Unauthorized')) { setAuthed(false); setAuthErr('كلمة المرور غلط'); }
+      if ((e as {message?:string})?.message?.includes('Unauthorized'))
+        { setAuthed(false); setAuthErr('┘â┘ä┘à╪⌐ ╪º┘ä┘à╪▒┘ê╪▒ ╪║┘ä╪╖'); }
     } finally { setFetching(false); }
   }, []);
 
   const login = useCallback(async () => {
-    if (!pass.trim()) { setAuthErr('أدخل كلمة المرور'); return; }
+    if (!pass.trim()) { setAuthErr('╪ú╪»╪«┘ä ┘â┘ä┘à╪⌐ ╪º┘ä┘à╪▒┘ê╪▒'); return; }
     setLogging(true); setAuthErr('');
     try {
       const { data: res, error } = await supabase.rpc('admin_list_users', { p_password: pass.trim() });
@@ -102,7 +96,7 @@ export default function AdminPage() {
       setSavedPass(pass.trim());
       localStorage.setItem(PASS_KEY, pass.trim());
       setAuthed(true);
-    } catch { setAuthErr('كلمة المرور غلط'); }
+    } catch { setAuthErr('┘â┘ä┘à╪⌐ ╪º┘ä┘à╪▒┘ê╪▒ ╪║┘ä╪╖'); }
     finally { setLogging(false); }
   }, [pass]);
 
@@ -110,10 +104,10 @@ export default function AdminPage() {
     setBlocking(id);
     try {
       const { error } = await supabase.rpc('admin_update_user',
-        { p_password: savedPass, p_user_id: id, p_status: newStatus, p_blocked: block });
+        { p_password:savedPass, p_user_id:id, p_status:newStatus, p_blocked:block });
       if (error) throw error;
-      setData(prev => prev.map(s => s.id === id ? { ...s, status: newStatus, is_blocked: block } : s));
-    } catch {/**/ }
+      setData(prev => prev.map(s => s.id===id ? {...s, status:newStatus, is_blocked:block} : s));
+    } catch {/**/}
     finally { setBlocking(null); }
   }, [savedPass]);
 
@@ -124,7 +118,7 @@ export default function AdminPage() {
         { p_password: savedPass, p_user_id: id });
       if (error) throw error;
       setData(prev => prev.filter(s => s.id !== id));
-    } catch { alert('حدث خطأ أثناء مسح المستخدم.'); }
+    } catch { alert('╪¡╪»╪½ ╪«╪╖╪ú ╪ú╪½┘å╪º╪í ┘à╪│╪¡ ╪º┘ä┘à╪│╪¬╪«╪»┘à.'); }
     finally { setBlocking(null); }
   }, [savedPass]);
 
@@ -134,75 +128,20 @@ export default function AdminPage() {
     return () => clearInterval(t);
   }, [authed, savedPass, load]);
 
-  // Logic for Code Generator
-  const fetchCodes = useCallback(async () => {
-    setCodesLoading(true);
-    const { data, error } = await codesSupabase
-      .from('course_access_requests')
-      .select('*')
-      .order('created_at', { ascending: false });
-    if (!error && data) setAccessCodes(data);
-    setCodesLoading(false);
-  }, []);
-
-  useEffect(() => {
-    if (tab === 'codes' && authed) fetchCodes();
-  }, [tab, authed, fetchCodes]);
-
-  const handleGenerateNewCode = async () => {
-    setIsGenerating(true);
-    const newCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-
-    const { error } = await codesSupabase
-      .from('course_access_requests')
-      .insert([{
-        device_code: newCode,
-        is_approved: false,
-        target_course: selectedCourse,
-        code_type: 'admin'
-      }]);
-
-    if (!error) {
-      await fetchCodes();
-    } else {
-      alert("حدث خطأ أثناء توليد الكود. تأكد من إعدادات قاعدة البيانات.");
-    }
-    setIsGenerating(false);
-  };
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    alert('تم نسخ الكود: ' + text);
-  };
-
-  const handleApproveStudent = async (id: string) => {
-    const { error } = await codesSupabase
-      .from('course_access_requests')
-      .update({ is_approved: true })
-      .eq('id', id);
-    if (!error) await fetchCodes();
-  };
-
-  const getCourseName = (c: string) => {
-    if (c === 'flutter') return 'كورس فلاتر';
-    if (c === 'js') return 'كورس جافاسكريبت';
-    return 'الباقة الشاملة';
-  };
-
   const rows = data.filter(s => {
-    if (tab === 'active' && (s.is_blocked || s.status !== 'approved')) return false;
-    if (tab === 'pending' && (s.is_blocked || s.status !== 'pending')) return false;
-    if (tab === 'blocked' && !s.is_blocked) return false;
+    if (tab==='active'  && (s.is_blocked || s.status !== 'approved')) return false;
+    if (tab==='pending' && (s.is_blocked || s.status !== 'pending')) return false;
+    if (tab==='blocked' && !s.is_blocked) return false;
     const q = search.toLowerCase();
     const nm = (s.display_name || s.email || '').toLowerCase();
     return !q || nm.includes(q);
   });
   const C = {
-    all: data.length,
-    active: data.filter(s => !s.is_blocked && s.status === 'approved').length,
-    pending: data.filter(s => !s.is_blocked && s.status === 'pending').length,
-    blocked: data.filter(s => s.is_blocked).length,
-    online: data.filter(s => !s.is_blocked && isOnline(s.last_seen_at)).length,
+    all:     data.length,
+    active:  data.filter(s=>!s.is_blocked && s.status==='approved').length,
+    pending: data.filter(s=>!s.is_blocked && s.status==='pending').length,
+    blocked: data.filter(s=> s.is_blocked).length,
+    online:  data.filter(s=>!s.is_blocked && isOnline(s.last_seen_at)).length,
   };
 
   return (
@@ -231,11 +170,11 @@ export default function AdminPage() {
           display:flex; flex-direction:column;
         }
 
-        /* ── scrollbar ── */
+        /* ΓöÇΓöÇ scrollbar ΓöÇΓöÇ */
         #ap .scroll::-webkit-scrollbar       { width:4px }
         #ap .scroll::-webkit-scrollbar-thumb { background:rgba(255,255,255,.06); border-radius:4px }
 
-        /* ── HEADER ── */
+        /* ΓöÇΓöÇ HEADER ΓöÇΓöÇ */
         #ap .hdr {
           flex-shrink:0; height:60px; display:flex; align-items:center; justify-content:space-between;
           padding:0 32px;
@@ -273,13 +212,13 @@ export default function AdminPage() {
         #ap .hbtn:hover       { background:rgba(255,255,255,.09); color:#e2e8f0; border-color:rgba(255,255,255,.12); }
         #ap .hbtn.hbtn-exit:hover { background:rgba(239,68,68,.1); color:#f87171; border-color:rgba(239,68,68,.2); }
 
-        /* ── BODY ── */
+        /* ΓöÇΓöÇ BODY ΓöÇΓöÇ */
         #ap .body {
           flex:1; overflow-y:auto; overflow-x:hidden;
           padding:24px 32px 40px; direction:rtl;
         }
 
-        /* ── STATS ── */
+        /* ΓöÇΓöÇ STATS ΓöÇΓöÇ */
         #ap .stats {
           display:grid; grid-template-columns:repeat(4,1fr);
           gap:14px; margin-bottom:20px;
@@ -319,7 +258,7 @@ export default function AdminPage() {
         #ap .stat.c3 .stat-num { color:#a78bfa; }
         #ap .stat-lbl  { font-size:.74rem; color:#475569; font-weight:600; }
 
-        /* ── TOOLBAR ── */
+        /* ΓöÇΓöÇ TOOLBAR ΓöÇΓöÇ */
         #ap .toolbar { display:flex; align-items:center; gap:12px; margin-bottom:16px; }
         #ap .search-box {
           flex:1; position:relative;
@@ -343,7 +282,7 @@ export default function AdminPage() {
         #ap .tab.on.b1 { background:rgba(52,211,153,.12); color:#34d399; }
         #ap .tab.on.b2 { background:rgba(239,68,68,.1);   color:#f87171; }
 
-        /* ── CARD ── */
+        /* ΓöÇΓöÇ CARD ΓöÇΓöÇ */
         #ap .card {
           background:rgba(10,16,32,.9); border:1px solid rgba(255,255,255,.07);
           border-radius:20px; overflow:hidden;
@@ -359,7 +298,7 @@ export default function AdminPage() {
         #ap .card-title { font-size:.88rem; font-weight:800; color:#e2e8f0; display:flex; align-items:center; gap:8px; }
         #ap .card-badge { background:rgba(56,189,248,.1); border:1px solid rgba(56,189,248,.15); color:#38bdf8; border-radius:100px; padding:2px 10px; font-size:.72rem; font-weight:700; }
 
-        /* ── LUXURY MINIMALIST GRID TABLE ── */
+        /* ΓöÇΓöÇ LUXURY MINIMALIST GRID TABLE ΓöÇΓöÇ */
         #ap .grid-tbl {
           width:100%; min-width:1080px;
           display:flex; flex-direction:column;
@@ -420,7 +359,7 @@ export default function AdminPage() {
         /* Spinner */
         #ap .spin { border-radius:50%; animation:a-spin .7s linear infinite; flex-shrink:0; }
 
-        /* ── MODAL ── */
+        /* ΓöÇΓöÇ MODAL ΓöÇΓöÇ */
         #ap .modal-overlay {
           position:fixed; inset:0; z-index:999999;
           background:rgba(8,13,26,.85); backdrop-filter:blur(8px);
@@ -454,7 +393,7 @@ export default function AdminPage() {
         #ap .mbtn.danger { background:rgba(239,68,68,.9); color:#fff; box-shadow:0 8px 20px rgba(239,68,68,.3); }
         #ap .mbtn.danger:hover { background:rgba(239,68,68,1); transform:translateY(-2px); }
 
-        /* ── LOGIN ── */
+        /* ΓöÇΓöÇ LOGIN ΓöÇΓöÇ */
         #ap .login-wrap { flex:1; display:flex; align-items:center; justify-content:center; padding:20px; }
         #ap .login-card {
           width:min(420px,100%); padding:52px 48px;
@@ -507,7 +446,7 @@ export default function AdminPage() {
       `}</style>
 
       <div id="ap">
-        {/* ── HEADER */}
+        {/* ΓöÇΓöÇ HEADER */}
         <div className="hdr">
           <div className="hdr-logo">
             <div className="hdr-dot" />
@@ -519,62 +458,62 @@ export default function AdminPage() {
               {C.online > 0 && (
                 <div className="hdr-live">
                   <div className="hdr-live-dot" />
-                  {C.online} أونلاين
+                  {C.online} ╪ú┘ê┘å┘ä╪º┘è┘å
                 </div>
               )}
               <button className="hbtn" onClick={() => load(savedPass)} disabled={fetching}>
                 {fetching
-                  ? <div className="spin" style={{ width: 13, height: 13, border: '2px solid rgba(255,255,255,.2)', borderTopColor: '#94a3b8' }} />
-                  : '🔄'} تحديث
+                  ? <div className="spin" style={{width:13,height:13,border:'2px solid rgba(255,255,255,.2)',borderTopColor:'#94a3b8'}} />
+                  : '≡ƒöä'} ╪¬╪¡╪»┘è╪½
               </button>
               <button className="hbtn hbtn-exit" onClick={() => {
                 localStorage.removeItem(PASS_KEY);
                 setAuthed(false); setSavedPass(''); setPass('');
-              }}>🚪 خروج</button>
+              }}>≡ƒÜ¬ ╪«╪▒┘ê╪¼</button>
             </div>
           )}
         </div>
 
-        {/* ── LOGIN */}
+        {/* ΓöÇΓöÇ LOGIN */}
         {!authed ? (
           <div className="login-wrap">
             <div className="login-card">
               <div className="login-emblem">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
               </div>
-              <div className="login-title">لوحة التحكم</div>
-              <div className="login-sub">أدخل كلمة مرور المشرف للمتابعة</div>
+              <div className="login-title">┘ä┘ê╪¡╪⌐ ╪º┘ä╪¬╪¡┘â┘à</div>
+              <div className="login-sub">╪ú╪»╪«┘ä ┘â┘ä┘à╪⌐ ┘à╪▒┘ê╪▒ ╪º┘ä┘à╪┤╪▒┘ü ┘ä┘ä┘à╪¬╪º╪¿╪╣╪⌐</div>
               {authErr && <div className="login-err">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
                 {authErr}
               </div>}
-              <label className="login-label">كلمة المرور</label>
-              <input className="login-inp" type="password" placeholder="••••••••••"
+              <label className="login-label">┘â┘ä┘à╪⌐ ╪º┘ä┘à╪▒┘ê╪▒</label>
+              <input className="login-inp" type="password" placeholder="ΓÇóΓÇóΓÇóΓÇóΓÇóΓÇóΓÇóΓÇóΓÇóΓÇó"
                 value={pass} autoFocus
                 onChange={e => { setPass(e.target.value); setAuthErr(''); }}
-                onKeyDown={e => e.key === 'Enter' && login()}
+                onKeyDown={e => e.key==='Enter' && login()}
               />
               <button className="login-btn" onClick={login} disabled={logging}>
                 {logging
-                  ? <div className="spin" style={{ width: 18, height: 18, border: '2px solid rgba(255,255,255,.25)', borderTopColor: '#fff' }} />
-                  : <><span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M13.8 12H3" /></svg></span>دخول للوحة التحكم</>}
+                  ? <div className="spin" style={{width:18,height:18,border:'2px solid rgba(255,255,255,.25)',borderTopColor:'#fff'}} />
+                  : <><span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M13.8 12H3"/></svg></span>╪»╪«┘ê┘ä ┘ä┘ä┘ê╪¡╪⌐ ╪º┘ä╪¬╪¡┘â┘à</>}
               </button>
             </div>
           </div>
 
         ) : (
-          /* ── DASHBOARD */
+          /* ΓöÇΓöÇ DASHBOARD */
           <div className="body scroll">
 
             {/* Stats */}
             <div className="stats">
               {[
-                { cls: 'c0', ico: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>, num: C.all, lbl: 'المسجلين', tag: 'الكل', d: 0 },
-                { cls: 'c3', ico: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>, num: C.pending, lbl: 'طلبات انضمام', tag: 'جديد', d: .07 },
-                { cls: 'c1', ico: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>, num: C.active, lbl: 'نشطين', tag: 'مفعل', d: .14 },
-                { cls: 'c2', ico: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>, num: C.blocked, lbl: 'محظورين', tag: 'محظور', d: .21 },
+                {cls:'c0', ico:<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>, num:C.all,     lbl:'╪º┘ä┘à╪│╪¼┘ä┘è┘å',    tag:'╪º┘ä┘â┘ä',  d:0},
+                {cls:'c3', ico:<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>, num:C.pending, lbl:'╪╖┘ä╪¿╪º╪¬ ╪º┘å╪╢┘à╪º┘à', tag:'╪¼╪»┘è╪»',   d:.07},
+                {cls:'c1', ico:<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>, num:C.active,  lbl:'┘å╪┤╪╖┘è┘å',       tag:'┘à┘ü╪╣┘ä',   d:.14},
+                {cls:'c2', ico:<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>, num:C.blocked, lbl:'┘à╪¡╪╕┘ê╪▒┘è┘å',     tag:'┘à╪¡╪╕┘ê╪▒', d:.21},
               ].map(s => (
-                <div key={s.cls} className={`stat ${s.cls}`} style={{ animationDelay: `${s.d}s` }}>
+                <div key={s.cls} className={`stat ${s.cls}`} style={{animationDelay:`${s.d}s`}}>
                   <div className="stat-top">
                     <span className="stat-icon">{s.ico}</span>
                     <span className="stat-tag">{s.tag}</span>
@@ -589,239 +528,139 @@ export default function AdminPage() {
             <div className="toolbar">
               <div className="search-box">
                 <span className="search-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></span>
-                <input placeholder="ابحث بالاسم أو الإيميل..."
+                <input placeholder="╪º╪¿╪¡╪½ ╪¿╪º┘ä╪º╪│┘à ╪ú┘ê ╪º┘ä╪Ñ┘è┘à┘è┘ä..."
                   value={search} onChange={e => setSearch(e.target.value)} />
               </div>
               <div className="tabs">
                 {[
-                  { key: 'all', lbl: `الكل (${C.all})`, cls: 'b0' },
-                  { key: 'pending', lbl: `انتظار (${C.pending})`, cls: 'b1' },
-                  { key: 'active', lbl: `نشطين (${C.active})`, cls: 'b1' },
-                  { key: 'blocked', lbl: `محظورين (${C.blocked})`, cls: 'b2' },
-                  { key: 'codes', lbl: `أكواد التفعيل`, cls: 'b0' },
+                  {key:'all',     lbl:`╪º┘ä┘â┘ä (${C.all})`,        cls:'b0'},
+                  {key:'pending', lbl:`╪º┘å╪¬╪╕╪º╪▒ (${C.pending})`,  cls:'b1'},
+                  {key:'active',  lbl:`┘å╪┤╪╖┘è┘å (${C.active})`,    cls:'b1'},
+                  {key:'blocked', lbl:`┘à╪¡╪╕┘ê╪▒┘è┘å (${C.blocked})`, cls:'b2'},
                 ].map(t => (
                   <button key={t.key}
-                    className={`tab ${tab === t.key ? `on ${t.cls}` : 't0'}`}
-                    onClick={() => setTab(t.key as any)}>
+                    className={`tab ${tab===t.key ? `on ${t.cls}` : 't0'}`}
+                    onClick={() => setTab(t.key as typeof tab)}>
                     {t.lbl}
                   </button>
                 ))}
               </div>
             </div>
 
-            {tab === 'codes' ? (
-              <div className="card" style={{ padding: '0', overflow: 'hidden' }}>
-                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', padding: '20px 26px', background: 'rgba(255,255,255,.013)', borderBottom: '1px solid rgba(255,255,255,.055)' }}>
-                <h3 style={{ color: '#e2e8f0', margin: 0, marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1rem', fontWeight: 800 }}>
-                  <svg width="20" height="20" style={{ color: '#38bdf8' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                  إدارة أكواد التفعيل
-                </h3>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(255,255,255,0.03)', padding: '6px 12px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                  <span style={{ color: '#94a3b8', fontSize: '0.8rem', fontWeight: 700 }}>إنشاء لـ:</span>
-                  <select
-                    value={selectedCourse}
-                    onChange={(e) => setSelectedCourse(e.target.value)}
-                    style={{ background: 'transparent', border: 'none', color: '#e2e8f0', outline: 'none', fontFamily: 'inherit', fontWeight: 700, fontSize: '0.85rem' }}
-                  >
-                    <option value="all" style={{ color: '#0f172a' }}>الباقة الشاملة</option>
-                    <option value="flutter" style={{ color: '#0f172a' }}>كورس Flutter & Dart</option>
-                    <option value="js" style={{ color: '#0f172a' }}>كورس JavaScript OOP</option>
-                  </select>
-                </div>
-
-                <button
-                  onClick={handleGenerateNewCode}
-                  disabled={isGenerating}
-                  className="login-btn"
-                  style={{ padding: '8px 18px', width: 'auto', margin: 0, borderRadius: '12px', fontSize: '0.85rem' }}
-                >
-                  {isGenerating ? 'جاري التوليد...' : '✨ إنشاء كود'}
-                </button>
-                <button onClick={fetchCodes} className="hbtn" style={{ height: '38px', borderRadius: '12px' }}>
-                  🔄 تحديث
-                </button>
-              </div>
-
-              {codesLoading ? (
-                <div className="empty">
-                  <div className="spin" style={{ width: 24, height: 24, border: '3px solid rgba(255,255,255,.2)', borderTopColor: '#38bdf8', margin: '0 auto' }} />
-                </div>
-              ) : (
-                <div style={{ overflowX: 'auto', paddingBottom: '8px' }}>
-                  <div className="grid-tbl">
-                    <div className="grid-hdr" style={{ gridTemplateColumns: '25% 22% 13% 15% 25%' }}>
-                      <div>الكود</div>
-                      <div style={{ textAlign: 'center' }}>الكورس</div>
-                      <div style={{ textAlign: 'center' }}>المصدر</div>
-                      <div style={{ textAlign: 'center' }}>الحالة</div>
-                      <div style={{ textAlign: 'center' }}>إجراء</div>
-                    </div>
-                    {accessCodes.length === 0 ? (
-                      <div className="empty">
-                        <div className="empty-txt">لا توجد أكواد تفعيل حتى الآن</div>
-                      </div>
-                    ) : accessCodes.map((codeRow, i) => {
-                      const isStudentReq = codeRow.code_type === 'student';
-                      return (
-                        <div key={codeRow.id} className="grid-row" style={{ gridTemplateColumns: '25% 22% 13% 15% 25%', animationDelay: `${i * .04}s` }}>
-                          <div className="grid-cell">
-                            <span className="cpill">{codeRow.device_code}</span>
-                          </div>
-                          <div className="grid-cell" style={{ textAlign: 'center', color: '#e2e8f0', fontSize: '0.88rem', fontWeight: 600 }}>
-                            {getCourseName(codeRow.target_course || 'all')}
-                          </div>
-                          <div className="grid-cell" style={{ textAlign: 'center' }}>
-                            {isStudentReq ? (
-                              <span style={{ color: '#f59e0b', fontSize: '0.82rem', fontWeight: 700 }}>👨‍🎓 طالب</span>
-                            ) : (
-                              <span style={{ color: '#a855f7', fontSize: '0.82rem', fontWeight: 700 }}>👑 أدمن</span>
-                            )}
-                          </div>
-                          <div className="grid-cell" style={{ textAlign: 'center' }}>
-                            {codeRow.is_approved ? (
-                              <span className={isStudentReq ? "sbadge ok" : "sbadge bad"}>
-                                <span className="sbadge-dot" /> {isStudentReq ? 'مفعل' : 'محروق'}
-                              </span>
-                            ) : (
-                              <span className="sbadge" style={{ background: isStudentReq ? 'rgba(251,191,36,.1)' : 'rgba(148,163,184,.1)', color: isStudentReq ? '#fbbf24' : '#94a3b8', border: isStudentReq ? '1px solid rgba(251,191,36,.2)' : '1px solid rgba(148,163,184,.2)' }}>
-                                {isStudentReq ? <><span className="sbadge-dot" style={{ background: '#fbbf24' }} /> مراجعة</> : <span style={{ display: 'inline-block' }}>متاح</span>}
-                              </span>
-                            )}
-                          </div>
-                          <div className="grid-cell" style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-                            {isStudentReq && !codeRow.is_approved && (
-                              <button onClick={() => handleApproveStudent(codeRow.id)} className="abtn unblock">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> تفعيل
-                              </button>
-                            )}
-                            {!isStudentReq && (
-                              <button onClick={() => copyToClipboard(codeRow.device_code)} className="abtn" style={{ background: 'rgba(56,189,248,.1)', color: '#38bdf8', border: '1px solid rgba(56,189,248,.2)' }}>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> نسخ الكود
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-            ) : (
+            {/* Table Card */}
             <div className="card">
               <div className="card-hdr">
                 <div className="card-title">
-                  👤 المستخدمون
+                  ≡ƒæñ ╪º┘ä┘à╪│╪¬╪«╪»┘à┘ê┘å
                   <span className="card-badge">{rows.length}</span>
                 </div>
                 {fetching && (
-                  <div className="spin" style={{ width: 16, height: 16, border: '2px solid rgba(255,255,255,.1)', borderTopColor: '#38bdf8' }} />
+                  <div className="spin" style={{width:16,height:16,border:'2px solid rgba(255,255,255,.1)',borderTopColor:'#38bdf8'}} />
                 )}
               </div>
 
-              <div style={{ overflowX: 'auto', paddingBottom: '8px' }}>
+              <div style={{overflowX:'auto', paddingBottom:'8px'}}>
                 <div className="grid-tbl">
                   {/* Header */}
                   <div className="grid-hdr">
-                    {['المستخدم', 'رقم الهاتف', 'تاريخ الانضمام', 'المتصفح', 'آخر ظهور', 'حالة الوصول', 'إجراء'].map((h, i) => (
-                      <div key={h} style={i > 0 ? { textAlign: 'center' } : {}}>{h}</div>
+                    {['╪º┘ä┘à╪│╪¬╪«╪»┘à','╪▒┘é┘à ╪º┘ä┘ç╪º╪¬┘ü','╪¬╪º╪▒┘è╪« ╪º┘ä╪º┘å╪╢┘à╪º┘à','╪º┘ä┘à╪¬╪╡┘ü╪¡','╪ó╪«╪▒ ╪╕┘ç┘ê╪▒','╪¡╪º┘ä╪⌐ ╪º┘ä┘ê╪╡┘ê┘ä','╪Ñ╪¼╪▒╪º╪í'].map((h, i) => (
+                      <div key={h} style={i > 0 ? {textAlign: 'center'} : {}}>{h}</div>
                     ))}
                   </div>
 
                   {/* Body */}
-                  {rows.length === 0 ? (
+                  {rows.length===0 ? (
                     <div className="empty">
                       <span className="empty-ico">
                         {search ? <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg> : <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>}
                       </span>
-                      <div className="empty-txt">{search ? 'لا توجد نتائج مطابقة' : 'لا يوجد مستخدمين بعد'}</div>
+                      <div className="empty-txt">{search?'┘ä╪º ╪¬┘ê╪¼╪» ┘å╪¬╪º╪ª╪¼ ┘à╪╖╪º╪¿┘é╪⌐':'┘ä╪º ┘è┘ê╪¼╪» ┘à╪│╪¬╪«╪»┘à┘è┘å ╪¿╪╣╪»'}</div>
                     </div>
-                  ) : rows.map((s, i) => {
+                  ) : rows.map((s,i) => {
                     const avc = colorAvatar(s.display_name || s.id);
                     return (
-                      <div key={s.id} className="grid-row" style={{ animationDelay: `${i * .04}s` }}>
+                      <div key={s.id} className="grid-row" style={{animationDelay:`${i*.04}s`}}>
                         {/* Name */}
                         <div className="grid-cell">
                           <div className="u-wrap">
                             {s.avatar_url ? (
                               <img src={s.avatar_url} alt="" className="u-ava" />
                             ) : (
-                              <div className="u-ava" style={{ background: `${avc}22`, border: `1px solid ${avc}50`, color: avc }}>
-                                {(s.display_name || s.email || '?')[0].toUpperCase()}
+                              <div className="u-ava" style={{background:`${avc}22`,border:`1px solid ${avc}50`,color:avc}}>
+                                {(s.display_name||s.email||'?')[0].toUpperCase()}
                               </div>
                             )}
                             <div>
                               <div className="u-name">
-                                {s.display_name || 'مجهول'}
-                                {isOnline(s.last_seen_at) && !s.is_blocked && <div className="online-dot" />}
+                                {s.display_name||'┘à╪¼┘ç┘ê┘ä'}
+                                {isOnline(s.last_seen_at)&&!s.is_blocked&&<div className="online-dot"/>}
                               </div>
                               <div className="u-sub">
-                                <span style={{ opacity: 0.8 }}>{s.email || 'بدون إيميل'}</span>
+                                <span style={{opacity:0.8}}>{s.email || '╪¿╪»┘ê┘å ╪Ñ┘è┘à┘è┘ä'}</span>
                               </div>
                             </div>
                           </div>
                         </div>
                         {/* Phone */}
-                        <div className="grid-cell" style={{ display: 'flex', justifyContent: 'center', color: '#38bdf8', fontSize: '.88rem', fontWeight: 700 }} dir="ltr">
+                        <div className="grid-cell" style={{display:'flex', justifyContent:'center', color:'#38bdf8', fontSize:'.88rem', fontWeight:700}} dir="ltr">
                           {s.phone ? (
-                            <a href={`https://wa.me/${s.phone.replace(/\D/g, '')}`} target="_blank" rel="noreferrer" style={{ color: '#38bdf8', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                            <a href={`https://wa.me/${s.phone.replace(/\D/g, '')}`} target="_blank" rel="noreferrer" style={{color:'#38bdf8', textDecoration:'none', display:'flex', alignItems:'center', gap:'6px'}}>
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg> 
                               {s.phone}
                             </a>
-                          ) : <span style={{ color: '#64748b', fontWeight: 400 }}>—</span>}
+                          ) : <span style={{color:'#64748b', fontWeight:400}}>ΓÇö</span>}
                         </div>
                         {/* Join Date */}
-                        <div className="grid-cell" style={{ color: '#94a3b8', fontSize: '.82rem', textAlign: 'center' }} dir="rtl">{fmtDate(s.created_at)}</div>
+                        <div className="grid-cell" style={{color:'#94a3b8',fontSize:'.82rem', textAlign:'center'}} dir="rtl">{fmtDate(s.created_at)}</div>
                         {/* Browser */}
-                        <div className="grid-cell" style={{ color: '#94a3b8', fontSize: '.88rem', textAlign: 'center' }}>{getBrowser(s.user_agent)}</div>
+                        <div className="grid-cell" style={{color:'#94a3b8',fontSize:'.88rem', textAlign:'center'}}>{getBrowser(s.user_agent)}</div>
                         {/* Time */}
-                        <div className="grid-cell" style={{ color: '#94a3b8', fontSize: '.82rem', textAlign: 'center' }} dir="rtl">{fmtDate(s.last_seen_at)}</div>
+                        <div className="grid-cell" style={{color:'#94a3b8',fontSize:'.82rem', textAlign:'center'}} dir="rtl">{fmtDate(s.last_seen_at)}</div>
                         {/* Status */}
-                        <div className="grid-cell" style={{ textAlign: 'center' }}>
+                        <div className="grid-cell" style={{textAlign:'center'}}>
                           {s.is_blocked ? (
-                            <span className="sbadge bad"><span className="sbadge-dot" />محظور</span>
+                             <span className="sbadge bad"><span className="sbadge-dot"/>┘à╪¡╪╕┘ê╪▒</span>
                           ) : s.status === 'pending' ? (
-                            <span className="sbadge" style={{ background: 'rgba(251,191,36,.1)', color: '#fbbf24', border: '1px solid rgba(251,191,36,.2)' }}><span className="sbadge-dot" style={{ background: '#fbbf24' }} />مراجعة</span>
+                             <span className="sbadge" style={{background:'rgba(251,191,36,.1)', color:'#fbbf24', border:'1px solid rgba(251,191,36,.2)'}}><span className="sbadge-dot" style={{background:'#fbbf24'}}/>┘à╪▒╪º╪¼╪╣╪⌐</span>
                           ) : s.status === 'approved' ? (
-                            <span className="sbadge ok"><span className="sbadge-dot" />مفعل</span>
+                             <span className="sbadge ok"><span className="sbadge-dot"/>┘à┘ü╪╣┘ä</span>
                           ) : (
-                            <span className="sbadge" style={{ background: 'rgba(148,163,184,.1)', color: '#94a3b8', border: '1px solid rgba(148,163,184,.2)' }}>لم يطلب</span>
+                             <span className="sbadge" style={{background:'rgba(148,163,184,.1)', color:'#94a3b8', border:'1px solid rgba(148,163,184,.2)'}}>┘ä┘à ┘è╪╖┘ä╪¿</span>
                           )}
                         </div>
                         {/* Action */}
-                        <div className="grid-cell" style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
+                        <div className="grid-cell" style={{display:'flex', gap:'6px', justifyContent:'center'}}>
                           {s.is_blocked ? (
-                            <button className="abtn unblock" disabled={blocking === s.id} onClick={() => updateUser(s.id, s.status, false)}>
-                              {blocking === s.id ? <div className="spin" style={{ width: 12, height: 12, border: '2px solid rgba(255,255,255,.2)', borderTopColor: 'currentColor' }} /> : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>} فك الحظر
+                            <button className="abtn unblock" disabled={blocking===s.id} onClick={()=>updateUser(s.id, s.status, false)}>
+                              {blocking===s.id ? <div className="spin" style={{width:12,height:12,border:'2px solid rgba(255,255,255,.2)',borderTopColor:'currentColor'}}/> : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>} ┘ü┘â ╪º┘ä╪¡╪╕╪▒
                             </button>
                           ) : (
                             <>
                               {s.status === 'pending' && (
-                                <button className="abtn unblock" disabled={blocking === s.id} onClick={() => updateUser(s.id, 'approved', false)}>
-                                  {blocking === s.id ? <div className="spin" style={{ width: 12, height: 12, border: '2px solid rgba(255,255,255,.2)', borderTopColor: 'currentColor' }} /> : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>} موافقة
+                                <button className="abtn unblock" disabled={blocking===s.id} onClick={()=>updateUser(s.id, 'approved', false)}>
+                                  {blocking===s.id ? <div className="spin" style={{width:12,height:12,border:'2px solid rgba(255,255,255,.2)',borderTopColor:'currentColor'}}/> : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>} ┘à┘ê╪º┘ü┘é╪⌐
                                 </button>
                               )}
-                              <button className="abtn block" disabled={blocking === s.id} onClick={() => updateUser(s.id, s.status, true)}>
-                                {blocking === s.id ? <div className="spin" style={{ width: 12, height: 12, border: '2px solid rgba(255,255,255,.2)', borderTopColor: 'currentColor' }} /> : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>} حظر
+                              <button className="abtn block" disabled={blocking===s.id} onClick={()=>updateUser(s.id, s.status, true)}>
+                                {blocking===s.id ? <div className="spin" style={{width:12,height:12,border:'2px solid rgba(255,255,255,.2)',borderTopColor:'currentColor'}}/> : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>} ╪¡╪╕╪▒
                               </button>
                             </>
                           )}
-                          <button
-                            className="abtn"
-                            style={{ background: 'rgba(220,38,38,.12)', color: '#fca5a5', border: '1px solid rgba(220,38,38,.25)' }}
-                            disabled={blocking === s.id}
-                            onClick={() => setConfirmDelete({ id: s.id, name: s.display_name || s.email || 'المستخدم' })}
-                            title="مسح المستخدم نهائياً"
+                          <button 
+                            className="abtn" 
+                            style={{background:'rgba(220,38,38,.12)', color:'#fca5a5', border:'1px solid rgba(220,38,38,.25)'}} 
+                            disabled={blocking===s.id} 
+                            onClick={()=>setConfirmDelete({id: s.id, name: s.display_name || s.email || '╪º┘ä┘à╪│╪¬╪«╪»┘à'})}
+                            title="┘à╪│╪¡ ╪º┘ä┘à╪│╪¬╪«╪»┘à ┘å┘ç╪º╪ª┘è╪º┘ï"
                           >
-                            {blocking === s.id ? (
-                              <div className="spin" style={{ width: 12, height: 12, border: '2px solid rgba(255,255,255,.2)', borderTopColor: 'currentColor' }} />
+                            {blocking===s.id ? (
+                              <div className="spin" style={{width:12,height:12,border:'2px solid rgba(255,255,255,.2)',borderTopColor:'currentColor'}}/>
                             ) : (
                               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line>
                               </svg>
                             )}
-                            مسح
+                            ┘à╪│╪¡
                           </button>
                         </div>
                       </div>
@@ -830,7 +669,6 @@ export default function AdminPage() {
                 </div>
               </div>
             </div>
-            )}
 
           </div>
         )}
@@ -842,14 +680,14 @@ export default function AdminPage() {
               <div className="modal-icon">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
               </div>
-              <h3 className="modal-title">تأكيد المسح</h3>
-              <p className="modal-text">هل أنت متأكد من مسح حساب <strong>{confirmDelete.name}</strong> نهائياً؟<br />لا يمكن التراجع عن هذا الإجراء.</p>
+              <h3 className="modal-title">╪¬╪ú┘â┘è╪» ╪º┘ä┘à╪│╪¡</h3>
+              <p className="modal-text">┘ç┘ä ╪ú┘å╪¬ ┘à╪¬╪ú┘â╪» ┘à┘å ┘à╪│╪¡ ╪¡╪│╪º╪¿ <strong>{confirmDelete.name}</strong> ┘å┘ç╪º╪ª┘è╪º┘ï╪ƒ<br/>┘ä╪º ┘è┘à┘â┘å ╪º┘ä╪¬╪▒╪º╪¼╪╣ ╪╣┘å ┘ç╪░╪º ╪º┘ä╪Ñ╪¼╪▒╪º╪í.</p>
               <div className="modal-actions">
-                <button className="mbtn cancel" onClick={() => setConfirmDelete(null)}>إلغاء</button>
+                <button className="mbtn cancel" onClick={() => setConfirmDelete(null)}>╪Ñ┘ä╪║╪º╪í</button>
                 <button className="mbtn danger" onClick={() => {
                   deleteUser(confirmDelete.id);
                   setConfirmDelete(null);
-                }}>نعم، امسح نهائياً</button>
+                }}>┘å╪╣┘à╪î ╪º┘à╪│╪¡ ┘å┘ç╪º╪ª┘è╪º┘ï</button>
               </div>
             </div>
           </div>

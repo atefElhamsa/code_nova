@@ -1,0 +1,215 @@
+---
+id: functions
+title: "1.4 Functions & Arrow Functions"
+sidebar_label: "1.4 Functions"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 1.4 الدوال (Functions) والـ Arrow Functions
+
+الدوال (Functions) هي القلب النابض لأي تطبيق جافاسكريبت. هي عبارة عن "كتلة من الكود" مصممة لأداء مهمة معينة، ويمكنك إعادة استخدامها ملايين المرات دون كتابة الكود من جديد. في هذا الدرس ستتعلم الطرق المختلفة لتعريف الدوال.
+
+---
+
+##  الأهداف التعليمية
+
+1. كتابة الدوال بالطريقة التقليدية (Function Declaration).
+2. فهم طريقة تعبير الدوال (Function Expression).
+3. احتراف الدوال السهمية (Arrow Functions) وأهميتها في الكود الحديث.
+4. فهم تمرير المعاملات (Parameters) والقيم الافتراضية (Default Parameters).
+5. الإجابة على أسئلة المقابلات الشخصية عن `return` وأنواع الدوال.
+
+---
+
+## 1. الطريقة التقليدية (Function Declaration)
+
+هذه هي أقدم وأبسط طريقة لتعريف دالة. 
+
+```javascript
+// 1. تعريف الدالة
+function greetUser(name) {
+  console.log(`Welcome, ${name}!`);
+}
+
+// 2. استدعاء الدالة (Calling the function)
+greetUser("Ahmed"); // "Welcome, Ahmed!"
+greetUser("Ali");   // "Welcome, Ali!"
+```
+
+**الـ Return:** الدالة في العادة تقوم بعملية حسابية ثم **تُرجع (Return)** النتيجة لتستخدمها في مكان آخر.
+
+```javascript
+function calculateTotal(price, tax) {
+  return price + tax;
+}
+
+let cartTotal = calculateTotal(100, 14);
+console.log(cartTotal); // 114
+```
+
+> ✅ **قاعدة الكود النظيف (Clean Code):** الدالة يجب أن تفعل شيئاً واحداً فقط وبشكل ممتاز (Single Responsibility). اسم الدالة يجب أن يكون فعلاً يصف ما تفعله (مثل `getUser`, `calculateTotal`, `showMenu`).
+
+---
+
+## 2. تعبير الدالة (Function Expression)
+
+في جافاسكريبت، الدالة تعتبر "قيمة" مثل الأرقام والنصوص، لذا يمكنك تخزينها بداخل متغير!
+
+```javascript
+const multiply = function(a, b) {
+  return a * b;
+};
+
+console.log(multiply(5, 4)); // 20
+```
+
+---
+
+## 3. الدوال السهمية (Arrow Functions) - ES6
+
+هذه هي **الطريقة الأحدث والأكثر استخداماً** الآن (خاصة في React). هي طريقة مختصرة جداً لكتابة الـ Function Expression.
+
+```javascript
+// الطريقة القديمة
+const add = function(a, b) {
+  return a + b;
+};
+
+// الطريقة الحديثة (Arrow Function)
+const addArrow = (a, b) => {
+  return a + b;
+};
+```
+
+### الاختصارات السحرية للـ Arrow Function
+إذا كانت الدالة تتكون من **سطر واحد فقط يُرجع قيمة**، يمكنك حذف الأقواس `{}` وكلمة `return`:
+
+```javascript
+// سطر واحد فقط!
+const square = (x) => x * x;
+
+console.log(square(5)); // 25
+```
+
+وإذا كان لديك **عنصر واحد فقط (Parameter)** يمكنك حتى حذف الأقواس `()`:
+
+```javascript
+const sayHi = name => `Hi, ${name}`;
+```
+
+---
+
+## 4. القيم الافتراضية (Default Parameters)
+
+ماذا لو استدعى أحدهم الدالة ونسي إرسال بعض القيم؟ يمكنك تحديد قيمة افتراضية لتجنب أخطاء `undefined`.
+
+```javascript
+function greet(name = "Guest") {
+  return `Hello, ${name}`;
+}
+
+console.log(greet("Ali")); // "Hello, Ali"
+console.log(greet());      // "Hello, Guest" (استخدم القيمة الافتراضية!)
+```
+
+---
+
+## 🚀 Performance & Pro Tips
+
+:::tip متى تستخدم Arrow Functions؟
+الـ Arrow Functions ليست مجرد اختصار في الكتابة! لديها سلوك مختلف مع الـ `this` keyword (وهو مفهوم متقدم سندرسه في دروس الـ OOP). بشكل عام، استخدم Arrow Functions بشكل افتراضي لكل شيء إلا إذا كنت مضطراً لاستخدام `this` الديناميكية (مثل أحداث المتصفح أو الـ object methods).
+:::
+
+:::tip لا تنسَ الـ Return!
+إذا قمت بوضع أقواس `{}` في الـ Arrow Function، **يجب** عليك كتابة كلمة `return`، وإلا سترجع الدالة `undefined`.
+```javascript
+// ❌ خطأ (ترجع undefined)
+const add = (a, b) => { a + b }; 
+
+// ✅ صحيح
+const add = (a, b) => { return a + b; };
+```
+:::
+
+---
+
+##  أسئلة المقابلات الشخصية (Interview Questions)
+
+<details>
+<summary><strong>Q1: ما الفرق بين Function Declaration و Function Expression؟</strong></summary>
+
+الفرق الأساسي هو **الرفع (Hoisting)**.
+- **Function Declaration:** تُرفع بالكامل إلى أعلى الملف، مما يعني أنه يمكنك استدعاؤها **قبل** كتابة الكود الخاص بها.
+- **Function Expression:** (سواء بالـ `function` أو الـ `Arrow`)، لا يتم رفعها، ولا يمكنك استدعاؤها إلا **بعد** تعريفها في الكود.
+</details>
+
+<details>
+<summary><strong>Q2: هل يمكن استخدام `arguments` بداخل الـ Arrow Function؟</strong></summary>
+
+**لا.** الـ Arrow Functions لا تدعم المتغير الخفي `arguments` الموجود في الدوال العادية. بدلاً من ذلك، نستخدم في الكود الحديث الـ **Rest Operator (`...args`)** لتجميع كل المعاملات المرسلة في مصفوفة.
+</details>
+
+---
+
+##  أخطاء شائعة تجنبها (Common Mistakes)
+
+```javascript
+// ❌ 1 - عدم تخزين القيمة العائدة من الدالة
+function getDiscount() { return 10; }
+getDiscount(); // النتيجة ضاعت في الهواء!
+
+// ✅
+let discount = getDiscount(); 
+
+// ❌ 2 - نسيان تمرير المعاملات وعدم وجود قيم افتراضية
+function calcArea(w, h) { return w * h; }
+calcArea(5); // NaN (لأن h ستكون undefined)
+
+// ✅ استخدام القيم الافتراضية
+function calcArea(w = 1, h = 1) { return w * h; }
+```
+
+---
+
+<ExerciseBox title="🏋️ تمرين عملي (Exercise)">
+
+قم بكتابة دالة (استخدم صيغة Arrow Function) تحسب السعر النهائي لمنتج:
+1. الدالة اسمها `calculateFinalPrice`.
+2. تأخذ الدالة معاملين: `price` (السعر) و `taxRate` (نسبة الضريبة).
+3. اجعل القيمة الافتراضية للضريبة `0.14` (14%).
+4. يجب أن تُرجع الدالة (`return`) السعر النهائي (السعر + الضريبة).
+5. استدعِ الدالة بمنتج سعره 200 واطبع النتيجة.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل (Solution)</strong></summary>
+
+```javascript
+// السطر الواحد والمختصر!
+const calculateFinalPrice = (price, taxRate = 0.14) => price + (price * taxRate);
+
+// أو بالطريقة المفصلة قليلاً:
+// const calculateFinalPrice = (price, taxRate = 0.14) => {
+//   let taxAmount = price * taxRate;
+//   return price + taxAmount;
+// }
+
+let finalPrice = calculateFinalPrice(200);
+console.log(`Final Price is: ${finalPrice}`); // 228
+```
+
+</details>
+
+---
+
+<SummaryBox title="📌 ملخص الدرس (Summary)">
+
+- الدوال هي كتل من الأكواد قابلة لإعادة الاستخدام وتقبل مدخلات (Parameters) وتعيد مخرجات (Return).
+- Function Declaration تُرفع (Hoisted) ويمكن استدعاؤها من أي مكان.
+- Arrow Functions `() => {}` هي الطريقة الأحدث، الأكثر اختصاراً، والمفضلة في كتابة تطبيقات React.
+- استخدم القيم الافتراضية (Default Parameters) لحماية الكود من المتغيرات المفقودة (`undefined`).
+
+</SummaryBox>

@@ -1,0 +1,251 @@
+---
+id: arrays-methods
+title: "2.2 Arrays & Array Methods"
+sidebar_label: "2.2 Arrays & Methods"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 2.2 المصفوفات (Arrays) ودوالها المتقدمة
+
+المصفوفة (Array) هي كائن خاص في جافاسكريبت مصمم لتخزين قائمة مرتبة من العناصر. على عكس الكائنات (Objects) التي تعتمد على "المفاتيح" (Keys)، المصفوفات تعتمد على "الفهرس" (Index) للوصول للبيانات.
+
+في هذا الدرس، لن نتعلم فقط كيفية إنشاء المصفوفات، بل سنغوص في **الدوال المتقدمة (Array Methods)** مثل `map`، `filter`، و `reduce` والتي تعتبر من أهم وأقوى أدوات جافاسكريبت الحديثة.
+
+---
+
+##  الأهداف التعليمية
+
+1. إنشاء المصفوفات والوصول لعناصرها عبر الـ Index.
+2. إضافة وحذف العناصر باستخدام `push`, `pop`, `unshift`, `shift`.
+3. احتراف دالة `map` لتحويل البيانات.
+4. احتراف دالة `filter` لتصفية البيانات.
+5. فهم دالة `reduce` لتجميع البيانات في قيمة واحدة.
+6. الإجابة على أسئلة المقابلات المتقدمة عن معالجة البيانات في JS.
+
+---
+
+## 1. أساسيات المصفوفات (Array Basics)
+
+لإنشاء مصفوفة، نستخدم الأقواس المربعة `[]`. المصفوفات في جافاسكريبت يمكنها أن تحمل أي نوع من البيانات في نفس الوقت (أرقام، نصوص، كائنات، وحتى مصفوفات أخرى).
+
+```javascript
+const fruits = ["Apple", "Banana", "Mango"];
+
+// الوصول للعناصر (الفهرس يبدأ من 0)
+console.log(fruits[0]); // "Apple"
+console.log(fruits[2]); // "Mango"
+
+// تعديل عنصر
+fruits[1] = "Orange";
+console.log(fruits); // ["Apple", "Orange", "Mango"]
+
+// معرفة طول المصفوفة
+console.log(fruits.length); // 3
+```
+
+---
+
+## 2. الإضافة والحذف السريع (Basic Methods)
+
+- `push()`: تضيف عنصراً في **نهاية** المصفوفة.
+- `pop()`: تحذف العنصر من **نهاية** المصفوفة وترجعه.
+- `unshift()`: تضيف عنصراً في **بداية** المصفوفة.
+- `shift()`: تحذف العنصر من **بداية** المصفوفة وترجعه.
+
+```javascript
+const numbers = [10, 20];
+
+numbers.push(30);    // [10, 20, 30]
+numbers.unshift(5);  // [5, 10, 20, 30]
+numbers.pop();       // 30 (أُزيلت من النهاية، المتبقي: [5, 10, 20])
+numbers.shift();     // 5 (أُزيلت من البداية، المتبقي: [10, 20])
+```
+
+---
+
+## 3. الدوال المتقدمة (High-Order Array Methods)
+
+في الكود الحديث (وخاصة في React)، نادراً ما نستخدم `for` loop العادية. بدلاً منها نستخدم دوال مبنية مسبقاً (Built-in Methods) تقوم بالمرور على كل عنصر بشكل أنيق جداً.
+
+### أ. الدالة `forEach` (للتكرار فقط)
+تُستخدم لتنفيذ وظيفة معينة على كل عنصر في المصفوفة. **لا ترجع مصفوفة جديدة.**
+
+```javascript
+const names = ["Ahmed", "Ali", "Sara"];
+
+names.forEach((name, index) => {
+  console.log(`${index}: ${name}`);
+});
+// 0: Ahmed
+// 1: Ali
+// 2: Sara
+```
+
+### ب. الدالة السحرية `map` (للتحويل)
+تأخذ كل عنصر في المصفوفة، تطبق عليه عملية ما، و**ترجع مصفوفة جديدة كلياً** بنفس عدد العناصر. تستخدم بكثرة في React لعرض قوائم البيانات.
+
+```javascript
+const prices = [100, 200, 300];
+
+// نريد إضافة ضريبة 10% لكل سعر
+const pricesWithTax = prices.map((price) => {
+  return price + (price * 0.10);
+});
+
+console.log(pricesWithTax); // [110, 220, 330]
+console.log(prices); // [100, 200, 300] (المصفوفة الأصلية لم تتغير!)
+```
+
+### ج. الدالة `filter` (للتصفية)
+تمر على كل عنصر، وإذا كان الشرط `true` تبقيه، وإذا كان `false` تستبعده. **ترجع مصفوفة جديدة.**
+
+```javascript
+const ages = [15, 22, 18, 12, 30];
+
+// نريد فقط الأشخاص الأكبر من أو يساوي 18
+const adults = ages.filter((age) => {
+  return age >= 18;
+});
+
+console.log(adults); // [22, 18, 30]
+```
+
+### د. الدالة `reduce` (للتجميع)
+تقوم بدمج (تجميع) كل عناصر المصفوفة في **قيمة واحدة فقط** (مثل مجموع أرقام، أو حساب الإجمالي).
+
+```javascript
+const cart = [10, 50, 40];
+
+// المجموع الكلي (تبدأ accumulator بصفر)
+const total = cart.reduce((accumulator, currentValue) => {
+  return accumulator + currentValue;
+}, 0); // 0 هنا هي القيمة المبدئية للـ accumulator
+
+console.log(total); // 100
+```
+
+---
+
+## 🚀 Performance & Pro Tips
+
+:::tip متى تستخدم forEach ومتى تستخدم map؟
+استخدم `map` عندما تريد **تغيير** البيانات والاحتفاظ بالنتيجة في متغير جديد (مثلاً تغيير أسعار منتجات).
+استخدم `forEach` عندما تريد **فعل شيء** فقط بالبيانات ولا تهتم بإرجاع مصفوفة جديدة (مثلاً طباعة عناصر في الـ Console أو إرسال إشعارات).
+:::
+
+:::tip Chaining Methods (سلسلة الدوال)
+يمكنك ربط `map`, `filter`, `reduce` ببعضها في سطر واحد لإنشاء أكواد قوية جداً!
+```javascript
+const numbers = [1, 2, 3, 4, 5, 6];
+
+// ضاعف الأرقام الزوجية فقط واجمعها
+const sumOfDoubledEvens = numbers
+  .filter(n => n % 2 === 0)   // [2, 4, 6]
+  .map(n => n * 2)            // [4, 8, 12]
+  .reduce((acc, curr) => acc + curr, 0); // 24
+```
+:::
+
+---
+
+##  أسئلة المقابلات الشخصية (Interview Questions)
+
+<details>
+<summary><strong>Q1: ما هو الفرق بين الدالة المعطوبة للـ Mutating والدوال الـ Non-mutating في المصفوفات؟</strong></summary>
+
+- **Mutating Methods:** هي الدوال التي تعدل **المصفوفة الأصلية** وتدمر قيمتها السابقة (مثل `push`, `pop`, `splice`, `sort`).
+- **Non-mutating Methods:** هي الدوال التي تنشئ **مصفوفة جديدة** وتترك الأصلية كما هي (مثل `map`, `filter`, `concat`, `slice`). في البرمجة الحديثة (Functional Programming) نفضل دائماً الـ Non-mutating لتقليل الأخطاء غير المتوقعة (Side effects).
+</details>
+
+<details>
+<summary><strong>Q2: كيف تفرغ مصفوفة بالكامل؟ (How to empty an array?)</strong></summary>
+
+هناك عدة طرق:
+1. `arr = []` (إذا كانت معرّفة بـ `let`).
+2. `arr.length = 0` (وهي الطريقة الأسرع والأكثر شيوعاً، وتعمل حتى لو كانت معرّفة بـ `const`).
+3. `arr.splice(0, arr.length)`.
+</details>
+
+---
+
+##  أخطاء شائعة تجنبها (Common Mistakes)
+
+```javascript
+// ❌ 1 - نسيان الـ return داخل map أو filter
+const doubled = [1, 2, 3].map((num) => {
+  num * 2; // نسينا كلمة return!
+});
+console.log(doubled); // [undefined, undefined, undefined]
+
+// ✅ 
+const doubled = [1, 2, 3].map(num => num * 2); // (الـ Arrow function المختصرة تقوم بالـ return تلقائياً)
+
+// ❌ 2 - استخدام forEach لتعديل عناصر (لا يعمل بشكل مباشر مع الـ primitives)
+let nums = [1, 2, 3];
+nums.forEach(n => n = n * 2);
+console.log(nums); // [1, 2, 3] (لم يتغير شيء!)
+
+// ✅ استخدم map بدلاً منها
+nums = nums.map(n => n * 2);
+```
+
+---
+
+<ExerciseBox title="🏋️ تمرين عملي (Exercise)">
+
+لديك مصفوفة من الكائنات تمثل طلاب وعلاماتهم:
+```javascript
+const students = [
+  { name: "Ali", score: 85 },
+  { name: "Omar", score: 45 },
+  { name: "Sara", score: 92 },
+  { name: "Mona", score: 30 }
+];
+```
+
+استخدم الدوال المتقدمة للقيام بالآتي:
+1. قم بإنشاء مصفوفة جديدة اسمها `passedStudents` تحتوي فقط على الطلاب الناجحين (علامتهم 50 أو أكثر) باستخدام `filter`.
+2. قم بإنشاء مصفوفة جديدة اسمها `passedNames` تحتوي فقط على **أسماء** هؤلاء الطلاب الناجحين باستخدام `map`.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل (Solution)</strong></summary>
+
+```javascript
+const students = [
+  { name: "Ali", score: 85 },
+  { name: "Omar", score: 45 },
+  { name: "Sara", score: 92 },
+  { name: "Mona", score: 30 }
+];
+
+// 1. فلترة الناجحين
+const passedStudents = students.filter(student => student.score >= 50);
+console.log(passedStudents); 
+// [{name: "Ali", score: 85}, {name: "Sara", score: 92}]
+
+// 2. سحب الأسماء فقط من مصفوفة الناجحين
+const passedNames = passedStudents.map(student => student.name);
+console.log(passedNames); 
+// ["Ali", "Sara"]
+
+// الحل الاحترافي (Chaining):
+// const names = students.filter(s => s.score >= 50).map(s => s.name);
+```
+
+</details>
+
+---
+
+<SummaryBox title="📌 ملخص الدرس (Summary)">
+
+- المصفوفات `[]` ترتب البيانات وتعتمد على الأرقام (Index) للوصول إليها.
+- دوال الإضافة والحذف الأساسية هي: `push` (نهاية)، `pop` (نهاية)، `unshift` (بداية)، `shift` (بداية).
+- `map`: تنشئ مصفوفة جديدة مبنية على تغيير كل عنصر في المصفوفة القديمة.
+- `filter`: تنشئ مصفوفة جديدة تحتوي فقط على العناصر التي حققت الشرط المنطقي.
+- `reduce`: تجمع (تلخص) جميع عناصر المصفوفة في قيمة واحدة نهائية.
+
+</SummaryBox>

@@ -1,0 +1,221 @@
+---
+id: classes-constructors
+title: "3.1 Classes & Constructors"
+sidebar_label: "3.1 Classes"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 3.1 الفئات (Classes) والمُنشآت (Constructors)
+
+البرمجة كائنية التوجه (OOP) هي نمط برمجي يعتمد على تنظيم الكود في "كائنات" (Objects). في جافاسكريبت الحديثة (ES6)، تم تقديم الـ `class` كطريقة سهلة وأنيقة لإنشاء الكائنات بدلاً من الطريقة القديمة المعقدة التي كانت تعتمد على الـ Prototypes بشكل مباشر. إذا كنت قادماً من لغات مثل Dart أو Java، ستجد هذا مألوفاً جداً.
+
+---
+
+##  الأهداف التعليمية
+
+1. فهم مفهوم الفئة (Class) وكيف تختلف عن الكائن (Object).
+2. بناء فئة جديدة باستخدام الكلمة المحجوزة `class`.
+3. استخدام دالة البناء (Constructor) لتهيئة الكائنات.
+4. إضافة الـ Methods للفئة.
+5. الإجابة على أسئلة المقابلات حول الفئات في جافاسكريبت.
+
+---
+
+## 1. الفئة (Class) مقابل الكائن (Object)
+
+تخيل أن الـ **Class** هو "المخطط الهندسي" للمنزل، والـ **Object** هو المنزل الحقيقي المبني من هذا المخطط.
+باستخدام فئة واحدة، يمكنك إنشاء (استنساخ) مئات الكائنات المختلفة بسرعة.
+
+---
+
+## 2. كتابة أول فئة (Class) في JS
+
+يتم تعريف الفئة باستخدام كلمة `class`، ويجب أن تبدأ بحرف كبير (PascalCase) كقاعدة عامة في الكود النظيف.
+
+```javascript
+class User {
+  // الكود الخاص بالفئة سيوضع هنا
+}
+```
+
+---
+
+## 3. دالة البناء (The Constructor)
+
+الـ `constructor` هو دالة خاصة (Method) بداخل الفئة، يتم تنفيذها **تلقائياً وبشكل فوري** بمجرد إنشاء كائن جديد من هذه الفئة. مهمتها هي استلام البيانات الأولية (مثل اسم المستخدم) ووضعها في الكائن.
+
+```javascript
+class User {
+  constructor(firstName, age) {
+    // الكلمة this تشير إلى الكائن "الحالي" الذي يتم إنشاؤه
+    this.name = firstName;
+    this.age = age;
+    this.isActive = true; // قيمة افتراضية ثابتة لجميع الكائنات
+  }
+}
+```
+
+---
+
+## 4. الاستنساخ (Instantiation)
+
+كيف نصنع "كائناً حقيقياً" من هذا المخطط الهندسي؟ باستخدام الكلمة السحرية `new`!
+
+```javascript
+// نقوم بإنشاء نسختين مختلفتين من فئة User
+const user1 = new User("Ahmed", 25);
+const user2 = new User("Sara", 22);
+
+console.log(user1.name); // "Ahmed"
+console.log(user2.age);  // 22
+```
+
+> ✅ **قاعدة الكود النظيف (Clean Code):** لا تنسَ أبداً كلمة `new` عند إنشاء كائن من الفئة. نسيانها سيؤدي إلى خطأ `TypeError`.
+
+---
+
+## 5. إضافة الدوال (Methods) للفئة
+
+لإضافة سلوك للكائن (مثلاً: دالة للترحيب)، نكتب الدالة مباشرة بداخل الفئة وبدون كلمة `function`.
+
+```javascript
+class User {
+  constructor(name, age) {
+    this.name = name;
+    this.age = age;
+  }
+
+  // Method
+  greet() {
+    console.log(`Hello, my name is ${this.name}`);
+  }
+
+  // Method
+  celebrateBirthday() {
+    this.age++;
+    console.log(`Happy Birthday! Now I am ${this.age}`);
+  }
+}
+
+const user = new User("Ali", 30);
+user.greet(); // "Hello, my name is Ali"
+user.celebrateBirthday(); // "Happy Birthday! Now I am 31"
+```
+
+---
+
+## 🚀 Performance & Pro Tips
+
+:::tip الـ Classes في جافاسكريبت مجرد سُكَّر (Syntactic Sugar)
+تحت الغطاء، جافاسكريبت لا تمتلك نظام فئات (Classes) حقيقي مثل Dart أو C++. الفئات في JS هي مجرد **تغليف تجميلي (Syntactic Sugar)** فوق نظام الـ **Prototypes**. لا تقلق، هذا لن يغير طريقة كتابتك للكود، ولكنه يجعلك تفهم أن جافاسكريبت تتعامل معها كـ الدوال العادية والكائنات في الخلفية.
+:::
+
+:::tip عدم استخدام الفاصلة (Comma) بين الـ Methods
+بينما نستخدم الفاصلة بين الخصائص والدوال بداخل الكائنات العادية (`{ name: "", age: "" }`)، لا نستخدم الفواصل بين الـ Methods داخل الـ `class`.
+:::
+
+---
+
+##  أسئلة المقابلات الشخصية (Interview Questions)
+
+<details>
+<summary><strong>Q1: هل يتم الرفع (Hoisting) للـ Classes مثلما يحدث للـ Functions العادية؟</strong></summary>
+
+**لا!** لا يتم عمل Hoisting للـ Classes في جافاسكريبت. هذا يعني أنك **لا تستطيع** استخدام (استنساخ) فئة قبل أن تقوم بتعريفها في الكود، وإلا ستحصل على `ReferenceError`.
+</details>
+
+<details>
+<summary><strong>Q2: ما الذي تفعله كلمة `this` بداخل الـ constructor الخاص بالفئة؟</strong></summary>
+
+تشير إلى الكائن (Object) الذي يتم إنشاؤه في تلك اللحظة باستخدام الكلمة `new`. فهي تسمح لنا بتعيين الخصائص (Properties) لهذا الكائن تحديداً دون غيره.
+</details>
+
+---
+
+##  أخطاء شائعة تجنبها (Common Mistakes)
+
+```javascript
+// ❌ 1 - نسيان كلمة new
+class Car {
+  constructor(brand) { this.brand = brand; }
+}
+const myCar = Car("Toyota"); // ❌ TypeError: Class constructor cannot be invoked without 'new'
+
+// ✅
+const myCar = new Car("Toyota");
+
+// ❌ 2 - استخدام الفواصل بين الـ Methods بداخل الـ Class
+class Product {
+  constructor() { }, // ❌ خطأ (SyntaxError)
+  buy() { }
+}
+
+// ✅
+class Product {
+  constructor() { }
+  buy() { }
+}
+```
+
+---
+
+<ExerciseBox title="🏋️ تمرين عملي (Exercise)">
+
+قم بكتابة كود جافاسكريبت يقوم بالآتي:
+1. أنشئ فئة (Class) تسمى `BankAccount`.
+2. بداخل الـ `constructor`، استقبل اسم العميل `owner` ورصيده المبدئي `balance`.
+3. قم بإنشاء Method تسمى `deposit` تستقبل رقم `amount`، وتقوم بجمعه على الرصيد، وتطبع رسالة إيداع.
+4. قم بإنشاء Method تسمى `withdraw` تستقبل رقم `amount`. إذا كان الرصيد كافياً، قم بخصمه، وإلا اطبع "رصيد غير كافٍ".
+5. قم بإنشاء كائنين مختلفين، وجرب الإيداع والسحب منهما.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل (Solution)</strong></summary>
+
+```javascript
+class BankAccount {
+  constructor(owner, balance) {
+    this.owner = owner;
+    this.balance = balance;
+  }
+
+  deposit(amount) {
+    this.balance += amount; // this.balance = this.balance + amount
+    console.log(`تم إيداع ${amount}. الرصيد الجديد لـ ${this.owner}: ${this.balance}`);
+  }
+
+  withdraw(amount) {
+    if (this.balance >= amount) {
+      this.balance -= amount;
+      console.log(`تم سحب ${amount}. الرصيد المتبقي لـ ${this.owner}: ${this.balance}`);
+    } else {
+      console.log(`عذراً ${this.owner}، رصيدك غير كافٍ لإتمام العملية.`);
+    }
+  }
+}
+
+// الاختبار (Testing)
+const account1 = new BankAccount("Ahmed", 1000);
+const account2 = new BankAccount("Sara", 500);
+
+account1.deposit(500);   // تم إيداع 500. الرصيد الجديد: 1500
+account1.withdraw(2000); // عذراً، رصيدك غير كافٍ.
+
+account2.withdraw(100);  // تم سحب 100. الرصيد المتبقي: 400
+```
+
+</details>
+
+---
+
+<SummaryBox title="📌 ملخص الدرس (Summary)">
+
+- **Class:** المخطط الهندسي لإنشاء الكائنات المتشابهة.
+- **constructor:** الدالة التي تُشغَّل أوتوماتيكياً عند إنشاء أي كائن جديد لوضع البيانات الأساسية به.
+- **new:** الكلمة المحورية التي تقوم باستنساخ كائن حي من الفئة (بدونها سيفشل الكود).
+- **this:** ضمير الإشارة الذي يربط الخصائص بالكائن الحالي.
+
+</SummaryBox>
