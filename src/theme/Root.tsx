@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from '@docusaurus/router';
 import { supabase } from '../lib/supabaseClient';
+import AccessGate from '../components/AccessGate';
 
 // 🛑 زر التحكم السحري: اجعل هذه القيمة false إذا كنت تريد فتح الكورسات مجاناً للجميع وإلغاء البوابة تماماً
 const IS_GATE_ENABLED = true; 
@@ -14,7 +15,6 @@ export default function Root({ children }) {
   const [successMsg, setSuccessMsg] = useState("");
   const [isChecking, setIsChecking] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
-  const [showAutoRequest, setShowAutoRequest] = useState(false);
 
   const isFlutterCourse = location.pathname.startsWith('/docs');
   const isJsCourse = location.pathname.startsWith('/docs-js');
@@ -59,20 +59,7 @@ export default function Root({ children }) {
         localStorage.setItem(`CodeNova_Device_Code_${currentCourse}`, storedCode);
       }
       if (isMounted) setDeviceCode(storedCode);
-
-      try {
-        if (!supabase) return;
-        const { data } = await supabase.from('course_access_requests').select('is_approved').eq('device_code', storedCode).single();
-        if (data && data.is_approved) {
-          grantAccess(currentCourse);
-        } else if (!data) {
-          await supabase.from('course_access_requests').insert([{ device_code: storedCode, is_approved: false, target_course: currentCourse, code_type: 'student' }]);
-        }
-      } catch (err) {
-        // ignore
-      } finally {
-        if (isMounted) setIsInitializing(false);
-      }
+      if (isMounted) setIsInitializing(false);
     };
 
     initGate();
@@ -85,21 +72,7 @@ export default function Root({ children }) {
     document.body.style.overflow = 'auto';
   };
 
-  const handleCheckDeviceApproval = async () => {
-    setIsChecking(true); setErrorMsg(""); setSuccessMsg("");
-    try {
-      const { data } = await supabase.from('course_access_requests').select('is_approved').eq('device_code', deviceCode).single();
-      if (data && data.is_approved) {
-        setSuccessMsg("تم التفعيل بنجاح! جاري الدخول...");
-        setTimeout(() => grantAccess(currentCourse), 1000);
-      } else {
-        setErrorMsg("لم يتم تفعيل حسابك بعد، يرجى مراسلة الإدارة.");
-      }
-    } catch (err) {
-      setErrorMsg("حدث خطأ في الاتصال.");
-    }
-    setIsChecking(false);
-  };
+
 
   const handleManualCodeSubmit = async (e) => {
     e.preventDefault();
@@ -155,7 +128,7 @@ export default function Root({ children }) {
   }
 
   return (
-    <>
+    <AccessGate>
       {children}
 
       {isLocked && (
@@ -169,77 +142,40 @@ export default function Root({ children }) {
               هذا المحتوى مخصص فقط للمشتركين. يرجى إدخال كود التفعيل الخاص بـ {currentCourse === 'flutter' ? 'كورس فلاتر' : 'كورس جافاسكريبت'} للبدء.
             </p>
 
-            {showAutoRequest ? (
-              <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
-                <p style={{ color: '#94a3b8', fontSize: '0.9rem', marginBottom: '1rem' }}>
-                  أرسل كود جهازك للإدارة لتفعيل {currentCourse === 'flutter' ? 'فلاتر' : 'جافاسكريبت'}
-                </p>
-                <div className="device-code-display" dir="ltr" style={{ margin: '0 auto 1rem auto', fontSize: '1.8rem', padding: '0.8rem', background: '#0f172a', borderRadius: '8px', fontWeight: 'bold', color: '#38bdf8', letterSpacing: '3px' }}>
-                  {deviceCode}
-                </div>
-                <button 
-                  onClick={handleCheckDeviceApproval} 
-                  className={`gate-btn ${isChecking ? 'verifying' : ''}`}
-                  disabled={isChecking}
-                  style={{ background: '#334155', marginBottom: '0.5rem' }}
-                >
-                  تحقق من تفعيل جهازي
-                </button>
-                <button 
-                  onClick={() => setShowAutoRequest(false)} 
-                  className="gate-btn"
-                  style={{ background: 'transparent', color: '#94a3b8', border: 'none' }}
-                >
-                  العودة لإدخال كود
-                </button>
-                {errorMsg && <div className="gate-error-message">{errorMsg}</div>}
-                {successMsg && <div className="gate-error-message" style={{color: '#22d3a0'}}>{successMsg}</div>}
-              </div>
-            ) : (
-              <form onSubmit={handleManualCodeSubmit} className="gate-form">
-                <input
-                  type="text"
-                  className={`gate-input ${errorMsg ? 'input-error' : ''}`}
-                  placeholder="أدخل كود التفعيل هنا..."
-                  value={inputCode}
-                  onChange={(e) => { setInputCode(e.target.value.toUpperCase()); setErrorMsg(""); }}
-                  dir="ltr"
-                />
-                {errorMsg && <div className="gate-error-message">{errorMsg}</div>}
-                {successMsg && <div className="gate-error-message" style={{color: '#22d3a0'}}>{successMsg}</div>}
-                
-                <button 
-                  type="submit" 
-                  className={`gate-btn ${isChecking ? 'verifying' : ''}`}
-                  disabled={isChecking || !inputCode.trim()}
-                >
-                  {isChecking ? 'جاري التحقق...' : 'تفعيل و دخول الكورس'}
-                </button>
-                
-                <button 
-                  type="button" 
-                  onClick={() => setShowAutoRequest(true)}
-                  className="gate-btn"
-                  style={{ background: 'rgba(255,255,255,0.05)', color: '#38bdf8', marginTop: '0.5rem' }}
-                >
-                  ليس لديك كود؟ اطلب تفعيل جهازك
-                </button>
-                
-                <button 
-                  type="button" 
-                  onClick={() => window.location.href = '/'}
-                  className="gate-btn"
-                  style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#cbd5e1', marginTop: '0.5rem' }}
-                >
-                  🏠 العودة للصفحة الرئيسية
-                </button>
-              </form>
-            )}
+            <form onSubmit={handleManualCodeSubmit} className="gate-form">
+              <input
+                type="text"
+                className={`gate-input ${errorMsg ? 'input-error' : ''}`}
+                placeholder="أدخل كود التفعيل هنا..."
+                value={inputCode}
+                onChange={(e) => { setInputCode(e.target.value.toUpperCase()); setErrorMsg(""); }}
+                dir="ltr"
+              />
+              {errorMsg && <div className="gate-error-message">{errorMsg}</div>}
+              {successMsg && <div className="gate-error-message" style={{color: '#22d3a0'}}>{successMsg}</div>}
+              
+              <button 
+                type="submit" 
+                className={`gate-btn ${isChecking ? 'verifying' : ''}`}
+                disabled={isChecking || !inputCode.trim()}
+              >
+                {isChecking ? 'جاري التحقق...' : 'تفعيل و دخول الكورس'}
+              </button>
+              
+              <button 
+                type="button" 
+                onClick={() => window.location.href = '/'}
+                className="gate-btn"
+                style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#cbd5e1', marginTop: '0.5rem' }}
+              >
+                🏠 العودة للصفحة الرئيسية
+              </button>
+            </form>
             
             <div className="gate-footer" style={{ marginTop: '1.5rem' }}>
               <p>للاشتراك والحصول على الكود، تواصل معنا:</p>
               <div className="gate-contact-links">
-                <a href={`https://wa.me/201552946586?text=أريد%20تفعيل%20كورس%20${currentCourse === 'flutter' ? 'فلاتر' : 'جافاسكريبت'}%20للكود:%20${deviceCode}`} target="_blank" rel="noreferrer" className="contact-btn whatsapp">
+                <a href={`https://wa.me/201552946586?text=أريد%20تفعيل%20كورس%20${currentCourse === 'flutter' ? 'فلاتر' : 'جافاسكريبت'}`} target="_blank" rel="noreferrer" className="contact-btn whatsapp">
                   💬 واتساب
                 </a>
                 <a href={`https://t.me/atefelhamsa`} target="_blank" rel="noreferrer" className="contact-btn telegram">
@@ -250,6 +186,6 @@ export default function Root({ children }) {
           </div>
         </div>
       )}
-    </>
+    </AccessGate>
   );
 }

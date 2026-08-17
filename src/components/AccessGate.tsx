@@ -397,8 +397,8 @@ export default function AccessGate({ children }: { children: React.ReactNode }) 
           .ag-logout:hover { color:#94a3b8; }
         `}</style>
         <div className="ag-card">
-          <img src={session.user.user_metadata.avatar_url} alt="" style={{width:80,height:80,borderRadius:'50%', marginBottom:16, border:'2px solid rgba(255,255,255,.1)'}} />
-          <h2 style={{fontSize:'1.6rem', fontWeight:800, color:'#f8fafc', margin:'0 0 12px'}}>أهلاً، {session.user.user_metadata.full_name}</h2>
+          <img src={session.user.user_metadata.avatar_url || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp'} alt="" style={{width:80,height:80,borderRadius:'50%', marginBottom:16, border:'2px solid rgba(255,255,255,.1)'}} />
+          <h2 style={{fontSize:'1.6rem', fontWeight:800, color:'#f8fafc', margin:'0 0 12px'}}>أهلاً، {session.user.user_metadata.full_name || 'بك'}</h2>
           
           {userPhone === null ? (
             <form onSubmit={handleUpdatePhone}>
@@ -409,10 +409,10 @@ export default function AccessGate({ children }: { children: React.ReactNode }) 
           ) : (
             <>
               <p style={{fontSize:'.95rem', color:'#94a3b8', lineHeight:1.8, margin:'0 0 32px'}}>
-                حسابك مسجل لدينا بنجاح، لكنك بحاجة إلى موافقة المشرف للوصول إلى محتوى الدورة.
+                حسابك مسجل لدينا بنجاح، لكنك بحاجة إلى موافقة المشرف للوصول إلى المنصة.
               </p>
               <button onClick={handleRequestAccess} className="ag-btn" disabled={loading}>
-                {loading ? 'جاري الإرسال...' : 'طلب الانضمام للكورس'}
+                {loading ? 'جاري الإرسال...' : 'طلب الموافقة من المشرف'}
               </button>
             </>
           )}
@@ -427,7 +427,7 @@ export default function AccessGate({ children }: { children: React.ReactNode }) 
 
   // ── 5. Pending Approval (status = pending) ─────────────────────
   if (session && accessStatus === 'pending' && !blocked) {
-    const waMsgRequest = encodeURIComponent(`مرحباً، لقد أرسلت طلب انضمام لكورس Dart & Flutter Pro (الإيميل: ${session.user.email})، هل يمكن المراجعة؟`);
+    const waMsgRequest = encodeURIComponent(`مرحباً، لقد أرسلت طلب موافقة للمنصة (الإيميل: ${session.user.email})، هل يمكن المراجعة؟`);
     const waLinkRequest = `https://wa.me/${WA_NUMBER}?text=${waMsgRequest}`;
 
     return (
