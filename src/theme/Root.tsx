@@ -147,8 +147,8 @@ export default function Root({ children }) {
       {isLocked && (
         <div className="course-gate-overlay">
           <div className="course-gate-container" dir="rtl">
-            <div className="gate-icon-wrapper">
-              <span className="gate-icon">🔒</span>
+            <div className="ag-logo-wrap" style={{ marginBottom: '20px' }}>
+              <img src="/img/codeNovaLogo.jpg" alt="CodeNova Logo" className="ag-logo" style={{ width: 120, height: 120 }} />
             </div>
             <h2 className="gate-title">وصول حصري</h2>
             <p className="gate-subtitle">
