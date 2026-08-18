@@ -6,7 +6,7 @@ const SUPABASE_URL = 'https://rkncoqjqfdpgvgcvkpxg.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_zVjzVEKeyjH8qtPKS9pJGA_1OSruxJH';
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const WA_NUMBER = '201552946586';
+const WA_NUMBER = '201272442829';
 const CHECK_INTERVAL_MS = 10_000;
 
 export default function AccessGate({ children }: { children: React.ReactNode }) {

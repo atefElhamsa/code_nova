@@ -133,7 +133,7 @@ export default function Root({ children }) {
 
       {/* Floating Contact Button */}
       <a 
-        href="https://wa.me/201552946586" 
+        href="https://wa.me/201272442829" 
         target="_blank" 
         rel="noreferrer" 
         className="floating-whatsapp-btn"
@@ -188,7 +188,7 @@ export default function Root({ children }) {
             <div className="gate-footer" style={{ marginTop: '1.5rem' }}>
               <p>للاشتراك والحصول على الكود، تواصل معنا:</p>
               <div className="gate-contact-links">
-                <a href={`https://wa.me/201552946586?text=أريد%20تفعيل%20كورس%20${currentCourse === 'flutter' ? 'فلاتر' : 'جافاسكريبت'}`} target="_blank" rel="noreferrer" className="contact-btn whatsapp">
+                <a href={`https://wa.me/201272442829?text=أريد%20تفعيل%20كورس%20${currentCourse === 'flutter' ? 'فلاتر' : 'جافاسكريبت'}`} target="_blank" rel="noreferrer" className="contact-btn whatsapp">
                   💬 واتساب
                 </a>
                 <a href={`https://t.me/atefelhamsa`} target="_blank" rel="noreferrer" className="contact-btn telegram">
