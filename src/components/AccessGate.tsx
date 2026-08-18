@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import Head from '@docusaurus/Head';
 import { createClient, Session } from '@supabase/supabase-js';
 
 const SUPABASE_URL = 'https://rkncoqjqfdpgvgcvkpxg.supabase.co';
@@ -184,6 +185,7 @@ export default function AccessGate({ children }: { children: React.ReactNode }) 
         position:'fixed', inset:0, zIndex:99999, background:'#020617',
         display:'flex', alignItems:'center', justifyContent:'center'
       }}>
+        <Head><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" /></Head>
         <div style={{
           width:50, height:50, borderRadius:'50%',
           border:'4px solid rgba(255,255,255,.1)',
@@ -201,6 +203,7 @@ export default function AccessGate({ children }: { children: React.ReactNode }) 
     
     return (
       <div className="ag-overlay">
+        <Head><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" /></Head>
         <style>{`
           .ag-overlay { position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:#020617;font-family:'Cairo','Inter',sans-serif;direction:rtl; }
           .ag-card { background:rgba(15,23,42,.95); backdrop-filter:blur(24px); border:1px solid rgba(255,255,255,.08); border-radius:32px; padding:60px 48px; text-align:center; max-width:460px; width:90%; box-shadow:0 40px 80px rgba(0,0,0,.6); animation:ag-fadeup .5s ease; }
@@ -234,16 +237,40 @@ export default function AccessGate({ children }: { children: React.ReactNode }) 
   if (!session) {
     return (
       <div className="ag-overlay">
+        <Head><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" /></Head>
         <style>{`
-          .ag-overlay { position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:#020617;font-family:'Cairo','Inter',sans-serif;direction:rtl; }
-          .ag-card { background:rgba(15,23,42,.95); backdrop-filter:blur(24px); border:1px solid rgba(255,255,255,.08); border-radius:32px; padding:60px 48px; text-align:center; max-width:440px; width:90%; box-shadow:0 40px 80px rgba(0,0,0,.6); animation:ag-fadeup .5s ease; position:relative; overflow:hidden; transition: max-width 0.3s ease; }
+          .ag-overlay { position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;background:#020617;font-family:'Cairo','Inter',sans-serif;direction:rtl; overflow-y:auto; padding:24px 16px; }
+          .ag-card { margin:auto; background:rgba(15,23,42,.95); backdrop-filter:blur(24px); border:1px solid rgba(255,255,255,.08); border-radius:32px; padding:60px 48px; text-align:center; max-width:440px; width:100%; box-shadow:0 40px 80px rgba(0,0,0,.6); animation:ag-fadeup .5s ease; position:relative; transition: max-width 0.3s ease; }
           .ag-card.wide { max-width: 720px; padding: 60px 56px; }
+          
+          /* Custom scrollbar for overlay */
+          .ag-overlay::-webkit-scrollbar { width: 6px; }
+          .ag-overlay::-webkit-scrollbar-track { background: transparent; }
+          .ag-overlay::-webkit-scrollbar-thumb { background: rgba(56, 189, 248, 0.3); border-radius: 10px; }
+          
+          .ag-logo { width:140px; height:140px; border-radius:50%; object-fit:cover; animation:ag-float 4s ease-in-out infinite; border:2px solid rgba(56, 189, 248, 0.3); }
+          .ag-logo-wrap { margin-bottom: 28px; display: flex; justify-content: center; }
+          .ag-title { font-size:1.6rem; font-weight:800; color:#f8fafc; margin:0 0 12px; }
+          .ag-subtitle { font-size:.95rem; color:#94a3b8; line-height:1.8; margin:0 0 32px; }
+
           @keyframes ag-fadeup { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+          @keyframes ag-float { 0%, 100% { transform: translateY(0) scale(1); box-shadow: 0 10px 40px rgba(56, 189, 248, 0.25); } 50% { transform: translateY(-10px) scale(1.02); box-shadow: 0 20px 50px rgba(56, 189, 248, 0.4); } }
           
           /* Form Styles */
           .ag-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; text-align: right; }
           .ag-grid .ag-inp-wrap { margin-bottom: 0 !important; }
-          @media (max-width: 500px) { .ag-grid { grid-template-columns: 1fr; gap: 16px; } }
+          
+          @media (max-width: 600px) { 
+            .ag-overlay { padding: 16px 12px; }
+            .ag-card { padding: 32px 20px; border-radius: 24px; }
+            .ag-card.wide { padding: 32px 20px; }
+            .ag-grid { grid-template-columns: 1fr; gap: 12px; margin-bottom: 16px; } 
+            .ag-logo { width: 100px; height: 100px; }
+            .ag-logo-wrap { margin-bottom: 20px; }
+            .ag-title { font-size: 1.4rem; margin: 0 0 8px; }
+            .ag-subtitle { font-size: 0.85rem; margin: 0 0 24px; }
+            .ag-inp-wrap { margin-bottom: 12px; }
+          }
           
           .ag-inp-wrap { margin-bottom:16px; text-align:right; }
           .ag-inp-label { display:block; font-size:.9rem; color:#94a3b8; margin-bottom:8px; font-weight:600; }
@@ -280,15 +307,13 @@ export default function AccessGate({ children }: { children: React.ReactNode }) 
             </button>
           )}
           
-          <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'center' }}>
-            {authMode === 'signup' 
-              ? <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-              : <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5-4 5-4"></path><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 4-5 4-5"></path></svg>}
+          <div className="ag-logo-wrap">
+            <img src="/img/codeNovaLogo.jpg" alt="CodeNova Logo" className="ag-logo" />
           </div>
-          <h1 style={{fontSize:'1.6rem', fontWeight:800, color:'#f8fafc', margin:'0 0 12px'}}>
-            {authMode === 'main' ? 'مرحباً بك في الكورس' : authMode === 'login' ? 'تسجيل الدخول' : 'إنشاء حساب جديد'}
+          <h1 className="ag-title">
+            {authMode === 'main' ? 'مرحباً بك في CodeNova' : authMode === 'login' ? 'تسجيل الدخول' : 'إنشاء حساب جديد'}
           </h1>
-          <p style={{fontSize:'.95rem', color:'#94a3b8', lineHeight:1.8, margin:'0 0 32px'}}>
+          <p className="ag-subtitle">
             {authMode === 'main' ? 'اختر طريقة تسجيل الدخول أو أنشئ حساباً جديداً للوصول إلى محتوى الدورة.' : 
              authMode === 'login' ? 'أدخل بيانات حسابك للمتابعة.' : 'أدخل بياناتك لإنشاء حسابك الخاص.'}
           </p>
@@ -386,6 +411,7 @@ export default function AccessGate({ children }: { children: React.ReactNode }) 
   if (session && accessStatus === 'none' && !blocked) {
     return (
       <div className="ag-overlay">
+        <Head><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" /></Head>
         <style>{`
           .ag-overlay { position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:#020617;font-family:'Cairo','Inter',sans-serif;direction:rtl; }
           .ag-card { background:rgba(15,23,42,.95); backdrop-filter:blur(24px); border:1px solid rgba(255,255,255,.08); border-radius:32px; padding:60px 48px; max-width:440px; width:90%; box-shadow:0 40px 80px rgba(0,0,0,.6); animation:ag-fadeup .5s ease; text-align:center; }
@@ -432,6 +458,7 @@ export default function AccessGate({ children }: { children: React.ReactNode }) 
 
     return (
       <div className="ag-overlay">
+        <Head><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" /></Head>
         <style>{`
           .ag-overlay { position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:#020617;font-family:'Cairo','Inter',sans-serif;direction:rtl; }
           .ag-card { background:rgba(15,23,42,.95); backdrop-filter:blur(24px); border:1px solid rgba(255,255,255,.08); border-radius:32px; padding:60px 48px; max-width:440px; width:90%; box-shadow:0 40px 80px rgba(0,0,0,.6); animation:ag-fadeup .5s ease; text-align:center; }
