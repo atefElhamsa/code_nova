@@ -88,7 +88,7 @@ export default function Hub() {
             </div>
 
             <div className="logo-wrapper">
-              <img src="/img/codeNovaLogo.jpg" alt="CodeNova Logo" className="brand-logo" />
+              <img src="/img/codeNovaLogo.png" alt="CodeNova Logo" className="brand-logo" />
             </div>
 
             <h1 className="main-title" dir="ltr">
@@ -180,15 +180,19 @@ export default function Hub() {
         .pill-divider { width: 1px; height: 14px; background: rgba(255,255,255,0.2); }
         .pill-text-ar { color: #e2e8f0; font-size: 0.95rem; font-weight: 700; }
 
-        .logo-wrapper { margin-bottom: 2rem; position: relative; display: flex; justify-content: center; align-items: center; animation: floatLogo 6s infinite ease-in-out; }
+        .logo-wrapper { margin-bottom: 2rem; position: relative; display: flex; justify-content: center; align-items: center; }
         
         .brand-logo { 
           height: 180px; 
-          width: auto; 
-          border-radius: 35px; /* Crops the black corners of the JPG perfectly to a squircle */
-          box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+          width: 180px; 
+          object-fit: contain;
+          animation: floatLogo 4s ease-in-out infinite;
+          filter: drop-shadow(0 10px 20px rgba(56, 189, 248, 0.4));
         }
-        @keyframes floatLogo { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+        @keyframes floatLogo { 
+          0%, 100% { transform: translateY(0) scale(1); filter: drop-shadow(0 10px 20px rgba(56, 189, 248, 0.3)); } 
+          50% { transform: translateY(-12px) scale(1.02); filter: drop-shadow(0 20px 30px rgba(56, 189, 248, 0.5)); } 
+        }
 
         .main-title { margin: 0 0 1.5rem; line-height: 1.1; display: flex; flex-direction: column; align-items: center; gap: 5px; }
         .brand-name { font-size: clamp(4rem, 8vw, 6.5rem); font-weight: 900; letter-spacing: -2px; display: flex; align-items: center; justify-content: center; }
@@ -277,7 +281,7 @@ export default function Hub() {
           .start-btn { flex-direction: row; gap: 6px; padding: 0.8rem; }
           .btn-text, .btn-text-ar { font-size: 0.95rem; }
           .btn-divider { display: block; opacity: 0.3; }
-          .logo-wrapper .brand-logo { height: 130px; }
+          .logo-wrapper .brand-logo { height: 140px; width: 140px; }
         }
       `}</style>
     </Layout>
