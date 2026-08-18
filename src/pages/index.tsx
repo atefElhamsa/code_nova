@@ -256,14 +256,28 @@ export default function Hub() {
         .flutter-card .start-btn:hover { background: #0ea5e9; color: #fff; border-color: #0ea5e9; box-shadow: 0 10px 20px rgba(14,165,233,0.2); }
         .start-btn:hover .arrow { opacity: 1; transform: translateX(5px); }
 
+        @media (max-width: 1024px) {
+          .modern-hub { padding: 5rem 1.5rem; }
+          .courses-showcase { gap: 1.5rem; }
+          .course-card { padding: 2rem; }
+        }
+
         @media (max-width: 768px) {
-          .modern-hub { padding: 4rem 1rem; }
-          .brand-name { font-size: 4rem; }
-          .brand-academy { font-size: 2rem; }
-          .course-card { padding: 1.5rem; }
-          .title { font-size: 1.5rem; }
-          .start-btn { flex-wrap: wrap; gap: 8px; }
-          .btn-divider { display: none; }
+          .modern-hub { padding: 3rem 1rem; }
+          .brand-name { font-size: clamp(3rem, 10vw, 4rem); }
+          .brand-academy { font-size: clamp(1.5rem, 6vw, 2rem); }
+          .main-subtitle { font-size: 1rem; }
+          .subtitle-ar { font-size: 1.1rem; }
+          .courses-showcase { grid-template-columns: 1fr; gap: 1.5rem; }
+          .course-card { padding: 1.5rem; align-items: center; text-align: center; }
+          .card-header { width: 100%; }
+          .title { font-size: 1.5rem; align-items: center; text-align: center; }
+          .desc { align-items: center; text-align: center; }
+          .tech-stack { justify-content: center; }
+          .start-btn { flex-direction: row; gap: 6px; padding: 0.8rem; }
+          .btn-text, .btn-text-ar { font-size: 0.95rem; }
+          .btn-divider { display: block; opacity: 0.3; }
+          .logo-wrapper .brand-logo { height: 130px; }
         }
       `}</style>
     </Layout>

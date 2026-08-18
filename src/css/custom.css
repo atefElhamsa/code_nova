@@ -796,6 +796,7 @@ div[class*='codeBlockContainer'] pre {
   box-shadow: none !important;
   padding: 0 !important;
   margin: 0 !important;
+  overflow-x: auto !important;
 }
 
 div[class*='codeBlockContent'] pre code,

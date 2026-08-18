@@ -103,10 +103,10 @@ export default function Home() {
       <section className="hero-section" ref={heroRef}>
         
         {/* Back to Hub Button */}
-        <div style={{ position: 'absolute', top: '20px', left: '20px', zIndex: 50 }}>
-          <Link to="/" className="btn btn-secondary" style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', borderRadius: '10px' }}>
+        <div className="back-btn-wrapper">
+          <Link to="/" className="btn-back">
             <span dir="ltr">← Back to Hub</span>
-            <span style={{ opacity: 0.5, margin: '0 8px' }}>|</span>
+            <span className="divider">|</span>
             <span dir="rtl">العودة للرئيسية</span>
           </Link>
         </div>
@@ -622,6 +622,18 @@ export default function Home() {
           border-radius: 16px;
         }
 
+        .back-btn-wrapper {
+          position: absolute; top: 30px; left: 30px; z-index: 50;
+        }
+        .btn-back {
+          display: inline-flex; align-items: center; padding: 0.8rem 1.5rem;
+          background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 12px; color: #a1a1aa; font-weight: 600; font-size: 0.95rem;
+          text-decoration: none !important; backdrop-filter: blur(10px); transition: all 0.3s;
+        }
+        .btn-back:hover { background: rgba(255,255,255,0.1); color: #fff; transform: translateX(-5px); }
+        .divider { opacity: 0.3; margin: 0 12px; }
+
         /* ═══════════════ TECH CHIP ═══════════════ */
         .tech-chip {
           font-family: 'Fira Code', monospace;
@@ -944,6 +956,52 @@ export default function Home() {
         }
         .cta-desc {
           font-size: 1.25rem; color: #cbd5e1; margin-bottom: 3.5rem; line-height: 1.7; position: relative; z-index: 1;
+        }
+        /* ═══════════════ RESPONSIVE DESIGN ═══════════════ */
+        @media (max-width: 1024px) {
+          .hero-section { padding: 6rem 1rem 4rem; min-height: auto; }
+          .hero-title { font-size: clamp(2.8rem, 6vw, 4rem); }
+          .hero-subtitle { font-size: clamp(1.2rem, 3vw, 1.8rem); }
+          .stats-grid { gap: 2rem; grid-template-columns: repeat(2, 1fr); }
+          .features-grid { grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+          .parts-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+          .final-cta { padding: 4rem 1.5rem; margin-top: 6rem; }
+        }
+
+        @media (max-width: 768px) {
+          .hero-section { padding: 5rem 1rem 3rem; }
+          .hero-title { font-size: clamp(2.2rem, 8vw, 3rem); }
+          .hero-subtitle { font-size: 1.2rem; }
+          .hero-description { font-size: 0.95rem; }
+          .hero-cta { flex-direction: column; gap: 0.8rem; width: 100%; }
+          .hero-cta .btn { width: 100%; padding: 0.8rem; font-size: 0.95rem; justify-content: center; }
+          
+          .stats-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+          .stat-card { padding: 1.5rem; }
+          
+          .architecture-flow { font-size: 0.8rem; gap: 0.5rem; }
+          .arch-box { padding: 0.4rem 0.8rem; }
+          
+          .section-title { font-size: 2rem; }
+          .section-subtitle { font-size: 1.2rem; }
+          
+          .features-grid { grid-template-columns: 1fr; }
+          .feature-card { padding: 1.5rem; }
+          
+          .parts-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+          .part-card { padding: 1.5rem; }
+          .part-header { margin-bottom: 1.5rem; }
+          .part-title-en { font-size: 1.3rem; }
+          .part-title-ar { font-size: 1rem; }
+          
+          .btn-back { padding: 0.6rem 1rem; font-size: 0.85rem; }
+          .btn-back .divider, .btn-back span:last-child { display: none; }
+          
+          .final-cta { padding: 3rem 1rem; border-radius: 20px; }
+          .cta-title { font-size: 1.8rem; }
+          .cta-subtitle { font-size: 1.2rem; }
+          .cta-desc { font-size: 1rem; margin-bottom: 2rem; }
+          .final-cta .btn { width: 100%; padding: 0.8rem; font-size: 0.95rem; justify-content: center; }
         }
       `}</style>
     </Layout>

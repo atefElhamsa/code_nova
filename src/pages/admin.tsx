@@ -193,9 +193,12 @@ export default function AdminPage() {
     if (tab === 'active' && (s.is_blocked || s.status !== 'approved')) return false;
     if (tab === 'pending' && (s.is_blocked || s.status !== 'pending')) return false;
     if (tab === 'blocked' && !s.is_blocked) return false;
+    if (!search) return true;
     const q = search.toLowerCase();
-    const nm = (s.display_name || s.email || '').toLowerCase();
-    return !q || nm.includes(q);
+    const nm = (s.display_name || '').toLowerCase();
+    const em = (s.email || '').toLowerCase();
+    const ph = (s.phone || '').toLowerCase();
+    return nm.includes(q) || em.includes(q) || ph.includes(q);
   });
   const C = {
     all: data.length,
@@ -361,11 +364,11 @@ export default function AdminPage() {
 
         /* ── LUXURY MINIMALIST GRID TABLE ── */
         #ap .grid-tbl {
-          width:100%; min-width:1080px;
+          width:100%; min-width:1250px;
           display:flex; flex-direction:column;
         }
         #ap .grid-hdr {
-          display:grid; grid-template-columns:25% 13% 12% 9% 12% 9% 20%;
+          display:grid; grid-template-columns:22% 12% 11% 9% 11% 10% 25%;
           padding:16px 26px;
           background:linear-gradient(90deg, rgba(255,255,255,.01), rgba(255,255,255,.025) 50%, rgba(255,255,255,.01));
           border-top:1px solid rgba(255,255,255,.05);
@@ -374,7 +377,7 @@ export default function AdminPage() {
           text-align:right;
         }
         #ap .grid-row {
-          display:grid; grid-template-columns:25% 13% 12% 9% 12% 9% 20%;
+          display:grid; grid-template-columns:22% 12% 11% 9% 11% 10% 25%;
           align-items:center;
           padding:18px 26px;
           border-bottom:1px solid rgba(255,255,255,.03);
@@ -499,10 +502,32 @@ export default function AdminPage() {
           margin-bottom:13px;
         }
 
-        @media (max-width:768px) {
+        @media (max-width: 1024px) {
           #ap .stats { grid-template-columns:repeat(2,1fr); }
-          #ap .hdr   { padding:0 16px; }
-          #ap .body  { padding:16px 14px 30px; }
+          #ap .hdr   { padding:0 24px; }
+          #ap .body  { padding:20px 24px 40px; }
+        }
+
+        @media (max-width:768px) {
+          #ap .stats { grid-template-columns:repeat(2,1fr); gap: 10px; }
+          #ap .hdr   { height: auto; min-height: 65px; flex-wrap: wrap; padding: 12px; gap: 12px; justify-content: center; }
+          #ap .hdr-logo { justify-content: center; flex-wrap: wrap; }
+          #ap .hdr-right { justify-content: center; flex-wrap: wrap; }
+          #ap .hdr-pill { display: none; }
+          #ap .hbtn, #ap .hdr-live, #ap .hdr-title { white-space: nowrap; flex-shrink: 0; }
+          #ap .body  { padding:16px 10px 30px; }
+          #ap .login-card { padding:32px 24px; }
+          #ap .toolbar { flex-direction: column; align-items: stretch; gap: 8px; }
+          #ap .tabs { overflow-x: auto; padding-bottom: 4px; display: flex; justify-content: flex-start; }
+          #ap .tab { flex-shrink: 0; font-size: 0.75rem; }
+          #ap .login-btn { padding: 10px; font-size: 0.9rem; }
+          #ap .abtn { padding: 6px 10px; font-size: 0.75rem; }
+        }
+
+        @media (max-width:480px) {
+          #ap .stats { grid-template-columns:1fr; }
+          #ap .hdr-title { font-size: 0.85rem; }
+          #ap .hdr-right .hbtn { padding: 0 8px; font-size: 0.7rem; }
         }
       `}</style>
 
@@ -510,6 +535,9 @@ export default function AdminPage() {
         {/* ── HEADER */}
         <div className="hdr">
           <div className="hdr-logo">
+            <a href="/" style={{ color: '#a1a1aa', marginRight: '10px', textDecoration: 'none', display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,0.05)', padding: '4px 8px', borderRadius: '8px', fontSize: '0.85rem' }}>
+              <span dir="ltr">←</span>
+            </a>
             <div className="hdr-dot" />
             <span className="hdr-title">Admin Panel</span>
             <span className="hdr-pill">Dart & Flutter Pro</span>

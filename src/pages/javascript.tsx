@@ -405,13 +405,34 @@ export default function JavascriptHome() {
         .pop-in { transform: translateY(30px) scale(0.95); transition: all 0.7s cubic-bezier(0.34, 1.56, 0.64, 1); }
         .pop-in.is-revealed { transform: translateY(0) scale(1); }
 
+        @media (max-width: 1024px) {
+          .hero-section { padding: 8rem 1.5rem 4rem; min-height: auto; }
+          .hero-title { font-size: clamp(3rem, 6vw, 4.5rem); }
+          .stats-grid { gap: 2rem; grid-template-columns: repeat(2, 1fr); }
+          .parts-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+          .curriculum-section { padding: 4rem 1.5rem 6rem; }
+        }
+
         @media (max-width: 768px) {
           .hero-section { padding: 6rem 1rem 3rem; }
-          .hero-title { font-size: 3rem; }
-          .section-title { font-size: 2.5rem; }
+          .hero-title { font-size: clamp(2.5rem, 8vw, 3.5rem); }
+          .hero-subtitle { font-size: 1.1rem; }
+          .section-title { font-size: 2rem; }
+          .section-subtitle { font-size: 1.1rem; }
+          
+          .stats-section { padding: 2rem 1rem 4rem; }
+          .stats-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+          .stat-card { padding: 1.5rem; }
+          
+          .parts-grid { grid-template-columns: 1fr; gap: 1.5rem; }
           .part-card { padding: 1.5rem; }
+          .part-title-en { font-size: 1.3rem; }
+          .part-title-ar { font-size: 1rem; }
+          
           .btn-back { padding: 0.6rem 1rem; font-size: 0.85rem; }
           .btn-back .divider, .btn-back span:last-child { display: none; }
+          
+          .btn-primary { width: 100%; padding: 0.8rem; font-size: 1rem; justify-content: center; }
         }
       `}</style>
     </Layout>
