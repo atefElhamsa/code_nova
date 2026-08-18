@@ -46,6 +46,18 @@ const colorAvatar = (str: string) => {
   return colors[Math.abs(h) % colors.length];
 };
 
+const formatPhoneForWA = (phone: string | null) => {
+  if (!phone) return '';
+  let clean = phone.replace(/\D/g, '');
+  if (clean.startsWith('01') && clean.length === 11) {
+    return '20' + clean.substring(1);
+  }
+  if (clean.startsWith('1') && clean.length === 10) {
+    return '20' + clean;
+  }
+  return clean;
+};
+
 export default function AdminPage() {
   const [pass, setPass] = useState('');
   const [authed, setAuthed] = useState(false);
@@ -793,7 +805,7 @@ export default function AdminPage() {
                         {/* Phone */}
                         <div className="grid-cell" style={{ display: 'flex', justifyContent: 'center', color: '#38bdf8', fontSize: '.88rem', fontWeight: 700 }} dir="ltr">
                           {s.phone ? (
-                            <a href={`https://wa.me/${s.phone.replace(/\D/g, '')}`} target="_blank" rel="noreferrer" style={{ color: '#38bdf8', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <a href={`https://wa.me/${formatPhoneForWA(s.phone)}`} target="_blank" rel="noreferrer" style={{ color: '#38bdf8', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
                               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
                               {s.phone}
                             </a>

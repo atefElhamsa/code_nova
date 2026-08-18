@@ -6,6 +6,9 @@ const SUPABASE_URL = 'https://rkncoqjqfdpgvgcvkpxg.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_zVjzVEKeyjH8qtPKS9pJGA_1OSruxJH';
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+import PhoneInput from 'react-phone-input-2';
+import 'react-phone-input-2/lib/style.css';
+
 const WA_NUMBER = '201272442829';
 const CHECK_INTERVAL_MS = 10_000;
 
@@ -15,7 +18,8 @@ export default function AccessGate({ children }: { children: React.ReactNode }) 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
-  const [phone, setPhone] = useState('');
+  const [phone, setPhone] = useState<string | undefined>('');
+  const [dialCode, setDialCode] = useState('20');
   const [userPhone, setUserPhone] = useState<string | null | undefined>(undefined);
   const [authError, setAuthError] = useState('');
   const [authMode, setAuthMode] = useState<'main' | 'login' | 'signup'>('main');
@@ -123,13 +127,14 @@ export default function AccessGate({ children }: { children: React.ReactNode }) 
       setAuthError('جميع الحقول مطلوبة'); return;
     }
     setLoading(true); setAuthError('');
+    const fullPhone = phone;
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: {
           full_name: fullName,
-          phone: phone,
+          phone: fullPhone,
         }
       }
     });
@@ -168,8 +173,9 @@ export default function AccessGate({ children }: { children: React.ReactNode }) 
     e.preventDefault();
     if (!phone) return;
     setLoading(true);
-    const { error } = await supabase.from('user_profiles').update({ phone: phone }).eq('id', session?.user.id);
-    if (!error) setUserPhone(phone);
+    const fullPhone = phone;
+    const { error } = await supabase.from('user_profiles').update({ phone: fullPhone }).eq('id', session?.user.id);
+    if (!error) setUserPhone(fullPhone);
     setLoading(false);
   };
 
@@ -298,6 +304,46 @@ export default function AccessGate({ children }: { children: React.ReactNode }) 
           
           .spin { border-radius:50%; border-right-color:transparent!important; animation:spin 1s linear infinite; }
           @keyframes spin { 100% { transform:rotate(360deg); } }
+          
+          /* react-phone-input-2 overrides */
+          .react-tel-input { font-family: inherit; direction: ltr; margin-bottom: 0 !important; }
+          .react-tel-input .flag { display: none !important; }
+          .react-tel-input .form-control { 
+            width: 100% !important; padding: 14px 18px 14px 74px !important; height: auto !important;
+            background: rgba(255,255,255,.03) !important; border: 1.5px solid rgba(255,255,255,.08) !important; 
+            border-radius: 14px !important; color: #f8fafc !important; font-size: .95rem !important; 
+            transition: all .2s !important; outline: none !important; box-shadow: none !important;
+          }
+          .react-tel-input .form-control:focus { border-color: rgba(56,189,248,.5) !important; background: rgba(14,165,233,.04) !important; box-shadow: 0 0 0 4px rgba(56,189,248,.1) !important; }
+          .react-tel-input .flag-dropdown { 
+            background: rgba(255,255,255,.04) !important; border: 1.5px solid rgba(255,255,255,.08) !important; 
+            border-radius: 14px 0 0 14px !important; border-right: none !important; padding: 0 !important;
+            width: 60px !important; display: flex !important; align-items: center !important; justify-content: center !important;
+          }
+          .react-tel-input .flag-dropdown:hover, .react-tel-input .flag-dropdown.open { background: rgba(255,255,255,.07) !important; }
+          .react-tel-input .selected-flag { border-radius: 14px 0 0 14px !important; width: 100% !important; padding: 0 !important; background: transparent !important; display: flex !important; align-items: center !important; justify-content: center !important; }
+          .react-tel-input .selected-flag .arrow { left: auto !important; right: auto !important; position: static !important; border-top-color: #94a3b8 !important; margin-right: 32px !important; }
+          .react-tel-input .selected-flag .arrow.up { border-bottom-color: #94a3b8 !important; }
+          .react-tel-input .country-list { 
+            background: #0f172a !important; border: 1px solid rgba(255,255,255,.1) !important; 
+            border-radius: 14px !important; color: #f8fafc !important; 
+            box-shadow: 0 10px 30px rgba(0,0,0,.5) !important;
+            margin-top: 8px !important; text-align: left !important;
+            max-height: 220px !important; overflow-y: auto !important;
+            direction: ltr !important;
+          }
+          .react-tel-input .country-list::-webkit-scrollbar { width: 6px; }
+          .react-tel-input .country-list::-webkit-scrollbar-thumb { background: rgba(56,189,248,.3); border-radius: 10px; }
+          .react-tel-input .country-list .country { padding: 10px 14px !important; transition: background .2s; display: flex; align-items: center; direction: ltr !important; text-align: left !important; }
+          .react-tel-input .country-list .country:hover, .react-tel-input .country-list .country.highlight { background: rgba(56,189,248,.1) !important; }
+          .react-tel-input .country-list .country .dial-code { color: #94a3b8 !important; margin-left: 8px !important; direction: ltr !important; }
+          .react-tel-input .country-list .country .country-name { color: #f8fafc !important; margin-right: 8px !important; }
+          .react-tel-input .search { background: #0f172a !important; padding: 10px !important; border-bottom: 1px solid rgba(255,255,255,.1); border-radius: 14px 14px 0 0 !important; z-index: 2; position: sticky; top: 0; }
+          .react-tel-input .search-box { 
+            background: rgba(255,255,255,.05) !important; border: 1px solid rgba(255,255,255,.1) !important; 
+            border-radius: 8px !important; color: #fff !important; width: 100% !important; 
+            padding: 8px 12px !important; outline: none; margin: 0 !important; font-family: inherit; direction: rtl;
+          }
         `}</style>
 
         <div className={`ag-card ${authMode === 'signup' ? 'wide' : ''}`}>
@@ -376,9 +422,26 @@ export default function AccessGate({ children }: { children: React.ReactNode }) 
                 </div>
                 <div className="ag-inp-wrap">
                   <label className="ag-inp-label">رقم الهاتف (واتساب)</label>
-                  <div className="ag-inp-box">
-                    <input className="ag-inp" type="tel" placeholder="05XXXXXXXX" value={phone} onChange={e => setPhone(e.target.value)} required dir="ltr" />
-                    <div className="ag-inp-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg></div>
+                  <div style={{ position: 'relative' }}>
+                    <PhoneInput
+                      country={'eg'}
+                      enableSearch={true}
+                      disableCountryCode={true}
+                      searchPlaceholder="ابحث عن الدولة..."
+                      searchNotFound="لا توجد نتائج"
+                      value={phone ? (phone.startsWith('+' + dialCode) ? phone.slice(dialCode.length + 1) : phone) : ''}
+                      onChange={(p, data: any) => {
+                        let newPhone = p;
+                        if (newPhone && !newPhone.startsWith('+')) newPhone = '+' + newPhone;
+                        setPhone(newPhone);
+                        if (data?.dialCode) setDialCode(data.dialCode);
+                      }}
+                      dropdownStyle={{ maxHeight: '200px' }}
+                      inputProps={{ required: true, dir: 'ltr', placeholder: '10XXXXXXXX' }}
+                    />
+                    <div style={{ position: 'absolute', top: 0, left: '26px', height: '100%', display: 'flex', alignItems: 'center', color: '#f8fafc', fontWeight: 'bold', fontSize: '.95rem', pointerEvents: 'none', zIndex: 1, direction: 'ltr' }}>
+                      +{dialCode}
+                    </div>
                   </div>
                 </div>
                 <div className="ag-inp-wrap">
@@ -421,6 +484,46 @@ export default function AccessGate({ children }: { children: React.ReactNode }) 
           .ag-input { width:100%; padding:14px; border-radius:12px; border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.03); color:white; margin-top:16px; box-sizing:border-box; }
           .ag-logout { display:block; text-align:center; margin-top:24px; color:#64748b; font-size:.85rem; cursor:pointer; background:none; border:none; width:100%; }
           .ag-logout:hover { color:#94a3b8; }
+          
+          /* react-phone-input-2 overrides */
+          .react-tel-input { font-family: inherit; direction: ltr; margin-bottom: 0 !important; }
+          .react-tel-input .flag { display: none !important; }
+          .react-tel-input .form-control { 
+            width: 100% !important; padding: 14px 18px 14px 74px !important; height: auto !important;
+            background: rgba(255,255,255,.03) !important; border: 1px solid rgba(255,255,255,.1) !important; 
+            border-radius: 12px !important; color: #f8fafc !important; font-size: .95rem !important; 
+            transition: all .2s !important; outline: none !important; box-shadow: none !important;
+          }
+          .react-tel-input .form-control:focus { border-color: rgba(56,189,248,.5) !important; background: rgba(14,165,233,.04) !important; box-shadow: 0 0 0 4px rgba(56,189,248,.1) !important; }
+          .react-tel-input .flag-dropdown { 
+            background: rgba(255,255,255,.04) !important; border: 1px solid rgba(255,255,255,.1) !important; 
+            border-radius: 12px 0 0 12px !important; border-right: none !important; padding: 0 !important;
+            width: 60px !important; display: flex !important; align-items: center !important; justify-content: center !important;
+          }
+          .react-tel-input .flag-dropdown:hover, .react-tel-input .flag-dropdown.open { background: rgba(255,255,255,.07) !important; }
+          .react-tel-input .selected-flag { border-radius: 12px 0 0 12px !important; width: 100% !important; padding: 0 !important; background: transparent !important; display: flex !important; align-items: center !important; justify-content: center !important; }
+          .react-tel-input .selected-flag .arrow { left: auto !important; right: auto !important; position: static !important; border-top-color: #94a3b8 !important; margin-right: 32px !important; }
+          .react-tel-input .selected-flag .arrow.up { border-bottom-color: #94a3b8 !important; }
+          .react-tel-input .country-list { 
+            background: #0f172a !important; border: 1px solid rgba(255,255,255,.1) !important; 
+            border-radius: 12px !important; color: #f8fafc !important; 
+            box-shadow: 0 10px 30px rgba(0,0,0,.5) !important;
+            margin-top: 8px !important; text-align: left !important;
+            max-height: 220px !important; overflow-y: auto !important;
+            direction: ltr !important;
+          }
+          .react-tel-input .country-list::-webkit-scrollbar { width: 6px; }
+          .react-tel-input .country-list::-webkit-scrollbar-thumb { background: rgba(56,189,248,.3); border-radius: 10px; }
+          .react-tel-input .country-list .country { padding: 10px 14px !important; transition: background .2s; display: flex; align-items: center; direction: ltr !important; text-align: left !important; }
+          .react-tel-input .country-list .country:hover, .react-tel-input .country-list .country.highlight { background: rgba(56,189,248,.1) !important; }
+          .react-tel-input .country-list .country .dial-code { color: #94a3b8 !important; margin-left: 8px !important; direction: ltr !important; }
+          .react-tel-input .country-list .country .country-name { color: #f8fafc !important; margin-right: 8px !important; }
+          .react-tel-input .search { background: #0f172a !important; padding: 10px !important; border-bottom: 1px solid rgba(255,255,255,.1); border-radius: 12px 12px 0 0 !important; z-index: 2; position: sticky; top: 0; }
+          .react-tel-input .search-box { 
+            background: rgba(255,255,255,.05) !important; border: 1px solid rgba(255,255,255,.1) !important; 
+            border-radius: 8px !important; color: #fff !important; width: 100% !important; 
+            padding: 8px 12px !important; outline: none; margin: 0 !important; font-family: inherit; direction: rtl;
+          }
         `}</style>
         <div className="ag-card">
           <img src={session.user.user_metadata.avatar_url || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp'} alt="" style={{ width: 80, height: 80, borderRadius: '50%', marginBottom: 16, border: '2px solid rgba(255,255,255,.1)' }} />
@@ -429,7 +532,29 @@ export default function AccessGate({ children }: { children: React.ReactNode }) 
           {userPhone === null ? (
             <form onSubmit={handleUpdatePhone}>
               <p style={{ fontSize: '.9rem', color: '#94a3b8', margin: '0 0 8px' }}>يرجى إدخال رقم هاتفك للمتابعة:</p>
-              <input type="tel" className="ag-input" placeholder="05XXXXXXXX" value={phone} onChange={e => setPhone(e.target.value)} required />
+              <div style={{ marginTop: '16px', marginBottom: '16px' }}>
+                <div style={{ position: 'relative' }}>
+                  <PhoneInput
+                    country={'eg'}
+                    enableSearch={true}
+                    disableCountryCode={true}
+                    searchPlaceholder="ابحث عن الدولة..."
+                    searchNotFound="لا توجد نتائج"
+                    value={phone ? (phone.startsWith('+' + dialCode) ? phone.slice(dialCode.length + 1) : phone) : ''}
+                    onChange={(p, data: any) => {
+                      let newPhone = p;
+                      if (newPhone && !newPhone.startsWith('+')) newPhone = '+' + newPhone;
+                      setPhone(newPhone);
+                      if (data?.dialCode) setDialCode(data.dialCode);
+                    }}
+                    dropdownStyle={{ maxHeight: '200px' }}
+                    inputProps={{ required: true, dir: 'ltr', placeholder: '10XXXXXXXX' }}
+                  />
+                  <div style={{ position: 'absolute', top: 0, left: '26px', height: '100%', display: 'flex', alignItems: 'center', color: '#f8fafc', fontWeight: 'bold', fontSize: '.95rem', pointerEvents: 'none', zIndex: 1, direction: 'ltr' }}>
+                    +{dialCode}
+                  </div>
+                </div>
+              </div>
               <button type="submit" className="ag-btn" disabled={loading}>حفظ الرقم</button>
             </form>
           ) : (

@@ -23,7 +23,9 @@
     "clsx": "^2.1.1",
     "prism-react-renderer": "^2.4.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "react-phone-input-2": "^2.15.1",
+    "react-phone-number-input": "^3.4.17"
   },
   "devDependencies": {
     "@docusaurus/module-type-aliases": "^3.10.2",
