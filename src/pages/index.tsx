@@ -88,7 +88,7 @@ export default function Hub() {
             </div>
 
             <div className="logo-wrapper">
-              <img src="/img/codeNovaLogo.png" alt="CodeNova Logo" className="brand-logo" />
+              <img src="/img/codeNovaLogo.jpg" alt="CodeNova Logo" className="brand-logo" />
             </div>
 
             <h1 className="main-title" dir="ltr">
@@ -185,8 +185,10 @@ export default function Hub() {
         .brand-logo { 
           height: 180px; 
           width: 180px; 
-          object-fit: contain;
+          object-fit: cover;
+          border-radius: 50%;
           animation: floatLogo 4s ease-in-out infinite;
+          mix-blend-mode: screen;
           filter: drop-shadow(0 10px 20px rgba(56, 189, 248, 0.4));
         }
         @keyframes floatLogo { 

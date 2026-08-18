@@ -148,7 +148,7 @@ export default function Root({ children }) {
         <div className="course-gate-overlay">
           <div className="course-gate-container" dir="rtl">
             <div className="ag-logo-wrap" style={{ marginBottom: '20px' }}>
-              <img src="/img/codeNovaLogo.png" alt="CodeNova Logo" className="ag-logo" style={{ width: 120, height: 120 }} />
+              <img src="/img/codeNovaLogo.jpg" alt="CodeNova Logo" className="ag-logo" style={{ width: 120, height: 120 }} />
             </div>
             <h2 className="gate-title">وصول حصري</h2>
             <p className="gate-subtitle">

@@ -1471,8 +1471,10 @@ code {
 .ag-logo { 
   width:140px; 
   height:140px; 
-  object-fit:contain; 
-  animation:ag-float 4s ease-in-out infinite; 
+  object-fit:cover; 
+  border-radius: 50%;
+  animation:ag-float 4s ease-in-out infinite;
+  mix-blend-mode: screen;
   filter: drop-shadow(0 10px 20px rgba(56, 189, 248, 0.4));
 }
 .ag-logo-wrap { margin-bottom: 28px; display: flex; justify-content: center; }
