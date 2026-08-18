@@ -3,9 +3,9 @@ import type * as Preset from '@docusaurus/preset-classic';
 import {themes as prismThemes} from 'prism-react-renderer';
 
 const config: Config = {
-  title: 'CodeNova',
+  title: 'CodeNova Academy',
   tagline: 'Master modern development',
-  favicon: 'img/logo.svg',
+  favicon: 'img/codeNovaLogo.jpg',
 
   url: 'https://doc-flutter.local',
   baseUrl: '/',
@@ -60,13 +60,13 @@ const config: Config = {
   themeConfig: {
     image: 'img/docusaurus-social-card.jpg',
     footer: {
-      copyright: `Copyright © ${new Date().getFullYear()} CodeNova. Built with Docusaurus.`,
+      copyright: `Copyright © ${new Date().getFullYear()} CodeNova Academy. Built with Docusaurus.`,
     },
     navbar: {
-      title: 'CodeNova',
+      title: 'CodeNova Academy',
       logo: {
         alt: 'Logo',
-        src: 'img/logo.svg', // Ensure you have a logo or it might break, fallback to empty string if not needed but doc_flutter probably has it
+        src: 'img/codeNovaLogo.jpg', // Ensure you have a logo or it might break, fallback to empty string if not needed but doc_flutter probably has it
       },
       items: [
         {to: '/flutter', label: 'Flutter Course', position: 'left'},

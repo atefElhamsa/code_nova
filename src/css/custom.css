@@ -254,11 +254,50 @@ html[class*="docs-"] {
   height: 50px !important;
   width: auto !important;
   margin-right: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .navbar__logo img {
   object-fit: contain;
   height: 100%;
+  width: auto;
+  transition: all 0.3s ease;
+  border-radius: 12px; /* Crops the black corners */
+}
+
+.navbar__logo img:hover {
+  transform: scale(1.05);
+}
+
+/* Floating WhatsApp Button */
+.floating-whatsapp-btn {
+  position: fixed;
+  bottom: 30px;
+  left: 30px;
+  width: 60px;
+  height: 60px;
+  background-color: #25d366;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
+  z-index: 1000;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.floating-whatsapp-btn:hover {
+  transform: scale(1.1) translateY(-5px);
+  box-shadow: 0 6px 20px rgba(37, 211, 102, 0.6);
+  color: white;
+}
+
+.floating-whatsapp-btn svg {
+  width: 35px;
+  height: 35px;
 }
 
 /* ================================================================
