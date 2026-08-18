@@ -248,25 +248,20 @@ export default function AccessGate({ children }: { children: React.ReactNode }) 
           .ag-overlay::-webkit-scrollbar-track { background: transparent; }
           .ag-overlay::-webkit-scrollbar-thumb { background: rgba(56, 189, 248, 0.3); border-radius: 10px; }
           
-          .ag-logo { width:140px; height:140px; border-radius:50%; object-fit:cover; animation:ag-float 4s ease-in-out infinite; border:2px solid rgba(56, 189, 248, 0.3); }
-          .ag-logo-wrap { margin-bottom: 28px; display: flex; justify-content: center; }
           .ag-title { font-size:1.6rem; font-weight:800; color:#f8fafc; margin:0 0 12px; }
           .ag-subtitle { font-size:.95rem; color:#94a3b8; line-height:1.8; margin:0 0 32px; }
 
           @keyframes ag-fadeup { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
-          @keyframes ag-float { 0%, 100% { transform: translateY(0) scale(1); box-shadow: 0 10px 40px rgba(56, 189, 248, 0.25); } 50% { transform: translateY(-10px) scale(1.02); box-shadow: 0 20px 50px rgba(56, 189, 248, 0.4); } }
           
           /* Form Styles */
           .ag-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; text-align: right; }
           .ag-grid .ag-inp-wrap { margin-bottom: 0 !important; }
           
           @media (max-width: 600px) { 
-            .ag-overlay { padding: 16px 12px; }
-            .ag-card { padding: 32px 20px; border-radius: 24px; }
+            .ag-overlay { padding: 16px 12px; display: block; }
+            .ag-card { padding: 32px 20px; border-radius: 24px; margin: 0 auto; }
             .ag-card.wide { padding: 32px 20px; }
             .ag-grid { grid-template-columns: 1fr; gap: 12px; margin-bottom: 16px; } 
-            .ag-logo { width: 100px; height: 100px; }
-            .ag-logo-wrap { margin-bottom: 20px; }
             .ag-title { font-size: 1.4rem; margin: 0 0 8px; }
             .ag-subtitle { font-size: 0.85rem; margin: 0 0 24px; }
             .ag-inp-wrap { margin-bottom: 12px; }
