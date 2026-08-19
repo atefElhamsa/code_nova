@@ -1,0 +1,233 @@
+---
+id: classes-objects
+title: "6.1 Classes & Objects"
+sidebar_label: "6.1 Classes & Objects"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 6.1 الكلاسات والكائنات (Classes & Objects)
+
+مرحباً بك في عالم البرمجة الكائنية (OOP)! البرمجة الكائنية ليست لغة جديدة، بل هي "طريقة تفكير" لتنظيم الكود ليحاكي العالم الحقيقي، مما يسهل بناء الأنظمة الكبيرة جداً.
+
+---
+
+## 1. المفهوم: ما هو الكلاس والكائن؟
+
+- **الكلاس (Class):** هو "مخطط" أو "قالب" (Blueprint). مثلاً، مخطط بناء سيارة؛ يحدد أن السيارة لها لون، محرك، وسرعة، لكنه بحد ذاته ليس سيارة حقيقية.
+- **الكائن (Object):** هو النسخة الحقيقية المبنية من هذا القالب. (مثلاً: سيارة BMW حمراء سرعتها 200).
+
+```cpp
+#include <iostream>
+#include <string>
+using namespace std;
+
+// 1. تعريف الكلاس
+class Car {
+  public: // (سنشرحها لاحقاً، تعني أن المتغيرات متاحة للجميع)
+    string brand;
+    string model;
+    int year;
+    
+    // دالة داخل الكلاس (تسمى Method)
+    void honk() {
+        cout << "Beep beep!" << endl;
+    }
+};
+
+int main() {
+    // 2. إنشاء كائن (Object) من الكلاس
+    Car car1;
+    car1.brand = "Toyota";
+    car1.model = "Corolla";
+    car1.year = 2020;
+
+    // إنشاء كائن آخر
+    Car car2;
+    car2.brand = "Ford";
+    car2.model = "Mustang";
+    car2.year = 1969;
+
+    cout << car1.brand << " " << car1.model << endl;
+    car2.honk(); // استدعاء دالة الكائن
+
+    return 0;
+}
+```
+
+---
+
+## 2. محددات الوصول (Access Specifiers) والكبسلة (Encapsulation)
+
+في الكود السابق استخدمنا كلمة `public:`. محددات الوصول تحمي بيانات الكلاس من التعديل الخاطئ، وهو مبدأ أساسي يسمى **الكبسلة (Encapsulation)** (إخفاء التفاصيل الحساسة).
+
+- `public`: يمكن الوصول للمتغير/الدالة من أي مكان في البرنامج.
+- `private`: (الافتراضي) لا يمكن الوصول للمتغير إلا من **داخل الكلاس نفسه**.
+- `protected`: مثل private، لكن مسموح الوصول له من كلاسات الأبناء (Inheritance).
+
+```cpp
+class BankAccount {
+  private:
+    double balance = 0; // مخفي ومحمي!
+
+  public:
+    // دوال للتحكم في الرصيد (Getters & Setters)
+    void deposit(double amount) {
+        if (amount > 0) balance += amount;
+    }
+    
+    double getBalance() {
+        return balance;
+    }
+};
+
+int main() {
+    BankAccount account;
+    // account.balance = 5000; // ❌ خطأ! لا يمكن الوصول إليه مباشرة
+    account.deposit(5000);     // ✅ صحيح
+    cout << account.getBalance(); // يطبع 5000
+    return 0;
+}
+```
+
+---
+
+## 3. الـ Constructors (دالة البناء) والـ Destructors (دالة الهدم)
+
+- **Constructor**: دالة خاصة تحمل **نفس اسم الكلاس**، ولا تُرجع أي قيمة (حتى void). تُستدعى **تلقائياً** بمجرد إنشاء الكائن، وتُستخدم لإعطاء قيم ابتدائية (Initialization).
+- **Destructor**: دالة خاصة تُكتب بوضع علامة `~` قبل اسم الكلاس. تُستدعى **تلقائياً** عند تدمير الكائن (مثلاً عند انتهاء دالة main)، وتُستخدم غالباً لتنظيف الذاكرة الديناميكية (`delete`).
+
+```cpp
+class Student {
+  public:
+    string name;
+    
+    // Constructor (يتم تمرير القيمة عند إنشاء الكائن)
+    Student(string studentName) {
+        name = studentName;
+        cout << "Student " << name << " is created." << endl;
+    }
+    
+    // Destructor
+    ~Student() {
+        cout << "Student " << name << " is destroyed." << endl;
+    }
+};
+
+int main() {
+    Student s1("Ahmed"); // سيطبع: Student Ahmed is created.
+    // عند نهاية البرنامج سيطبع: Student Ahmed is destroyed.
+    return 0;
+}
+```
+
+---
+
+## ⚡ Performance Notes
+
+:::tip حجم الكائن (Object Size & Padding)
+قد تظن أن حجم الكائن (Object) هو مجموع أحجام المتغيرات بداخله. لكن C++ تقوم بعملية تسمى **Memory Alignment** لزيادة سرعة قراءة المعالج للبيانات. هذا يعني أنها قد تترك "فراغات" (Padding) بين المتغيرات.
+لتوفير الذاكرة في الكلاسات التي سيُصنع منها ملايين الكائنات، قم بترتيب المتغيرات داخل الكلاس من الأكبر حجماً (مثل `double` ثم `int`) إلى الأصغر (`char` و `bool`).
+:::
+
+---
+
+## ⚠️ الأخطاء الشائعة (Common Mistakes)
+
+```cpp
+// ❌ 1 - نسيان الفاصلة المنقوطة في نهاية الكلاس
+class MyClass {
+    int x;
+} // 💥 خطأ: نسيان الفاصلة المنقوطة هنا هو أشهر وأكثر خطأ مزعج في C++، وقد يولد رسائل خطأ غير مفهومة في سطور أخرى!
+// ✅ الصحيح: };
+
+// ❌ 2 - نسيان تحديد محدد الوصول (Access Specifier)
+class User {
+    string name; // 💥 في C++، إذا لم تكتب public: فإن كل شيء يعتبر private بشكل افتراضي!
+};
+```
+
+---
+
+## Interview Questions & Answers
+
+<details>
+<summary><strong>Q1: ما الفائدة من الـ Encapsulation (استخدام private + Getter/Setter) بدلاً من جعل كل شيء public؟</strong></summary>
+
+لحماية البيانات! إذا كان متغير `balance` public، يمكن لأي مبرمج كتابة `balance = -1000;` وسيُقبل الخطأ.
+بينما باستخدام الـ `private` والـ `Setter`، يمكنك إضافة شروط: `if (amount > 0) balance += amount;`، وبذلك تمنع إدخال قيم غير منطقية وتحافظ على استقرار النظام.
+</details>
+
+<details>
+<summary><strong>Q2: ماذا يعني الخطأ "No default constructor exists"؟</strong></summary>
+
+إذا كتبت أنت `Constructor` يأخذ parameters (مثل `Student(string name)`), فإن C++ تلغي الـ Constructor الافتراضي (الذي لا يأخذ شيئاً). وبالتالي إذا حاولت كتابة `Student s;` سيعطيك خطأ. لحل ذلك إما أن تمرر الـ parameters `Student s("Ali")`، أو تنشئ Default Constructor يدوياً `Student() {}`.
+</details>
+
+---
+
+<ExerciseBox title="🏋️ Exercise - إنشاء كلاس الكتاب">
+
+1. أنشئ كلاس باسم `Book`.
+2. المتغيرات `title` و `author` و `price` اجعلها `private`.
+3. أنشئ `Constructor` يقبل هذه البيانات الثلاث ويملأها.
+4. أنشئ دالة `public` باسم `displayInfo()` لطباعة تفاصيل الكتاب.
+5. في `main`، أنشئ كائناً من الكلاس واطبع بياناته.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي</strong></summary>
+
+```cpp
+#include <iostream>
+#include <string>
+using namespace std;
+
+class Book {
+  private:
+    string title;
+    string author;
+    double price;
+
+  public:
+    // Constructor
+    Book(string t, string a, double p) {
+        title = t;
+        author = a;
+        price = p;
+    }
+
+    // Method to display
+    void displayInfo() {
+        cout << "Title: " << title << endl;
+        cout << "Author: " << author << endl;
+        cout << "Price: $" << price << endl;
+    }
+};
+
+int main() {
+    // إنشاء الكائن وتمرير القيم للـ Constructor
+    Book b1("Clean Code", "Robert C. Martin", 39.99);
+    
+    // طباعة البيانات
+    b1.displayInfo();
+
+    return 0;
+}
+```
+
+</details>
+
+---
+
+<SummaryBox title="📌 Lesson Summary">
+
+- **Class**: قالب يحتوي على خصائص (متغيرات) وسلوكيات (دوال).
+- **Object**: كائن حقيقي مستنسخ من الكلاس.
+- **Encapsulation**: إخفاء البيانات باستخدام `private` والتحكم بها عبر الـ Getters و Setters.
+- **Constructor**: دالة لتجهيز الكائن عند ولادته (تأخذ نفس اسم الكلاس).
+- **Destructor**: دالة لتنظيف الكائن عند موته (تبدأ بـ `~`).
+
+</SummaryBox>

@@ -50,6 +50,25 @@ if (score >= 90) {
 }
 ```
 
+### الشروط المتداخلة (Nested If-Else)
+يمكنك وضع شرط `if` داخل `if` آخر للتحقق من شروط إضافية معتمدة على الشرط الأول:
+
+```javascript
+let isLoggedIn = true;
+let hasPremium = false;
+
+if (isLoggedIn) {
+  if (hasPremium) {
+    console.log("Welcome to the Premium Section");
+  } else {
+    console.log("Please upgrade to Premium to view this content");
+  }
+} else {
+  console.log("Please log in first");
+}
+```
+> 💡 **نصيحة الكود النظيف:** تجنب الإفراط في الشروط المتداخلة العميقة لأنها تجعل الكود غير مقروء. فكر دائماً في دمج الشروط بـ `&&` أو استخدام الـ `return` المبكر.
+
 ---
 
 ## 2. المعامل الثلاثي (Ternary Operator)
@@ -129,6 +148,22 @@ while (count > 0) {
 }
 ```
 
+### ج. الحلقات المتداخلة (Nested Loops)
+هي حلقة `loop` مكتوبة بالكامل داخل حلقة أخرى. تُستخدم بشكل رئيسي للتعامل مع البيانات ثنائية الأبعاد (مثل المصفوفات المتداخلة) أو طباعة الأشكال (الشبكات).
+
+في الحلقات المتداخلة، **في كل دورة واحدة للحلقة الخارجية، تعمل الحلقة الداخلية دورة كاملة من البداية للنهاية.**
+
+```javascript
+// طباعة جدول ضرب مصغر
+for (let i = 1; i <= 3; i++) { // الحلقة الخارجية
+  console.log(`--- Table of ${i} ---`);
+  
+  for (let j = 1; j <= 3; j++) { // الحلقة الداخلية
+    console.log(`${i} x ${j} = ${i * j}`);
+  }
+}
+```
+
 ---
 
 ## 5. `break` و `continue`
@@ -151,7 +186,7 @@ for (let i = 1; i <= 5; i++) {
 
 ---
 
-## 🚀 Performance & Pro Tips
+## ⚡ Performance Notes
 
 :::tip الحلقات اللانهائية (Infinite Loops)
 من أسوأ الأخطاء التي تدمر الأداء (وأحياناً تعلق المتصفح) هو نسيان تحديث المتغير داخل `while` loop، مما يؤدي إلى حلقة لا تنتهي أبداً. تأكد دائماً من وجود شرط للخروج!
@@ -180,7 +215,7 @@ for (let i = 1; i <= 5; i++) {
 
 ---
 
-##  أخطاء شائعة تجنبها (Common Mistakes)
+## ⚠️ الأخطاء الشائعة (Common Mistakes)
 
 ```javascript
 // ❌ 1 - نسيان علامة = للمقارنة
@@ -200,6 +235,11 @@ switch(status) {
   case "banned":
     console.log("Is banned"); // سيتم طباعة هذا أيضاً إذا كان active!
 }
+
+// ❌ 3 - الشروط الثلاثية المتداخلة (Nested Ternary) 
+let result = score > 90 ? "A" : score > 80 ? "B" : "C"; // سيء القراءة جداً
+
+// ✅ استخدم if-else أو switch عندما يكون هناك أكثر من احتمالين
 ```
 
 ---

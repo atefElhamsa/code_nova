@@ -218,6 +218,8 @@ export default function AdminPage() {
   const getCourseName = (c: string) => {
     if (c === 'flutter') return 'كورس فلاتر';
     if (c === 'js') return 'كورس جافاسكريبت';
+    if (c === 'cpp') return 'كورس C++';
+    if (c === 'python') return 'كورس Python';
     return 'الباقة الشاملة';
   };
 
@@ -687,6 +689,8 @@ export default function AdminPage() {
                     <option value="all" style={{ color: '#0f172a' }}>الباقة الشاملة</option>
                     <option value="flutter" style={{ color: '#0f172a' }}>كورس Flutter & Dart</option>
                     <option value="js" style={{ color: '#0f172a' }}>كورس JavaScript OOP</option>
+                    <option value="cpp" style={{ color: '#0f172a' }}>كورس C++ Mastery</option>
+                    <option value="python" style={{ color: '#0f172a' }}>كورس Python Pro</option>
                   </select>
                 </div>
 

@@ -30,7 +30,7 @@ const sidebarsJs: SidebarsConfig = {
       collapsed: true,
       items: [
         { type: 'doc', id: 'part3-oop/classes-constructors', label: '3.1 Classes & Constructors' },
-        { type: 'doc', id: 'part3-oop/inheritance', label: '3.2 Inheritance' },
+        { type: 'doc', id: 'part3-oop/inheritance-super', label: '3.2 Inheritance' },
         { type: 'doc', id: 'part3-oop/this-keyword', label: '3.3 The `this` Keyword' },
         { type: 'doc', id: 'part3-oop/prototypes', label: '3.4 Intro to Prototypes' },
       ],

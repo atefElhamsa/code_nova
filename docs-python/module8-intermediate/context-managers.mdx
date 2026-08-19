@@ -1,0 +1,186 @@
+---
+id: context-managers
+title: "8.2 Context Managers (with)"
+sidebar_label: "8.2 Context Managers"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 8.2 الـ Context Managers واستخدامات `with`
+
+في درس التعامل مع الملفات، رأينا أننا استخدمنا الكلمة السحرية `with open(...) as file:`، وعرفنا أنها تقوم بإغلاق الملف تلقائياً حتى لو حدثت أخطاء.
+هذا الأسلوب يُسمى **(Context Management)**، وهو ليس حِكراً على الملفات فقط، بل يمكننا استخدامه في أي كود يحتاج إلى "إعداد مسبق" (Setup) و "تنظيف بعد الانتهاء" (Teardown)، مثل الاتصال بقواعد البيانات.
+
+---
+
+## 1. كيف يعمل الـ Context Manager داخلياً؟
+
+أي كائن تريد استخدامه مع كلمة `with`، يجب أن يحتوي على طريقتين سحريتين (Dunder Methods) بداخله:
+1. **`__enter__(self)`**: تُنفذ عندما ندخل إلى بلوك الـ `with`. (مرحلة الإعداد / فتح الاتصال).
+2. **`__exit__(self, exc_type, exc_val, traceback)`**: تُنفذ عند الخروج من البلوك، أو عند حدوث خطأ. (مرحلة التنظيف / الإغلاق).
+
+دعنا نصنع Context Manager خاصاً بنا لطباعة رسائل قبل وبعد تنفيذ الكود.
+
+```python
+class MyTimer:
+    def __enter__(self):
+        print("--> Entering the Context: Starting the timer...")
+        # القيمة التي تُرجع هنا ستُخزن في المتغير بعد كلمة "as"
+        return self 
+        
+    def __exit__(self, exc_type, exc_val, traceback):
+        print("--> Exiting the Context: Stopping the timer and cleaning up...")
+        # إذا أردت تجاهل الأخطاء وعدم إيقاف البرنامج يمكنك إرجاع True
+        return False 
+
+# الاستخدام
+print("Program started.")
+
+with MyTimer() as timer:
+    print("Inside the block! Doing some work...")
+    # بمجرد الخروج من هذا البلوك، ستُستدعى __exit__ تلقائياً
+    
+print("Program ended.")
+```
+**النتيجة ستكون:**
+1. Program started.
+2. --> Entering the Context...
+3. Inside the block!
+4. --> Exiting the Context...
+5. Program ended.
+
+---
+
+## 2. الطريقة السهلة: `@contextmanager`
+
+كتابة كلاس كامل مع `__enter__` و `__exit__` قد يبدو طويلاً. لحسن الحظ، توفر بايثون وحدة مدمجة تسمى `contextlib` تسمح لك بإنشاء Context Manager بسهولة شديدة باستخدام **دالة Generator** مضاف إليها **Decorator**.
+
+الفكرة: ما قبل الـ `yield` هو الـ Setup، وما بعد الـ `yield` هو التنظيف!
+
+```python
+from contextlib import contextmanager
+
+# استخدام الديكوريتور
+@contextmanager
+def open_file_custom(file_name, mode):
+    # مرحلة الإعداد (Setup - تشبه __enter__)
+    print(f"Opening file '{file_name}'...")
+    file = open(file_name, mode)
+    
+    try:
+        # yield تُسلم الكائن ليعمل داخل بلوك الـ with
+        yield file 
+    finally:
+        # مرحلة التنظيف (Teardown - تشبه __exit__)
+        # وضعناها في finally لضمان الإغلاق حتى لو حدث خطأ
+        print(f"Closing file '{file_name}'...")
+        file.close()
+
+# الاستخدام
+with open_file_custom("test.txt", "w") as f:
+    f.write("Testing custom context manager.")
+    print("Writing finished.")
+```
+
+---
+
+## ⚡ Performance Notes
+
+:::tip تكلفة الـ Context Managers
+استخدام الـ `with` يضيف عبئاً صغيراً جداً (Overhead) لأنه يستدعي دوال الإعداد والتنظيف (`__enter__` و `__exit__`). 
+في 99% من التطبيقات، هذه التكلفة لا تُذكر والأمان الذي يوفره أهم بكثير. ولكن، إذا كنت تفتح 100 ألف ملف داخل حلقة `for` ضخمة جداً (أمر نادر الحدوث)، فقد تلاحظ بطئاً، وسيكون من الأسرع فتحها يدوياً وإغلاقها دفعة واحدة.
+:::
+
+---
+
+## ⚠️ الأخطاء الشائعة (Common Mistakes)
+
+```python
+from contextlib import contextmanager
+
+# ❌ 1 - نسيان إرجاع القيمة بـ yield
+@contextmanager
+def my_file(name):
+    f = open(name, "w")
+    # نسينا كتابة yield f
+    yield # قمنا بـ yield فارغ!
+    f.close()
+
+# with my_file("test.txt") as file:
+    # file.write("Hello") 
+    # 💥 خطأ: AttributeError لأن المتغير file سيكون قيمته None!
+
+# ❌ 2 - نسيان وضع كود التنظيف داخل finally
+# إذا وضعت f.close() تحت yield مباشرة بدون finally، وحدث خطأ داخل الـ with، 
+# فإن الدالة ستتوقف عند الـ yield ولن تصل أبداً لسطر الإغلاق!
+```
+
+---
+
+## Interview Questions & Answers
+
+<details>
+<summary><strong>Q1: متى أستخدم الـ Context Managers (كلمة with) في الحياة الواقعية؟</strong></summary>
+
+أي عملية تتطلب "تخصيص موارد" وتحتاج إلى "تحريرها" لاحقاً لتجنب الـ Memory Leaks:
+1. التعامل مع الملفات المكتوبة `open()`.
+2. الاتصال بقواعد البيانات (فتح اتصال DB Connection، وإغلاقه).
+3. الاتصال بالشبكات والمنافذ (Sockets).
+4. قفل الخيوط المتعددة (Acquiring and releasing thread Locks).
+</details>
+
+<details>
+<summary><strong>Q2: في دالة الـ `__exit__`، ماذا تعني المعاملات `exc_type` و `exc_val`؟</strong></summary>
+
+هذه المعاملات (Exception Type, Exception Value) تمررها بايثون تلقائياً إلى الدالة إذا حدث خطأ (Crash) داخل بلوك الـ `with`. 
+- إذا كان الكود سليماً، ستكون جميعها `None`.
+- إذا حدث خطأ، ستحتوي على معلومات الخطأ لكي تتمكن الـ `__exit__` من تسجيله أو التعامل معه (مثل القيام بعملية Rollback في قواعد البيانات بدلاً من حفظ البيانات الخاطئة).
+</details>
+
+---
+
+<ExerciseBox title="🏋️ Exercise - Context Manager لقواعد البيانات">
+
+سنقوم بعمل محاكاة للاتصال بقاعدة بيانات:
+1. استخدم `@contextmanager` من مكتبة `contextlib`.
+2. اكتب دالة باسم `database_connection`.
+3. في البداية، اطبع `Connecting to database...`
+4. استخدم `yield "DB_CONNECTION_OBJECT"`
+5. في الجزء الأخير (داخل finally)، اطبع `Disconnecting from database...`
+6. اختبر الكود بوضعه داخل بلوك `with`.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي</strong></summary>
+
+```python
+from contextlib import contextmanager
+
+@contextmanager
+def database_connection():
+    print("Connecting to database...")
+    
+    try:
+        # تسليم أوبجكت وهمي للاتصال
+        yield "DB_CONNECTION_OBJECT"
+    finally:
+        print("Disconnecting from database...")
+
+# التجربة
+with database_connection() as db:
+    print(f"Using {db} to fetch users...")
+```
+
+</details>
+
+---
+
+<SummaryBox title="📌 Lesson Summary">
+
+- **Context Managers (with)**: تستخدم لضمان تحرير الموارد والتنظيف التلقائي بعد الانتهاء، حتى في حالة حدوث أخطاء.
+- تعتمد داخلياً على تنفيذ الـ Dunder methods: **`__enter__`** قبل الكود، و **`__exit__`** بعده.
+- يمكن بناؤها بإنشاء كلاس، أو بالطريقة الأسهل عبر استخدام الـ Decorator **`@contextmanager`** مع دوال الـ Generator التي تحتوي على `yield`.
+
+</SummaryBox>

@@ -1,0 +1,227 @@
+---
+id: algorithms-iterators
+title: "8.2 Algorithms & Iterators"
+sidebar_label: "8.2 Algorithms & Iterators"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 8.2 الخوارزميات والمُكررات (Algorithms & Iterators)
+
+تخيل أن لديك `vector` مليئاً بالأرقام وتريد ترتيبه تصاعدياً، أو البحث عن رقم معين، أو حتى عكس الأرقام. هل ستكتب حلقات `for` معقدة في كل مرة؟ 
+هنا تتجلى روعة الـ STL بتقديم مكتبة `<algorithm>` التي تحتوي على خوارزميات جاهزة وسريعة جداً. ولكن، لكي تعمل هذه الخوارزميات مع أي نوع حاوية (Vector, List, Set)، فإنها تستخدم ما يسمى بـ **المُكررات (Iterators)**.
+
+---
+
+## 1. ما هو المُكرر (Iterator)؟
+
+المُكرر هو كائن يشبه **المؤشر (Pointer)** يشير إلى عنصر معين داخل الحاوية (Container). 
+بدلاً من استخدام الـ Index (`[i]`) الذي لا يعمل مع الـ `list` أو `map`، نستخدم المُكرر للمرور على جميع أنواع الحاويات بنفس الطريقة.
+
+أهم دالتين في عالم الـ Iterators:
+- `begin()`: تعيد مُكرراً يشير إلى **أول عنصر**.
+- `end()`: تعيد مُكرراً يشير إلى **ما بعد العنصر الأخير** (نهاية الحاوية وليس آخر عنصر).
+
+```cpp
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    vector<int> nums = {10, 20, 30, 40};
+    
+    // الطريقة الكلاسيكية باستخدام Iterator
+    vector<int>::iterator it;
+    
+    for(it = nums.begin(); it != nums.end(); it++) {
+        cout << *it << " "; // نستخدم الـ Dereference * كأنه Pointer
+    }
+    
+    // ملاحظة: الـ (for-each) الحديثة تقوم بهذا العمل خلف الكواليس لتريحك!
+    return 0;
+}
+```
+
+---
+
+## 2. الخوارزميات (Algorithms)
+
+لدينا دوال جاهزة في مكتبة `<algorithm>`. أغلب هذه الدوال تطلب منك مُكرر البداية ومُكرر النهاية لتعرف أين تبحث أو ترتب.
+
+### أ. الترتيب (`sort`)
+ترتب العناصر تصاعدياً (بشكل افتراضي).
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm> // ضروري
+using namespace std;
+
+int main() {
+    vector<int> nums = {50, 10, 40, 20, 30};
+    
+    // رتب من البداية للنهاية
+    sort(nums.begin(), nums.end()); 
+    
+    for(int n : nums) cout << n << " "; // 10 20 30 40 50
+    return 0;
+}
+```
+
+### ب. عكس العناصر (`reverse`)
+```cpp
+    reverse(nums.begin(), nums.end()); // 50 40 30 20 10
+```
+
+### ج. البحث (`find`)
+تبحث عن عنصر، وترجع المُكرر الذي يشير إليه إذا وجدته، وإذا لم تجده ترجع `end()`.
+
+```cpp
+    vector<int>::iterator result = find(nums.begin(), nums.end(), 30);
+    
+    // يمكننا استخدام auto بدلاً من كتابة النوع الطويل (Modern C++)
+    auto result = find(nums.begin(), nums.end(), 30);
+    
+    if (result != nums.end()) {
+        cout << "Found " << *result << " at index " << distance(nums.begin(), result);
+    } else {
+        cout << "Not found!";
+    }
+```
+
+---
+
+## 3. تعبيرات لامدا (Lambda Expressions - C++11)
+
+أحياناً نريد ترتيب العناصر بشكل مخصص (مثلاً تنازلياً، أو بناءً على عمر الـ Person). بدلاً من كتابة دالة كاملة في الخارج، تتيح لنا الـ Lambda كتابة **دالة سريعة بدون اسم** داخل نفس السطر!
+
+صيغة اللامدا البسيطة: `[](param1, param2) { return condition; }`
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+int main() {
+    vector<int> nums = {5, 2, 8, 1};
+    
+    // ترتيب تنازلي باستخدام Lambda
+    // نقول: ضع a قبل b إذا كان a أكبر من b
+    sort(nums.begin(), nums.end(), [](int a, int b) {
+        return a > b; 
+    });
+    
+    for(int n : nums) cout << n << " "; // 8 5 2 1
+    return 0;
+}
+```
+
+---
+
+## ⚡ Performance Notes
+
+:::tip قوة `std::sort` المخفية
+لماذا نستخدم الخوارزميات الجاهزة بدلاً من كتابتها بأنفسنا؟ دالة `std::sort` في C++ لا تستخدم خوارزمية فرز عادية. إنها تستخدم خوارزمية هجينة تسمى **Introsort** (مزيج بين QuickSort و HeapSort و InsertionSort). تعقيد الوقت الخاص بها هو $O(N \log N)$ في أسوأ الحالات، وهي محسنة للتعامل مع الـ CPU Cache بأعلى كفاءة ممكنة. من المستحيل تقريباً أن تكتب خوارزمية فرز يدوية تتفوق عليها!
+:::
+
+---
+
+## ⚠️ الأخطاء الشائعة (Common Mistakes)
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <list>
+#include <algorithm>
+using namespace std;
+
+int main() {
+    // ❌ 1 - تمرير list لدالة sort
+    list<int> myList = {4, 1, 3};
+    // sort(myList.begin(), myList.end()); 
+    // 💥 خطأ في الترجمة (Compile Error)! دالة sort تتطلب وصولاً عشوائياً (Random Access) والـ list لا تدعم ذلك.
+    myList.sort(); // ✅ الصحيح: استخدام الدالة المدمجة داخل الـ list
+
+    // ❌ 2 - محاولة قراءة ما بداخل end()
+    vector<int> v = {10, 20};
+    auto it = v.end();
+    // cout << *it; 
+    // 💥 خطأ كارثي (Undefined Behavior): الـ end() يشير إلى "ما بعد" العنصر الأخير، وليس العنصر الأخير نفسه! العنصر الأخير هو v.end() - 1.
+
+    return 0;
+}
+```
+
+---
+
+## Interview Questions & Answers
+
+<details>
+<summary><strong>Q1: لماذا أصبحت كلمة `auto` مستخدمة بكثرة في C++ الحديثة؟</strong></summary>
+
+تستخدم `auto` لترك مهمة "تحديد نوع المتغير" للكومبايلر. 
+مثلاً، بدلاً من كتابة `std::vector<std::pair<int, string>>::iterator it = v.begin();`
+نكتب ببساطة: `auto it = v.begin();` 
+هذا يجعل الكود أنظف بكثير وأقل عرضة للأخطاء الكتابية، دون التضحية بالسرعة، لأن النوع يتحدد أثناء הـ (Compile-time).
+</details>
+
+<details>
+<summary><strong>Q2: هل `sort` تعمل مع `list`؟</strong></summary>
+
+دالة `std::sort` في `<algorithm>` تشترط وجود (Random Access Iterator)، وهو متوفر في `vector` و `array` فقط.
+الـ `list` لا تملكه، لذلك لا يمكن استخدام `std::sort` معها. لكن لغة C++ توفر دالة داخلية للـ list نفسها، فتكتب `myList.sort();`.
+</details>
+
+---
+
+<ExerciseBox title="🏋️ Exercise - خوارزميات C++ السحرية">
+
+1. قم بإنشاء `vector` يحتوي على الأرقام `[15, 3, 20, 8, 15, 10]`.
+2. استخدم `sort` لترتيبه تصاعدياً.
+3. استخدم دالة `count` (من مكتبة algorithm) لمعرفة كم مرة تكرر الرقم `15`.
+*صيغتها مشابهة جداً لـ find: `count(begin, end, value);`*
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي</strong></summary>
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+int main() {
+    vector<int> nums = {15, 3, 20, 8, 15, 10};
+
+    // 1. الترتيب تصاعدياً
+    sort(nums.begin(), nums.end());
+
+    cout << "Sorted array: ";
+    for(int n : nums) cout << n << " ";
+    cout << endl;
+
+    // 2. حساب عدد مرات التكرار
+    int occurrence = count(nums.begin(), nums.end(), 15);
+    
+    cout << "Number 15 appeared " << occurrence << " times." << endl;
+
+    return 0;
+}
+```
+
+</details>
+
+---
+
+<SummaryBox title="📌 Lesson Summary">
+
+- **Iterators**: مؤشرات خاصة للتنقل داخل حاويات الـ STL.
+- الدوال في مكتبة `<algorithm>` (مثل `sort`, `find`, `reverse`, `count`) قوية جداً وتوفر عليك كتابة الحلقات يدوياً.
+- **`auto`**: تستنتج نوع البيانات تلقائياً وتوفر الكثير من الكتابة المعقدة.
+- **Lambda Functions `[](){}`**: دوال مصغرة بدون اسم، تُستخدم لتخصيص سلوك الخوارزميات (مثل عكس ترتيب الفرز) في نفس السطر.
+
+</SummaryBox>

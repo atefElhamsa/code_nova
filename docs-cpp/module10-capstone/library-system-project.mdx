@@ -1,0 +1,235 @@
+---
+id: library-system-project
+title: "10.1 Library Management System (Capstone)"
+sidebar_label: "10.1 Library Management System"
+---
+
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 10.1 المشروع النهائي: نظام إدارة مكتبة
+
+تهانينا على وصولك إلى هنا! لقد تعلمت أساسيات C++، البرمجة الكائنية (OOP)، هياكل البيانات (STL)، والتعامل مع الملفات والأخطاء.
+في هذا المشروع الختامي، سنجمع كل ما تعلمناه لنبني نظاماً مصغراً لإدارة الكتب في مكتبة.
+
+---
+
+## 💡 متطلبات المشروع
+
+النظام يجب أن يكون عبارة عن برنامج Console (CLI) يسمح للمستخدم بالآتي:
+1. **إضافة كتاب جديد** (اسم الكتاب، المؤلف، والسنة).
+2. **عرض جميع الكتب**.
+3. **حفظ الكتب في ملف** (`library.txt`) لضمان عدم ضياعها بعد إغلاق البرنامج.
+4. **تحميل الكتب من الملف** عند تشغيل البرنامج مرة أخرى.
+5. استخدام **معالجة الأخطاء (Exceptions)** لمنع إدخال بيانات خاطئة.
+
+---
+
+## 🛠️ الكود الكامل للمشروع
+
+يمكنك نسخ هذا الكود وتجربته في محرر الأكواد الخاص بك. اقرأ التعليقات الموجودة في الكود لتفهم كيف ربطنا المفاهيم معاً.
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <string>
+#include <fstream>
+#include <stdexcept>
+
+using namespace std;
+
+// 1. كلاس يمثل الكتاب (مبدأ الـ OOP - Encapsulation)
+class Book {
+private:
+    string title;
+    string author;
+    int year;
+
+public:
+    // Constructor
+    Book(string t, string a, int y) {
+        if (y < 1000 || y > 2025) {
+            throw invalid_argument("Invalid Year!"); // استخدام Exceptions
+        }
+        title = t;
+        author = a;
+        year = y;
+    }
+
+    // Getters للحصول على البيانات المخفية
+    string getTitle() const { return title; }
+    string getAuthor() const { return author; }
+    int getYear() const { return year; }
+
+    // دالة لعرض بيانات الكتاب
+    void display() const {
+        cout << "- " << title << " by " << author << " (" << year << ")\n";
+    }
+};
+
+// 2. كلاس يمثل المكتبة ويحتوي على الكتب
+class Library {
+private:
+    vector<Book> books; // استخدام STL Vector لتخزين كائنات الكتب
+    const string filename = "library.txt";
+
+public:
+    // عند فتح المكتبة، نقوم بتحميل البيانات من الملف فوراً
+    Library() {
+        loadFromFile();
+    }
+
+    // دالة إضافة كتاب
+    void addBook(const Book& b) {
+        books.push_back(b);
+        saveToFile(); // الحفظ التلقائي بعد كل إضافة
+        cout << "Book added successfully!\n";
+    }
+
+    // دالة عرض جميع الكتب
+    void showAllBooks() const {
+        if (books.empty()) {
+            cout << "The library is empty.\n";
+            return;
+        }
+        cout << "\n--- Library Books ---\n";
+        for (const auto& book : books) { // استخدام auto والـ for-each
+            book.display();
+        }
+        cout << "---------------------\n";
+    }
+
+private:
+    // دوال مساعدة خاصة بالكلاس للتعامل مع الملفات
+    void saveToFile() const {
+        ofstream outFile(filename);
+        if (outFile.is_open()) {
+            for (const auto& book : books) {
+                // حفظ البيانات مفصولة بفاصلة لسهولة قراءتها لاحقاً
+                outFile << book.getTitle() << "," 
+                        << book.getAuthor() << "," 
+                        << book.getYear() << "\n";
+            }
+            outFile.close();
+        }
+    }
+
+    void loadFromFile() {
+        ifstream inFile(filename);
+        string line;
+        
+        if (inFile.is_open()) {
+            while (getline(inFile, line)) {
+                // استخراج البيانات من السطر (تقسيم النص باستخدام فاصلة)
+                size_t pos1 = line.find(',');
+                size_t pos2 = line.find(',', pos1 + 1);
+                
+                if (pos1 != string::npos && pos2 != string::npos) {
+                    string t = line.substr(0, pos1);
+                    string a = line.substr(pos1 + 1, pos2 - pos1 - 1);
+                    int y = stoi(line.substr(pos2 + 1)); // تحويل النص لرقم
+                    
+                    // إضافة الكتاب للمصفوفة بدون استدعاء saveToFile
+                    books.push_back(Book(t, a, y)); 
+                }
+            }
+            inFile.close();
+        }
+    }
+};
+
+// 3. دالة الـ main واجهة المستخدم (Menu)
+int main() {
+    Library myLibrary; // إنشاء الكائن (سيقوم بتحميل الملف تلقائياً)
+    int choice = 0;
+
+    cout << "Welcome to CodeNova Library System\n";
+
+    while (choice != 3) {
+        cout << "\n1. Add Book\n2. View All Books\n3. Exit\nChoice: ";
+        cin >> choice;
+        
+        // مسح الـ buffer لحل مشكلة إدخال النصوص بعد الأرقام
+        cin.ignore(); 
+
+        if (choice == 1) {
+            string title, author;
+            int year;
+
+            cout << "Enter title: ";
+            getline(cin, title);
+            
+            cout << "Enter author: ";
+            getline(cin, author);
+            
+            cout << "Enter publish year: ";
+            cin >> year;
+
+            try {
+                // محاولة إنشاء الكتاب
+                Book newBook(title, author, year);
+                myLibrary.addBook(newBook);
+            } catch (const invalid_argument& e) {
+                // التقاط الخطأ في حالة إدخال سنة خاطئة
+                cout << "Error: " << e.what() << "\nBook not added!\n";
+            }
+        } 
+        else if (choice == 2) {
+            myLibrary.showAllBooks();
+        } 
+        else if (choice == 3) {
+            cout << "Goodbye!\n";
+        } 
+        else {
+            cout << "Invalid choice. Try again.\n";
+        }
+    }
+
+    return 0;
+}
+```
+
+---
+
+## 🔍 شرح لأهم الأجزاء:
+
+1. **الـ Encapsulation:** المتغيرات داخل كلاس `Book` مخفية (`private`) ولا يمكن تعديلها إلا من خلال الـ Constructor.
+2. **الـ STL Vector:** استخدمنا `vector<Book>` بدلاً من المصفوفات العادية لأننا لا نعرف كم كتاباً سيضيفه المستخدم.
+3. **الـ Exceptions:** في حالة إدخال سنة مستحيلة (مثلاً 5000)، يقوم كلاس الكتاب بعمل `throw` لالتقاطه في `main` وإبلاغ المستخدم.
+4. **الـ File Handling:** عندما نقوم بحفظ الكتاب، نستخدم فاصلة `,` لكي نتمكن أثناء القراءة (بواسطة `find` و `substr`) من تفكيك السطر إلى عنوان، مؤلف، وسنة.
+
+---
+
+## ⚡ Performance Notes
+
+:::tip تسريع الإدخال والإخراج (Fast I/O)
+إذا كبر هذا المشروع وأصبح يتعامل مع مئات الآلاف من الكتب عبر ملفات ضخمة، يمكنك إضافة هذين السطرين في بداية دالة `main()`:
+```cpp
+ios_base::sync_with_stdio(false);
+cin.tie(NULL);
+```
+هذان السطران يفصلان مزامنة C++ مع مكتبات C القديمة للإدخال والإخراج، مما يجعل `cin` و `cout` تعملان بسرعة صاروخية!
+:::
+
+---
+
+## ⚠️ الأخطاء الشائعة (Common Mistakes)
+
+```cpp
+// ❌ 1 - مشكلة قراءة النصوص بعد الأرقام (The getline Trap)
+cin >> year;
+getline(cin, title);
+// 💥 خطأ مزعج جداً: `cin` تقرأ الرقم وتترك زر الـ "Enter" (الذي ضغطه المستخدم) معلقاً في الذاكرة (Buffer). 
+// دالة `getline` ستجد هذا الـ "Enter" وتعتبر أن المستخدم أدخل نصاً فارغاً وتتخطى السطر فوراً دون أن تسمح لك بالكتابة!
+
+// ✅ الحل: استخدم cin.ignore() لمسح الـ Buffer قبل استخدام getline كما فعلنا في الكود أعلاه.
+```
+
+---
+
+<SummaryBox title="🎉 ختام كورس C++">
+
+بإتمامك لهذا المشروع، أنت الآن تمتلك أساساً صلباً جداً في البرمجة ولغة C++. 
+تذكر أن البرمجة هي مهارة تعتمد على "التطبيق العملي"، حاول أن تعدل على هذا المشروع (مثلاً: أضف ميزة "البحث عن كتاب" أو "حذف كتاب") لتقوية مهاراتك.
+نتمنى لك رحلة موفقة في مشاريعك القادمة مع **CodeNova**!
+
+</SummaryBox>

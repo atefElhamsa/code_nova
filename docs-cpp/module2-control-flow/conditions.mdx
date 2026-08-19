@@ -1,0 +1,217 @@
+---
+id: conditions
+title: "2.1 Conditional Statements"
+sidebar_label: "2.1 Conditional Statements"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 2.1 الجمل الشرطية (Conditions)
+
+في البرمجة، نادراً ما يتم تنفيذ الأوامر بشكل خطي (سطر تلو الآخر) دون شروط. الجمل الشرطية تمنح برنامجك القدرة على اتخاذ قرارات بناءً على المدخلات.
+
+---
+
+## 1. جملة `if` و `else`
+
+تُستخدم جملة `if` لتنفيذ كود معين **فقط إذا** كان الشرط صحيحاً (true). وإذا كان خاطئاً، يمكننا استخدام `else` لتنفيذ كود بديل.
+
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    int age = 20;
+
+    if (age >= 18) {
+        cout << "You are an adult." << endl; // سيتم التنفيذ لأن 20 أكبر من 18
+    } else {
+        cout << "You are a minor." << endl;
+    }
+
+    return 0;
+}
+```
+
+### استخدام `else if` لأكثر من شرط
+
+إذا كان لديك عدة احتمالات، يمكنك ربطها باستخدام `else if`.
+
+```cpp
+int score = 85;
+
+if (score >= 90) {
+    cout << "Grade: A" << endl;
+} else if (score >= 80) {
+    cout << "Grade: B" << endl; // سيتم طباعة هذا السطر
+} else if (score >= 70) {
+    cout << "Grade: C" << endl;
+} else {
+    cout << "Grade: F" << endl;
+}
+```
+
+### الشروط المتداخلة (Nested If-Else)
+
+يمكنك وضع جملة `if` داخل جملة `if` أخرى لفحص شروط فرعية لا تهمنا إلا إذا تحقق الشرط الأساسي أولاً.
+
+```cpp
+bool isMember = true;
+bool hasCoupon = false;
+
+if (isMember) {
+    cout << "Welcome back, member!" << endl;
+    if (hasCoupon) {
+        cout << "You get an extra 10% discount!" << endl;
+    } else {
+        cout << "Check our new offers." << endl;
+    }
+} else {
+    cout << "Please register first." << endl;
+}
+```
+> 💡 **نصيحة الكود النظيف:** تجنب التداخل العميق جداً (أكثر من مستويين) لأنه يجعل الكود أشبه بـ "عش العصفور" ويصعب قراءته. استخدم المعاملات المنطقية `&&` لدمج الشروط بدلاً من ذلك.
+
+---
+
+## 2. جملة `switch`
+
+تُعتبر `switch` بديلاً أنظف لـ `if - else if` عندما تريد فحص متغيّر واحد مقابل **قيم ثابتة محددة** (عادة `int` أو `char`). لا تعمل `switch` مع النصوص (`string`) أو الأرقام العشرية (`double`) في C++.
+
+```cpp
+char grade = 'B';
+
+switch (grade) {
+    case 'A':
+        cout << "Excellent!" << endl;
+        break;
+    case 'B':
+        cout << "Good job!" << endl; // سيُطبع هذا
+        break; // break تمنع الكود من تنفيذ الـ cases اللي بعدها
+    case 'C':
+        cout << "You passed." << endl;
+        break;
+    case 'F':
+        cout << "Failed." << endl;
+        break;
+    default: // تعادل else في جملة if
+        cout << "Invalid grade." << endl;
+}
+```
+
+> ⚠️ **أهمية `break`:** إذا نسيت كتابة `break` بعد الـ `case`، سيستمر البرنامج في تنفيذ الـ `case` التي تليها حتى يجد `break` (هذا يسمى Fall-through).
+
+---
+
+## 3. المعامل الشرطي الثلاثي (Ternary Operator)
+
+هو طريقة مختصرة لكتابة `if / else` في سطر واحد. يُفضل استخدامه للحالات البسيطة فقط للحفاظ على وضوح الكود.
+
+**الصيغة:** `condition ? value_if_true : value_if_false;`
+
+```cpp
+int time = 20;
+// باستخدام if-else
+if (time < 18) {
+    cout << "Good day.";
+} else {
+    cout << "Good evening.";
+}
+
+// باستخدام Ternary (نفس النتيجة بسطر واحد)
+string result = (time < 18) ? "Good day." : "Good evening.";
+cout << result;
+```
+
+---
+
+## ⚡ Performance Notes
+
+:::tip Branch Prediction و `switch`
+في المعالجات الحديثة (CPUs)، هناك تقنية تسمى **Branch Prediction** تحاول تخمين الشرط الذي سيتحقق لتسريع المعالجة. كثرة الشروط المعقدة والمتداخلة (Nested Ifs) تجعل التخمين صعباً مما يبطئ المعالجة (Branch penalty).
+من جهة أخرى، جملة `switch` غالبًا ما يتم ترجمتها إلى جدول قفزات (Jump Table) في الذاكرة مما يجعلها تعمل في وقت ثابت $O(1)$ بغض النظر عن عدد الـ `cases`، وهذا يجعلها أسرع بكثير من سلسلة طويلة من `if-else`.
+:::
+
+---
+
+## ⚠️ الأخطاء الشائعة (Common Mistakes)
+
+```cpp
+// ❌ 1 - استخدام = بدلاً من ==
+int x = 5;
+if (x = 10) { // هذا سيقوم بجعل x تساوي 10، وسيعتبر الشرط true دائماً!
+    cout << "This is always printed!";
+}
+
+// ✅ الصحيح:
+if (x == 10) { }
+
+// ❌ 2 - نسيان الأقواس {} في الشروط المتعددة
+if (age > 18)
+    cout << "Adult";
+    cout << "You can enter"; // 💥 هذا السطر سيُطبع دائماً ولن يتأثر بالشرط! الأقواس ضرورية إذا كان هناك أكثر من سطر.
+```
+
+---
+
+## Interview Questions & Answers
+
+<details>
+<summary><strong>Q1: هل يمكننا استخدام الأرقام كشروط في if (مثل `if(5)`) في C++؟</strong></summary>
+
+نعم. في C++، الصفر `0` يُعتبر `false`، وأي رقم آخر (سواء موجب أو سالب) يُعتبر `true`. لذلك `if(5)` ستعتبر صحيحة وتُنفذ.
+</details>
+
+<details>
+<summary><strong>Q2: متى نستخدم `switch` ومتى نستخدم `if else`؟</strong></summary>
+
+نستخدم `switch` عندما يكون لدينا متغير واحد نود مقارنته بعدة قيم ثابتة ومحددة (`int`، `char`، `enum`). وتكون أسرع نسبياً من `if else` في بعض الحالات (بسبب الـ Jump table). 
+نستخدم `if else` إذا كانت الشروط معقدة، أو تتضمن مجالات (مثل `age > 18`)، أو كانت المتغيرات نصوصاً (`strings`) أو كسوراً.
+</details>
+
+---
+
+<ExerciseBox title="🏋️ Exercise - التحقق من الأرقام الزوجية">
+
+اكتب برنامجاً يطلب من المستخدم إدخال رقم صحيح (`int`).
+استخدم جملة `if - else` للتحقق مما إذا كان الرقم زوجياً أم فردياً.
+*(تلميح: الرقم الزوجي هو الذي يقبل القسمة على 2 بدون باقٍ، استخدم معامل باقي القسمة `%`).*
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي</strong></summary>
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+int main() {
+    int num;
+    cout << "Enter an integer: ";
+    cin >> num;
+
+    if (num % 2 == 0) {
+        cout << num << " is Even." << endl;
+    } else {
+        cout << num << " is Odd." << endl;
+    }
+
+    return 0;
+}
+```
+
+</details>
+
+---
+
+<SummaryBox title="📌 Lesson Summary">
+
+- استخدم `if/else if/else` للتحقق من شروط منطقية أو مجالات (Ranges).
+- استخدم `switch` للتحقق من قيمة محددة وثابتة (تعمل مع الأحرف والأرقام الصحيحة فقط).
+- لا تنسَ الـ `break` في جمل الـ `switch`.
+- استخدم المعامل الثلاثي `? :` للاختصارات السريعة.
+
+</SummaryBox>

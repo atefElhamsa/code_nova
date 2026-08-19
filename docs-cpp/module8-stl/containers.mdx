@@ -1,0 +1,236 @@
+---
+id: containers
+title: "8.1 Containers"
+sidebar_label: "8.1 Containers"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 8.1 حاويات الـ STL (Containers)
+
+الـ **STL (Standard Template Library)** هي مكتبة قياسية تأتي مع C++ وتعتبر من أهم وأقوى الأدوات في اللغة. تقدم لك حلولاً جاهزة واحترافية لمعظم مشاكل هياكل البيانات والخوارزميات، بدلاً من كتابتها من الصفر.
+أول جزء في هذه المكتبة هو الـ **Containers (الحاويات)**: وهي كائنات وُجدت لتخزين كائنات أخرى بطرق مختلفة.
+
+---
+
+## 1. المصفوفة المرنة (Vector)
+
+تعرفنا عليها مسبقاً. هي الحاوية الأهم والأكثر استخداماً في C++. عناصرها تُخزن بشكل متجاور في الذاكرة، مما يجعل قراءتها سريعة جداً.
+
+```cpp
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    vector<int> nums = {1, 2, 3};
+    nums.push_back(4); // إضافة للنهاية (سريع)
+    
+    // nums.push_front(0); ❌ خطأ، vector لا تدعم الإضافة السريعة في البداية
+    
+    return 0;
+}
+```
+
+---
+
+## 2. القائمة المزدوجة (List)
+
+الـ `list` في C++ هي تطبيق لمفهوم (Doubly Linked List).
+- **ميزتها:** إضافة وحذف العناصر في أي مكان (في البداية، الوسط، النهاية) سريع جداً جداً.
+- **عيبها:** لا يمكنك الوصول لعنصر معين مباشرة عن طريق الـ Index! (لا يمكنك كتابة `myList[3]`). يجب عليك المرور على العناصر واحداً تلو الآخر للوصول إليه.
+
+```cpp
+#include <iostream>
+#include <list>
+using namespace std;
+
+int main() {
+    list<int> myList = {10, 20, 30};
+    
+    myList.push_front(5);  // إضافة سريعة في البداية ✅
+    myList.push_back(40);  // إضافة في النهاية
+    
+    // cout << myList[0]; ❌ خطأ! الـ List لا تدعم الـ Index
+
+    for(int n : myList) {
+        cout << n << " "; // 5 10 20 30 40
+    }
+    
+    return 0;
+}
+```
+
+---
+
+## 3. المجموعات (Set)
+
+الـ `set` تُستخدم لتخزين عناصر **فريدة (بدون تكرار)** وتكون **مرتبة (Sorted)** تلقائياً.
+مفيدة جداً إذا كان لديك قائمة أسماء أو أرقام وتريد إزالة التكرارات منها والبحث فيها بسرعة هائلة.
+
+```cpp
+#include <iostream>
+#include <set>
+using namespace std;
+
+int main() {
+    set<int> uniqueNumbers;
+    
+    uniqueNumbers.insert(50);
+    uniqueNumbers.insert(10);
+    uniqueNumbers.insert(30);
+    uniqueNumbers.insert(10); // ⚠️ سيتم تجاهله لأنه موجود بالفعل!
+    
+    // عند الطباعة، ستجدها مرتبة تصاعدياً تلقائياً!
+    for(int n : uniqueNumbers) {
+        cout << n << " "; // 10 30 50
+    }
+    
+    return 0;
+}
+```
+*(ملاحظة: إذا لم تكن تهتم بالترتيب وكنت تبحث عن أداء أسرع، استخدم `unordered_set` التي تعتمد على الـ Hash Table).*
+
+---
+
+## 4. القاموس (Map)
+
+الـ `map` يخزن البيانات على شكل أزواج **(Key - Value) أو (مفتاح - قيمة)**.
+يشبه القاموس الحقيقي: تبحث عن كلمة (Key) لتحصل على معناها (Value). الـ Keys يجب أن تكون فريدة، ولكن الـ Values يمكن أن تتكرر. وتكون مرتبة تلقائياً بناءً على الـ Keys.
+
+```cpp
+#include <iostream>
+#include <map>
+using namespace std;
+
+int main() {
+    // Key: string (الاسم), Value: int (العمر)
+    map<string, int> ages;
+    
+    ages["Ahmed"] = 25;
+    ages["Sara"] = 22;
+    ages["Ziad"] = 30;
+    
+    // الوصول المباشر عبر الـ Key
+    cout << "Sara's age: " << ages["Sara"] << endl;
+    
+    // المرور على القاموس
+    // كل عنصر هو pair يحتوي على first (المفتاح) و second (القيمة)
+    for(auto pair : ages) {
+        cout << pair.first << " is " << pair.second << " years old." << endl;
+    }
+    
+    return 0;
+}
+```
+
+---
+
+## ⚡ Performance Notes
+
+:::tip التفريق بين map و unordered_map في الأداء
+الكثير من المبرمجين يستخدمون `std::map` كخيار افتراضي. خلف الكواليس، الـ `map` مبنية باستخدام أشجار (Red-Black Trees)، وعملية البحث فيها تستغرق $O(\log N)$.
+لكن إذا كنت لا تهتم بترتيب العناصر الأبجدي، فاستخدم دائماً **`std::unordered_map`**! فهي مبنية باستخدام (Hash Tables) وعملية البحث فيها فورية تقريباً $O(1)$. هذا التغيير البسيط قد يسرع كودك بشكل أسطوري عند التعامل مع ملايين البيانات.
+:::
+
+---
+
+## ⚠️ الأخطاء الشائعة (Common Mistakes)
+
+```cpp
+#include <vector>
+using namespace std;
+
+int main() {
+    vector<int> v = {1, 2, 3, 4};
+
+    // ❌ 1 - إبطال المُكرر (Iterator Invalidation)
+    for (auto it = v.begin(); it != v.end(); it++) {
+        if (*it == 2) {
+            v.erase(it); // 💥 خطأ كارثي! عند حذف عنصر من الـ vector، تتغير أماكن العناصر في الذاكرة، ويصبح المُكرر (it) يشير لمكان خاطئ (Invalid) وسينهار البرنامج!
+        }
+    }
+
+    // ✅ الصحيح:
+    // it = v.erase(it); لأن الدالة ترجع المُكرر الجديد الصحيح
+    
+    return 0;
+}
+```
+
+---
+
+## Interview Questions & Answers
+
+<details>
+<summary><strong>Q1: متى أستخدم `vector` ومتى أستخدم `list`؟</strong></summary>
+
+- استخدم **`vector`** في 90% من الحالات. فهو أسرع في القراءة (بسبب تخزين الذاكرة المتجاور - Cache Friendly)، وأسرع في الوصول العشوائي `v[5]`. العيب هو بطء إضافة/إزالة عناصر في منتصف المصفوفة.
+- استخدم **`list`** فقط إذا كان الكود الخاص بك يضيف ويزيل آلاف العناصر من "المنتصف" أو "البداية" بشكل متكرر جداً، ولا تحتاج إلى الوصول للعناصر عن طريق الـ Index.
+</details>
+
+<details>
+<summary><strong>Q2: ما الفرق بين `map` و `unordered_map`؟</strong></summary>
+
+- `map`: تستخدم (Red-Black Tree). البيانات بداخلها تترتب تلقائياً (Sorted) حسب المفتاح. عمليات البحث تأخذ وقت O(log n).
+- `unordered_map`: تستخدم (Hash Table). البيانات بداخلها غير مرتبة عشوائية. أسرع بكثير في البحث والإضافة O(1). **وهي المفضلة في معظم الحالات ما لم تكن بحاجة للترتيب!**
+</details>
+
+---
+
+<ExerciseBox title="🏋️ Exercise - قاموس درجات الطلاب">
+
+1. استخدم `map` لتخزين أسماء طلاب (Key: string) ودرجاتهم (Value: double).
+2. أضف 3 طلاب عشوائيين.
+3. عدّل درجة طالب معين لزيادتها 5 درجات.
+4. اطلب من المستخدم إدخال اسم طالب، واطبع درجته إذا كان موجوداً.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي</strong></summary>
+
+```cpp
+#include <iostream>
+#include <map>
+#include <string>
+using namespace std;
+
+int main() {
+    map<string, double> grades;
+
+    grades["Ali"] = 85.5;
+    grades["Nour"] = 92.0;
+    grades["Omar"] = 78.0;
+
+    // زيادة الدرجة
+    grades["Ali"] += 5;
+
+    string searchName;
+    cout << "Enter student name to find grade: ";
+    cin >> searchName;
+
+    // دالة count تبحث عن الـ Key وترجع 1 إذا وجدته و 0 إذا لم تجده
+    if (grades.count(searchName) > 0) {
+        cout << searchName << " has a grade of " << grades[searchName] << endl;
+    } else {
+        cout << "Student not found in the system." << endl;
+    }
+
+    return 0;
+}
+```
+
+</details>
+
+---
+
+<SummaryBox title="📌 Lesson Summary">
+
+- **`vector`**: مصفوفة ديناميكية، ممتازة للقراءة السريعة.
+- **`list`**: قائمة مرتبطة، ممتازة للإدراج والحذف السريع في أي مكان.
+- **`set`**: تخزن قيماً فريدة ومرتبة تلقائياً بدون تكرار.
+- **`map`**: تخزن أزواجاً (مفتاح وقيمة)، وتُستخدم للبحث السريع عن البيانات (مثل القواميس).
+
+</SummaryBox>

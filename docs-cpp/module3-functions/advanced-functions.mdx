@@ -1,0 +1,218 @@
+---
+id: advanced-functions
+title: "3.2 Advanced Functions"
+sidebar_label: "3.2 Advanced Functions"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 3.2 مفاهيم متقدمة في الدوال
+
+بعد أن تعلمنا أساسيات الدوال، سنتعمق الآن في مميزات أقوى توفرها لغة C++ في التعامل مع الدوال مثل تمرير البيانات بالمرجع (Pass by Reference)، وتعدد أشكال الدوال (Overloading)، والقيم الافتراضية.
+
+---
+
+## 1. التمرير بالقيمة (Pass by Value) مقابل التمرير بالمرجع (Pass by Reference)
+
+في الدرس السابق، عندما كنا نمرر متغيراً إلى دالة، كانت C++ تأخذ **نسخة** من قيمته. هذا يعني أن أي تعديل داخل الدالة لا يؤثر على المتغير الأصلي. هذا يسمى "Pass by Value".
+
+لكن ماذا لو أردنا للدالة أن تُعدل على المتغير الأصلي مباشرة؟ نستخدم **التمرير بالمرجع (Pass by Reference)** بإضافة علامة `&` قبل اسم المعامل.
+
+```cpp
+#include <iostream>
+using namespace std;
+
+// Pass by Value (نسخة)
+void addTenByValue(int x) {
+    x = x + 10;
+}
+
+// Pass by Reference (الأصلي)
+void addTenByReference(int &x) {
+    x = x + 10;
+}
+
+int main() {
+    int a = 5;
+    int b = 5;
+
+    addTenByValue(a);
+    cout << "a after Value: " << a << endl; // سيطبع 5 (لم يتغير)
+
+    addTenByReference(b);
+    cout << "b after Reference: " << b << endl; // سيطبع 15 (تغير الأصلي)
+
+    return 0;
+}
+```
+
+---
+
+## ⚡ Performance Notes
+
+:::tip التمرير بالمرجع للبيانات الكبيرة (Pass by Reference for Performance)
+في المشاريع الكبيرة التي نُمرر فيها نصوصاً ضخمة (Strings) أو كائنات (Objects) معقدة إلى الدوال، يُفضل دائماً تمريرها بالمرجع (`&`) لتجنب استهلاك الذاكرة والوقت في عمل نُسخ جديدة منها. 
+إذا كنت لا تنوي تعديل هذه البيانات داخل الدالة وتريد فقط قراءتها، استخدم **المرجع الثابت (`const &`)** مثل `void printName(const string& name)`. هذا يضمن الأمان (عدم التعديل) والسرعة الفائقة (عدم النسخ) في نفس الوقت!
+:::
+
+---
+
+## 2. القيم الافتراضية للمعاملات (Default Arguments)
+
+يمكنك إعطاء قيم افتراضية لمعاملات الدالة، بحيث إذا نسي المبرمج تمريرها عند الاستدعاء، تستخدم الدالة القيمة الافتراضية.
+
+```cpp
+// جعلنا قيمة age الافتراضية 18
+void registerUser(string name, int age = 18) {
+    cout << "Name: " << name << ", Age: " << age << endl;
+}
+
+int main() {
+    registerUser("Ahmed", 25); // سيطبع Age: 25
+    registerUser("Omar");      // لم نمرر العمر، سيطبع Age: 18 الافتراضي
+    return 0;
+}
+```
+**قاعدة هامة:** المعاملات التي لها قيم افتراضية يجب أن تُكتب دائماً في **نهاية** قائمة المعاملات، وليس في بدايتها.
+
+---
+
+## 3. الـ Function Overloading (تعدد أشكال الدوال)
+
+في C++، يمكنك إنشاء أكثر من دالة **بنفس الاسم**! شرط أن تختلف هذه الدوال في "عدد" أو "نوع" المعاملات التي تقبلها. الكومبايلر سيعرف أي واحدة تقصد بناءً على القيم التي مررتها.
+
+```cpp
+// دالة لجمع رقمين صحيحين
+int add(int a, int b) {
+    return a + b;
+}
+
+// دالة لجمع رقمين عشريين (Overloaded)
+double add(double a, double b) {
+    return a + b;
+}
+
+// دالة لجمع ثلاثة أرقام صحيحة (Overloaded)
+int add(int a, int b, int c) {
+    return a + b + c;
+}
+
+int main() {
+    cout << add(5, 10) << endl;       // سيستدعي الدالة الأولى
+    cout << add(3.5, 2.1) << endl;    // سيستدعي الدالة الثانية
+    cout << add(1, 2, 3) << endl;     // سيستدعي الدالة الثالثة
+    return 0;
+}
+```
+
+---
+
+## 4. الاستدعاء الذاتي (Recursion)
+
+الاستدعاء الذاتي (Recursion) يعني أن تقوم الدالة **باستدعاء نفسها** من الداخل. يجب أن تحتوي هذه الدالة على "شرط توقف" (Base Case) وإلا ستستمر في استدعاء نفسها للأبد ويحدث خطأ (Stack Overflow).
+
+أشهر مثال هو حساب المضروب (Factorial):
+`5! = 5 * 4 * 3 * 2 * 1`
+
+```cpp
+int factorial(int n) {
+    if (n <= 1) { // شرط التوقف
+        return 1;
+    } else {
+        return n * factorial(n - 1); // الدالة تستدعي نفسها برقم أقل
+    }
+}
+
+int main() {
+    cout << "Factorial of 5 is: " << factorial(5) << endl; // 120
+    return 0;
+}
+```
+
+---
+
+## ⚠️ الأخطاء الشائعة (Common Mistakes)
+
+```cpp
+// ❌ 1 - الـ Recursion بدون شرط توقف (Base Case)
+void printHello() {
+    cout << "Hello";
+    printHello(); // 💥 سيتم استدعاء الدالة للأبد حتى تمتلئ الذاكرة وينهار البرنامج (Stack Overflow)
+}
+
+// ❌ 2 - الغموض في الـ Overloading (Ambiguous Overloading)
+void display(int a) {}
+void display(double a) {}
+
+// في main:
+// display(5.5f); // 💥 المترجم سيعطي خطأ لأنه لا يعرف هل يحول الـ float إلى int أم إلى double!
+```
+
+---
+
+## Interview Questions & Answers
+
+<details>
+<summary><strong>Q1: هل يمكننا عمل Overloading لدالتين يختلفان فقط في "نوع الإرجاع" (Return Type)؟</strong></summary>
+
+لا، لا يمكن في C++. المترجم يعتمد على "اسم الدالة" و "نوع وعدد المعاملات (Parameters)" للتفريق بين الدوال. إذا كانت الدالتان تمتلكان نفس الاسم ونفس المعاملات، ولكن تختلفان في الـ Return Type فقط، سيعطي المترجم خطأ.
+</details>
+
+<details>
+<summary><strong>Q2: ما هي خطورة استخدام الـ Recursion بكثرة؟ ومتى نتجنبه؟</strong></summary>
+
+خطورته تكمن في استهلاك الذاكرة (Call Stack). كل استدعاء ذاتي يحجز مساحة في الذاكرة. إذا كان الاستدعاء عميقاً جداً سيحدث **Stack Overflow**. يُفضل تجنبه واستخدام الحلقات العادية (Loops) إذا كان الأداء والذاكرة يشكلان أولوية قصوى.
+</details>
+
+---
+
+<ExerciseBox title="🏋️ Exercise - تبديل المتغيرات (Swap)">
+
+اكتب دالة تُسمى `swapNumbers` تستقبل رقمين وتعمل على **التبديل (Swapping)** بينهما.
+*يجب أن تؤثر عملية التبديل على المتغيرات الأصلية في دالة `main`.*
+استدع الدالة في `main` واطبع المتغيرات قبل وبعد التبديل.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي</strong></summary>
+
+```cpp
+#include <iostream>
+using namespace std;
+
+// نستخدم Pass by Reference (&) لنؤثر على المتغيرات الأصلية
+void swapNumbers(int &x, int &y) {
+    int temp = x; // حفظ قيمة x مؤقتاً
+    x = y;        // وضع قيمة y في x
+    y = temp;     // وضع القيمة المحفوظة في y
+}
+
+int main() {
+    int a = 10;
+    int b = 20;
+
+    cout << "Before swap: a = " << a << ", b = " << b << endl;
+    
+    swapNumbers(a, b);
+    
+    cout << "After swap:  a = " << a << ", b = " << b << endl;
+
+    return 0;
+}
+```
+
+</details>
+
+---
+
+<SummaryBox title="📌 Lesson Summary">
+
+- **Pass by Value:** يأخذ نسخة من المتغير (آمن ولكنه بطيء مع البيانات الكبيرة).
+- **Pass by Reference (`&`):** يعدل المتغير الأصلي مباشرة ويوفر مساحة الذاكرة.
+- **Default Arguments:** تتيح لك وضع قيم افتراضية للمتغيرات (يجب أن تكون في نهاية القائمة).
+- **Function Overloading:** يسمح بكتابة دوال بنفس الاسم لكن بـ parameters مختلفة.
+- **Recursion:** هو استدعاء الدالة لنفسها، ويجب الحذر بوضع "شرط توقف" (Base case).
+
+</SummaryBox>

@@ -1,0 +1,189 @@
+---
+id: exceptions
+title: "9.1 Exception Handling"
+sidebar_label: "9.1 Exception Handling"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 9.1 معالجة الأخطاء (Exception Handling)
+
+الأخطاء البرمجية واردة دائماً. بعضها نكتشفه أثناء كتابة الكود (Compile-time errors) مثل نسيان فاصلة منقوطة، وبعضها يظهر فجأة أثناء تشغيل البرنامج (Runtime errors) مثل محاولة قسمة رقم على صفر، أو فتح ملف غير موجود. 
+إذا لم نقم بمعالجة هذه الأخطاء (Exceptions)، سينهار البرنامج (Crash) فوراً. 
+
+---
+
+## 1. الكلمات المفتاحية `try`, `catch`, `throw`
+
+معالجة الأخطاء في C++ تعتمد على 3 كلمات رئيسية:
+1. **`try`**: نضع بداخلها الكود المشكوك فيه أو الذي قد يسبب خطأ.
+2. **`throw`**: إذا اكتشفنا الخطأ، "نرمي" هذا الخطأ (Exception) ليتلقفه أحد آخر.
+3. **`catch`**: يلتقط الخطأ الذي تم رميه ويقوم بالتعامل معه بلطف (بدون أن ينهار البرنامج).
+
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    int numerator = 10;
+    int denominator = 0; // سنحاول القسمة على هذا الرقم!
+
+    try {
+        if (denominator == 0) {
+            // اكتشفنا الخطأ، نقوم بـ "رمي" رسالة
+            throw "Error: Division by zero is not allowed!";
+        }
+        
+        // إذا كان المقام ليس صفراً، سيتم تنفيذ هذا السطر وتجاهل الـ throw
+        int result = numerator / denominator;
+        cout << "Result is: " << result << endl;
+        
+    } catch (const char* errorMsg) {
+        // نلتقط النص الذي تم رميه ونطبعه
+        cout << "Exception Caught!" << endl;
+        cout << errorMsg << endl;
+    }
+
+    // البرنامج يستمر بشكل طبيعي ولم ينهار
+    cout << "Program finished successfully." << endl;
+
+    return 0;
+}
+```
+
+---
+
+## 2. مكتبة الـ Exceptions القياسية
+
+بدلاً من رمي نصوص (Strings) عشوائية، توفر C++ مكتبة كاملة `<stdexcept>` مخصصة للأخطاء، وتحتوي على كلاسات جاهزة مثل:
+- `invalid_argument`: وسيطة غير صالحة.
+- `out_of_range`: خارج الحدود (مهم جداً للـ Arrays و Vectors).
+- `runtime_error`: أخطاء عامة وقت التشغيل.
+
+وكل هذه الكلاسات ترث من كلاس أب اسمه `exception`.
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <stdexcept> // مكتبة الأخطاء
+using namespace std;
+
+int main() {
+    vector<int> myVec = {1, 2, 3};
+
+    try {
+        // استخدام at() آمن لأنه يرمي استثناء out_of_range إذا خرجت عن الحدود
+        cout << myVec.at(5) << endl; 
+        
+    } catch (const out_of_range& e) {
+        // e.what() تُرجع النص الذي يصف الخطأ
+        cout << "Out of Range Error: " << e.what() << endl;
+        
+    } catch (const exception& e) {
+        // هذا الـ catch العام يمسك بأي خطأ آخر لم يتم اصطياده فوق
+        cout << "General Error: " << e.what() << endl;
+    }
+
+    return 0;
+}
+```
+*ملاحظة: دائماً ابدأ بالتقاط الأخطاء المحددة (Specific) مثل `out_of_range`، ثم ضع الأخطاء العامة (`exception`) في النهاية كشبكة أمان.*
+
+---
+
+## ⚡ Performance Notes
+
+:::tip تكلفة الـ Throw (Stack Unwinding)
+نظام معالجة الأخطاء في C++ الحديثة يتبع مبدأ (Zero-cost exceptions). هذا يعني أن المرور على كتلة `try` بدون حدوث أخطاء لا يكلف المعالج أي شيء تقريباً (صفر تأخير). 
+ولكن! بمجرد تنفيذ جملة `throw`، يقوم البرنامج بعملية معقدة وبطيئة جداً تسمى (Stack Unwinding) للبحث عن الـ `catch`.
+**القاعدة:** لا تستخدم الـ Exceptions أبداً للتحكم في المنطق العادي للبرنامج (مثل التحقق من صحة باسورد)، استخدمها فقط للكوارث الحقيقية (مثل انقطاع الاتصال بقاعدة البيانات أو نفاذ الذاكرة).
+:::
+
+---
+
+## ⚠️ الأخطاء الشائعة (Common Mistakes)
+
+```cpp
+try {
+    // كود قد يفشل
+} 
+// ❌ 1 - التقاط الخطأ بالقيمة (Catch by Value)
+catch (exception e) { 
+    // 💥 هذا يسبب Object Slicing وينسخ الكائن بالكامل مما يجعله بطيئاً جداً وقد يضيع تفاصيل الخطأ!
+}
+
+// ✅ الصحيح: التقاط الخطأ بالمرجع الثابت (Catch by const reference)
+catch (const exception& e) {
+    cout << e.what();
+}
+```
+
+---
+
+## Interview Questions & Answers
+
+<details>
+<summary><strong>Q1: ماذا يحدث إذا قمت بـ `throw` لخطأ، ولم أكتب `catch` لالتقاطه؟</strong></summary>
+
+إذا تم رمي خطأ ولم يجد البرنامج أي كتلة `catch` مناسبة للتعامل معه، فسيتم استدعاء الدالة الداخلية `std::terminate()` وسينهار البرنامج (Crash) بشكل مفاجئ وغير لطيف، وسيظهر للمستخدم رسالة خطأ مزعجة من نظام التشغيل.
+</details>
+
+<details>
+<summary><strong>Q2: هل `try/catch` تبطئ البرنامج؟</strong></summary>
+
+في C++، تصميم الـ Exception Handling مبني على مبدأ "Zero-cost if no exception is thrown". هذا يعني أن مجرد وضع الكود داخل `try` لا يبطئ البرنامج إطلاقاً طالما لم يحدث خطأ. ولكن إذا تم تنفيذ جملة `throw`، فستكون عملية إنشاء الكائن والبحث عن `catch` المناسب بطيئة جداً. لذلك استخدمها للظروف الاستثنائية الحقيقية وليس للتحكم في سير البرنامج العادي (مثل التحقق من صحة إدخال المستخدم).
+</details>
+
+---
+
+<ExerciseBox title="🏋️ Exercise - التحقق من العمر">
+
+1. اكتب برنامجاً يطلب من المستخدم إدخال عمره.
+2. استخدم `try` للتحقق من العمر.
+3. إذا كان العمر أقل من `0` أو أكبر من `120`، قم بـ `throw` لاستثناء من نوع `invalid_argument("Invalid age entered!")`.
+4. إذا كان صحيحاً، اطبع "Age is accepted."
+5. التقط الخطأ في `catch` واطبع رسالة توضيحية.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي</strong></summary>
+
+```cpp
+#include <iostream>
+#include <stdexcept>
+using namespace std;
+
+int main() {
+    int age;
+    cout << "Enter your age: ";
+    cin >> age;
+
+    try {
+        if (age < 0 || age > 120) {
+            throw invalid_argument("Invalid age entered! Must be between 0 and 120.");
+        }
+        
+        cout << "Age is accepted. You are " << age << " years old." << endl;
+        
+    } catch (const invalid_argument& e) {
+        cout << "Error Caught: " << e.what() << endl;
+    }
+
+    return 0;
+}
+```
+
+</details>
+
+---
+
+<SummaryBox title="📌 Lesson Summary">
+
+- استخدم `try { ... }` لوضع الكود المحتمل فشله داخله.
+- استخدم `throw` لإعلان حدوث الخطأ (يمكن رمي أرقام، نصوص، أو كائنات أخطاء مخصصة).
+- استخدم `catch` لالتقاط الخطأ والتعامل معه ومنع البرنامج من الانهيار.
+- استخدم كلاسات `<stdexcept>` لرمي أخطاء قياسية واضحة، واستخدم `.what()` لطباعة التفاصيل.
+
+</SummaryBox>

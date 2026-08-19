@@ -1,0 +1,193 @@
+---
+id: templates
+title: "7.2 Templates"
+sidebar_label: "7.2 Templates"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 7.2 القوالب (Templates)
+
+ماذا لو طلب منك أحدهم كتابة دالة تقوم بإيجاد الأكبر بين رقمين. ستكتب دالة تأخذ `int`. ثم يخبرك أنه يريدها للأرقام العشرية `double`. ثم للنصوص `string`. هل ستكتب 3 دوال مختلفة؟
+هنا يأتي دور **القوالب (Templates)** (أو ما يسمى Generic Programming)، والتي تسمح لك بكتابة الكود مرة واحدة ليقبل **أي نوع من البيانات**!
+
+---
+
+## 1. قوالب الدوال (Function Templates)
+
+لإنشاء قالب لدالة، نكتب قبله `template <typename T>` (ويمكن استبدال `typename` بكلمة `class`). الحرف `T` هو اسم متغير النوع (Type Variable)، ويمكننا تسميته أي اسم، لكن جرت العادة على استخدام `T`.
+
+```cpp
+#include <iostream>
+#include <string>
+using namespace std;
+
+// دالة Generic تعمل مع أي نوع بيانات!
+template <typename T>
+T getMaximum(T a, T b) {
+    if (a > b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
+int main() {
+    // تعمل مع int
+    cout << "Max int: " << getMaximum(10, 20) << endl; 
+    
+    // تعمل مع double
+    cout << "Max double: " << getMaximum(5.5, 3.1) << endl; 
+    
+    // تعمل مع string (يقارن الأبجدية)
+    cout << "Max string: " << getMaximum(string("Apple"), string("Banana")) << endl; 
+
+    return 0;
+}
+```
+**كيف يعمل هذا؟** عندما تكتب `getMaximum(10, 20)`، يرى الكومبايلر أنك تمرر `int`، فيقوم خلف الكواليس بإنشاء نسخة من الدالة تستبدل كل `T` بـ `int`. وإذا مررت `double` يصنع نسخة أخرى. (هذا يوفر وقتك كمبرمج).
+
+---
+
+## 2. قوالب الكلاسات (Class Templates)
+
+مثلما يمكننا صنع دوال Generic، يمكننا صنع كلاسات Generic بالكامل. أبرز مثال على ذلك في C++ هو الـ `vector` (يمكن أن يكون `vector<int>` أو `vector<string>`). 
+
+دعنا نصنع كلاس اسمه `Box` يمكنه تخزين أي نوع من البيانات.
+
+```cpp
+#include <iostream>
+using namespace std;
+
+// Class Template
+template <class T>
+class Box {
+  private:
+    T item; // العنصر يمكن أن يكون من أي نوع
+
+  public:
+    // Constructor
+    Box(T i) {
+        item = i;
+    }
+
+    T getItem() {
+        return item;
+    }
+};
+
+int main() {
+    // صندوق يخزن رقماً
+    Box<int> intBox(100);
+    cout << "Box holds int: " << intBox.getItem() << endl;
+
+    // صندوق يخزن نصاً
+    Box<string> stringBox("Hello C++");
+    cout << "Box holds string: " << stringBox.getItem() << endl;
+
+    return 0;
+}
+```
+
+> ⚠️ **ملاحظة:** عند إنشاء كائن من كلاس Template، يجب عليك تحديد النوع بوضوح بين قوسين زاويتين `<int>` أو `<string>`.
+
+---
+
+## ⚡ Performance Notes
+
+:::tip القوالب (Templates) مقابل الدوال الافتراضية (Virtual)
+الـ Templates تمثل ما يسمى بـ **Compile-Time Polymorphism** (تعدد الأشكال وقت الترجمة). المترجم يصنع الكود الفعلي قبل تشغيل البرنامج. هذا يعني **سرعة جبارة** بدون أي تأخير أثناء التشغيل. 
+بينما الدوال الافتراضية `virtual` (Runtime Polymorphism) تستهلك وقتاً للبحث في الـ vtable أثناء التشغيل. لذلك، في محركات الألعاب والمكاتب الأساسية، يُفضل دائماً استخدام الـ Templates على الـ Virtual للحصول على الأداء الأقصى.
+:::
+
+---
+
+## ⚠️ الأخطاء الشائعة (Common Mistakes)
+
+```cpp
+// ❌ 1 - فصل تعريف الـ Template في ملفات مختلفة
+// في المشاريع الحقيقية، نضع الـ Definitions في ملف .cpp والـ Declarations في ملف .h
+// لكن مع الـ Templates، يجب أن تضع كل شيء (التصريح والتعريف) داخل ملف الـ Header (.h)
+// إذا حاولت فصلها ستحصل على Linker Error مرعب (Unresolved External Symbol).
+
+// ❌ 2 - استدعاء قالب من نوعين مختلفين دون تحديد النوع
+template <typename T>
+T add(T a, T b) { return a + b; }
+
+int main() {
+    add(5, 3.2); // 💥 خطأ: الكومبايلر محتار، هل T هي int (لأن 5 صحيح) أم double (لأن 3.2 عشري)؟
+    add<double>(5, 3.2); // ✅ صحيح: حددنا له أن T هي double، فسيقوم بتحويل الـ 5 إلى 5.0
+}
+```
+
+---
+
+## Interview Questions & Answers
+
+<details>
+<summary><strong>Q1: متى يجب أن أستخدم الـ Templates (Generics) ومتى أستخدم الـ Polymorphism (الوراثة)؟</strong></summary>
+
+- استخدم الـ **Templates** عندما تكون العمليات الرياضية أو المنطقية **هي نفسها تماماً** بغض النظر عن نوع البيانات (مثل ترتيب العناصر، إيجاد الأكبر، حفظ العناصر في مصفوفة). هذا يتم تحديده في وقت البناء (Compile-time).
+- استخدم الـ **Polymorphism** عندما تكون الكلاسات المختلفة تحتاج إلى القيام **بنفس الإجراء ولكن بطرق مختلفة** (مثل رسم الأشكال: رسم دائرة يختلف عن رسم مربع). هذا يتم تحديده وقت التشغيل (Runtime).
+</details>
+
+<details>
+<summary><strong>Q2: هل الـ Templates تؤثر على حجم البرنامج (Exe size)؟</strong></summary>
+
+نعم. الـ Templates لا توفر حجم الكود المُترجم (Compiled code)، بل توفر وقت المبرمج. إذا استدعيت الدالة بـ 5 أنواع مختلفة (`int`, `float`, `double`, `char`, `string`)، فإن الكومبايلر سيقوم بإنشاء 5 نسخ فعلية ومستقلة من الدالة، مما قد يزيد من حجم الملف النهائي (Code Bloat).
+</details>
+
+---
+
+<ExerciseBox title="🏋️ Exercise - تبديل أي متغيرين">
+
+في دروس سابقة كتبنا دالة لتبديل متغيرين (Swap) من نوع `int`.
+الآن، اكتب دالة **Template** باسم `swapValues` تقوم بتبديل متغيرين من **أي نوع**.
+اختبرها في `main` مع نوع `double` ونوع `string`.
+*(تلميح: لا تنسَ الـ Pass by Reference `&` للمتغيرات `T&` لتغيير القيم الأصلية).*
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي</strong></summary>
+
+```cpp
+#include <iostream>
+#include <string>
+using namespace std;
+
+// تعريف الـ Template وتمرير بالمرجع &
+template <typename T>
+void swapValues(T &a, T &b) {
+    T temp = a;
+    a = b;
+    b = temp;
+}
+
+int main() {
+    double d1 = 1.1, d2 = 9.9;
+    cout << "Before: " << d1 << " , " << d2 << endl;
+    swapValues(d1, d2); // الكومبايلر سيعرف أنها double
+    cout << "After:  " << d1 << " , " << d2 << endl;
+
+    string s1 = "Alpha", s2 = "Beta";
+    swapValues(s1, s2); // سيعمل بكفاءة مع النصوص أيضاً
+    cout << "Strings: " << s1 << " , " << s2 << endl;
+
+    return 0;
+}
+```
+
+</details>
+
+---
+
+<SummaryBox title="📌 Lesson Summary">
+
+- **Templates** تسمح لك بكتابة كود Generic يعمل مع أي نوع بيانات (int, double, كلاسات مخصصة).
+- تُستخدم بوضع `template <typename T>` أو `template <class T>` قبل الكلاس أو الدالة.
+- توفر الـ Templates عناء تكرار الكود، وهي الأساس الذي بنيت عليه مكتبة C++ الشهيرة STL (Standard Template Library).
+- عند استدعاء كلاس يعتمد على Template، يجب تحديد النوع بوضوح: `Box<int> box1;`.
+
+</SummaryBox>

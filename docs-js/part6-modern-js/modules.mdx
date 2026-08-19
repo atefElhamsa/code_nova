@@ -1,0 +1,172 @@
+---
+id: modules
+title: "6.1 ES Modules (import/export)"
+sidebar_label: "6.1 ES Modules"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 6.1 تنظيم الكود باستخدام الـ Modules
+
+مع نمو مشروعك وزيادة عدد الأسطر، يصبح من المستحيل (والسيء هندسياً) وضع كل الكود في ملف واحد (مثل `script.js`). جافاسكريبت الحديثة (ES6) قدمت لنا نظام الـ Modules لنتمكن من تقسيم الكود إلى أجزاء صغيرة ومستقلة، يسهل صيانتها وإعادة استخدامها.
+
+---
+
+##  الأهداف التعليمية
+
+1. فهم أهمية تقسيم الكود إلى ملفات صغيرة قابلة لإعادة الاستخدام.
+2. استخدام الكلمة `export` لتصدير المتغيرات، الدوال، أو الكلاسات.
+3. استخدام الكلمة `import` لاستيرادها في ملفات أخرى.
+4. التفريق بين التصدير المسمى (Named Export) والتصدير الافتراضي (Default Export).
+
+---
+
+## 1. لماذا نحتاج الـ Modules؟
+
+تخيل أن لديك ملفاً يحتوي على 5000 سطر برمجي يضم كل شيء (الاتصال بالشبكة، واجهة المستخدم، دوال مساعدة). إذا حدث خطأ، سيكون البحث عنه كالبحث عن إبرة في كومة قش!
+الـ Modules تسمح لنا بتقسيم هذا الملف إلى وحدات (ملفات) مستقلة، كل ملف مسؤول عن مهمة واحدة محددة.
+
+> 💡 **مقارنة بـ Dart/Flutter:**
+> الـ Modules في جافاسكريبت تقابل تماماً الكلمات المحجوزة `import` و استيراد الباقات (Packages) والملفات في لغة Dart.
+
+---
+
+## 2. التصدير (Export)
+
+لكي تتمكن من استخدام شيء (متغير، دالة، كلاس) موجود في ملف `A` بداخل ملف `B`، يجب عليك أولاً أن "تُصدره" أو تجعله متاحاً للعامة باستخدام كلمة `export`. لدينا نوعان من التصدير:
+
+### أ. التصدير المسمى (Named Export)
+يُستخدم عندما تريد تصدير **عدة أشياء** من نفس الملف.
+
+```javascript
+// ملف: mathUtils.js
+
+// تصدير متغير
+export const pi = 3.14159;
+
+// تصدير دالة
+export function add(a, b) {
+  return a + b;
+}
+```
+
+### ب. التصدير الافتراضي (Default Export)
+يُستخدم عندما يكون الملف يحتوي على شيء أساسي **واحد فقط** (مثل كلاس كامل أو مكون React كبير). لا يمكن أن يكون هناك سوى `default export` واحد في كل ملف.
+
+```javascript
+// ملف: User.js
+
+export default class User {
+  constructor(name) {
+    this.name = name;
+  }
+  sayHi() { console.log(`Hi, I am ${this.name}`); }
+}
+```
+
+---
+
+## 3. الاستيراد (Import)
+
+### استيراد الـ Named Exports
+يجب أن تستخدم **نفس الأسماء بالضبط** وتضعها داخل أقواس معقوفة `{}`.
+
+```javascript
+// ملف: main.js
+import { pi, add } from './mathUtils.js';
+
+console.log(pi); // 3.14159
+console.log(add(2, 5)); // 7
+```
+
+### استيراد الـ Default Export
+لا تستخدم الأقواس المعقوفة، والميزة الرائعة أنه يمكنك تسميته **بأي اسم تريد** داخل ملفك الحالي!
+
+```javascript
+// ملف: main.js
+// لاحظ أننا أسميناه MyCustomUser بدلاً من User (لأنه افتراضي)
+import MyCustomUser from './User.js';
+
+const user = new MyCustomUser("Omar");
+user.sayHi();
+```
+
+---
+
+## ⚡ Performance Notes
+
+:::tip تفعيل الـ Modules في المتصفح (Browser)
+الـ Modules تعمل بشكل افتراضي في بيئات مثل (Node.js أو Webpack أو Vite). ولكن إذا كنت تكتب كود جافاسكريبت نقي (Vanilla JS) داخل المتصفح وتريد استخدام `import`، يجب أن تخبر المتصفح بذلك صراحة عبر إضافة سمة `type="module"` إلى وسم السكريبت في ملف הـ HTML.
+```html
+<!-- بدون هذا النوع، سيعتبر المتصفح كلمة import خطأ قواعدي! -->
+<script type="module" src="main.js"></script>
+```
+:::
+
+---
+
+## ⚠️ الأخطاء الشائعة (Common Mistakes)
+
+```javascript
+// ❌ 1 - محاولة تغيير قيمة Named Export
+import { pi } from './mathUtils.js';
+pi = 3; // 💥 TypeError: Assignment to constant variable.
+// القيم المستوردة تعتبر قراءة فقط (Read-only) لحماية الكود!
+
+// ❌ 2 - نسيان امتداد الملف (.js) في الـ Vanilla JS
+import { add } from './mathUtils'; 
+// 💥 سيفشل المتصفح في العثور على الملف إذا لم يكن هناك أداة بناء (Bundler) مثل Webpack.
+// ✅ الحل: في المتصفح، يجب كتابة الامتداد الكامل ./mathUtils.js
+```
+
+---
+
+## Interview Questions & Answers
+
+<details>
+<summary><strong>Q1: هل يتم تنفيذ الكود بداخل الـ Module في كل مرة نقوم باستيراده (Import)؟</strong></summary>
+
+لا. جافاسكريبت ذكية جداً. إذا قمت باستيراد نفس الملف في 10 ملفات مختلفة، سيتم تنفيذ كود الـ Module **مرة واحدة فقط** في الذاكرة (وهو ما يُعرف بالـ Singleton pattern ضمناً). الكود المستورد هو مجرد "إشارة" أو Reference لنفس المكان في الذاكرة.
+</details>
+
+---
+
+<ExerciseBox title="🏋️ تمرين عملي (Exercise)">
+
+(يفضل تجربتها في محرر أكواد محلي وليس في الـ Console)
+1. أنشئ ملفاً باسم `utils.js` وقم بتصدير دالة عادية (Named Export) تسمى `toUpperCase(text)`.
+2. في نفس الملف، قم بتصدير مصفوفة `default` تحتوي على أيام الأسبوع.
+3. أنشئ ملف `app.js` وقم باستيراد الدالة والمصفوفة.
+4. اطبع أول يوم في المصفوفة بأحرف كبيرة باستخدام الدالة.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل (Solution)</strong></summary>
+
+```javascript
+// --- ملف utils.js ---
+export const toUpperCase = (text) => text.toUpperCase();
+
+const days = ["Sunday", "Monday", "Tuesday"];
+export default days;
+
+// --- ملف app.js ---
+import daysList, { toUpperCase } from './utils.js';
+
+console.log(toUpperCase(daysList[0])); // SUNDAY
+```
+
+</details>
+
+---
+
+<SummaryBox title="📌 ملخص الدرس (Summary)">
+
+- الـ `Modules` ضرورية لتنظيم المشاريع وتقسيمها لملفات.
+- `Named Export`: يسمح لك بتصدير أجزاء متعددة (`export const x = 1`) ويجب استيرادها بنفس الاسم مع أقواس `{ x }`.
+- `Default Export`: يصدر وحدة رئيسية واحدة لكل ملف (`export default User`) ويمكن استيرادها بأي اسم تختاره بدون أقواس.
+- في الـ HTML، يجب وضع `<script type="module">` لتفعيل هذه الميزة.
+
+</SummaryBox>

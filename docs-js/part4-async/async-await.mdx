@@ -1,0 +1,179 @@
+---
+id: async-await
+title: "4.3 Async / Await"
+sidebar_label: "4.3 Async / Await"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 4.3 Async / Await السحرية
+
+الـ `Promises` حلت مشكلة الـ `Callback Hell`، لكن الكود المليء بسلسلة من `.then()` لا يزال طويلاً وصعب القراءة أحياناً. لذلك تم إضافة سحر `async/await` في إصدار ES8 لجعل الكود غير المتزامن (Asynchronous) يبدو كأنه كود متزامن (Synchronous) عادي نظيف!
+
+---
+
+##  الأهداف التعليمية
+
+1. استخدام `async` و `await` لكتابة كود غير متزامن متسلسل وسهل القراءة.
+2. التعامل مع الأخطاء الاحترافي باستخدام `try...catch`.
+3. الإجابة على أسئلة المقابلات المتقدمة عن كيفية عملها خلف الكواليس.
+
+---
+
+## 1. التطور الطبيعي للبرمجة غير المتزامنة
+
+> 💡 **مقارنة بـ Dart:**
+> كلمات `async` و `await` في جافاسكريبت تعمل وتتطابق بشكل تام بنسبة 100% مع نظيراتها في Dart! إذا كنت تتقنها في Flutter، فأنت تتقنها في جافاسكريبت.
+
+## 2. استخدام Async / Await
+
+لجعل الدالة تدعم الانتظار، نضع كلمة `async` قبل تعريفها. (تلقائياً، أي دالة بـ async تصبح ترجع `Promise` من الخارج).
+بمجرد فعل ذلك، يمكننا استخدام كلمة `await` بالداخل **لإيقاف التنفيذ مؤقتاً** للسطر الحالي فقط، حتى يكتمل الـ Promise ويُرجع النتيجة.
+
+```javascript
+// دالة وهمية تُرجع Promise بعد ثانيتين
+function fetchUserData() {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({ id: 1, name: "Ali" });
+    }, 2000);
+  });
+}
+
+// استخدام async / await
+async function showUser() {
+  console.log("Loading...");
+  
+  // الكود سيتوقف "هنا" حتى ينتهي الـ Promise ويرجع القيمة
+  const user = await fetchUserData(); 
+  
+  // هذا السطر لن يعمل إلا بعد مرور الثانيتين ورجوع الـ user
+  console.log(`Welcome, ${user.name}`);
+}
+
+showUser();
+```
+
+---
+
+## 3. التعامل مع الأخطاء (Error Handling)
+
+مع الوعود العادية كنا نستخدم `.catch()` لالتقاط الأخطاء. 
+بما أن `async/await` تجعل الكود يبدو كأنه متزامن وطبيعي، فإن أفضل وأشهر طريقة لاصطياد الأخطاء هنا هي استخدام هيكل **`try...catch`** (تماما مثل Dart، C#، و Java).
+
+```javascript
+async function showUserWithErrorHandling() {
+  try {
+    console.log("Loading...");
+    
+    // إذا فشل (Rejected) هذا الـ Promise سينتقل الكود فوراً وبقوة للـ catch
+    const user = await fetchUserData(); 
+    
+    console.log(`Welcome, ${user.name}`);
+  } catch (error) {
+    // اصطياد خطأ الشبكة
+    console.error("Failed to load user data:", error);
+  } finally {
+    // هذا سيعمل في كل الأحوال
+    console.log("Hide loading spinner");
+  }
+}
+```
+
+---
+
+## ⚡ Performance Notes
+
+:::tip لا تجعل الأوامر تنتظر بعضها دون داعٍ!
+أحد أكثر الأخطاء تدميراً للأداء هو استخدام `await` لعدة عمليات لا تعتمد على بعضها.
+```javascript
+// ❌ خطأ (بطيء): سيستغرق 4 ثوانٍ لأن الثاني سينتظر الأول لينتهي
+const user = await fetchUser(); // يأخذ 2 ثانية
+const posts = await fetchPosts(); // يأخذ 2 ثانية
+
+// ✅ الحل (سريع): التشغيل المتوازي (Parallel) عبر Promise.all
+// سيستغرق ثانيتين فقط لأن الطلبين خرجا في نفس اللحظة!
+const [user, posts] = await Promise.all([fetchUser(), fetchPosts()]);
+```
+:::
+
+---
+
+## ⚠️ الأخطاء الشائعة (Common Mistakes)
+
+```javascript
+// ❌ 1 - استخدام await بدون async
+function getData() {
+  const data = await fetch(url); // 💥 SyntaxError!
+}
+// ✅ يجب أن تكون الدالة async function getData()
+
+// ❌ 2 - نسيان await 
+async function getData() {
+  const response = fetch(url); 
+  console.log(response); // 💥 سيطبع كائن Promise معلق (Pending)، وليس البيانات الحقيقية!
+}
+```
+
+---
+
+## Interview Questions & Answers
+
+<details>
+<summary><strong>Q1: هل `async/await` هو شيء مختلف كلياً عن الـ Promises؟</strong></summary>
+
+لا. الـ `async/await` هو مجرد (Syntactic Sugar) فوق الـ Promises. خلف الكواليس، محرك جافاسكريبت يقوم بتحويل كود الـ `await` إلى `.then()` والـ `try/catch` إلى `.catch()`. هي فقط موجودة لتسهيل كتابة الكود على المبرمجين.
+</details>
+
+---
+
+<ExerciseBox title="🏋️ تمرين عملي (Exercise)">
+
+1. قم بإنشاء دالة ترجع وعداً `Promise` برقم عشوائي بعد ثانية واحدة. (أو استخدم دالة وهمية ترجع رقماً).
+2. أنشئ دالة سهمية (Arrow Function) تستخدم `async`. تذكر: `const getNumber = async () => {...}`.
+3. بداخلها، استخدم `await` للحصول على الرقم وتخزينه في متغير، ثم اطبعه.
+4. ضع العملية داخل كتلة `try...catch` لاصطياد الأخطاء.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل (Solution)</strong></summary>
+
+```javascript
+// 1. الوعد
+const generateNumber = () => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => resolve(Math.random()), 1000);
+  });
+};
+
+// 2. الدالة السهمية الـ Async
+const showNumber = async () => {
+  try {
+    console.log("Generating...");
+    // 3. الانتظار
+    const num = await generateNumber();
+    console.log("Your lucky number is:", num);
+  } catch (error) {
+    // 4. معالجة الأخطاء
+    console.log("Something went wrong:", error);
+  }
+};
+
+showNumber();
+```
+
+</details>
+
+---
+
+<SummaryBox title="📌 ملخص الدرس (Summary)">
+
+- الـ `async/await` هي طريقة حديثة وأنظف لكتابة كود الـ Promises المعقد دون تداخل.
+- كلمة `await` توقف تنفيذ أسطر الدالة الحالية مؤقتاً حتى يكتمل الوعد ويرجع بقيمته النهائية.
+- تعمل بشكل متطابق مع طريقة كتابة الكود غير المتزامن في لغة Dart.
+- دائماً استخدم `try...catch` لاصطياد الأخطاء بداخل دوال הـ `async`.
+- لطلبات الـ API المستقلة عن بعضها، استخدم `await Promise.all` بدلاً من عدة `await` متتالية لتسريع التطبيق.
+
+</SummaryBox>

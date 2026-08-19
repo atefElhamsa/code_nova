@@ -1,0 +1,231 @@
+---
+id: local-storage-polish
+title: "7.3 LocalStorage & Polish"
+sidebar_label: "7.3 LocalStorage & Finish"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 7.3 حفظ البيانات (LocalStorage) واللمسات الأخيرة
+
+تطبيق المهام الخاص بنا يعمل بامتياز، ولكنه يعاني من مشكلة قاتلة: فقدان الذاكرة! بمجرد تحديث الصفحة، تُمحى الذاكرة العشوائية وتختفي المهام. في هذا الدرس الختامي، سنربط التطبيق بذاكرة المتصفح الدائمة (LocalStorage) لنجعله احترافياً وصالحاً للاستخدام اليومي.
+
+---
+
+##  الأهداف التعليمية
+
+1. فهم كيفية عمل التخزين المحلي `localStorage` في المتصفحات.
+2. حفظ البيانات من الذاكرة العشوائية إلى المتصفح بشكل دائم.
+3. استرجاع البيانات عند إعادة تحميل الصفحة وتحويلها من JSON.
+4. تجميع الكود النهائي للمشروع وربط المفاهيم.
+
+---
+
+## 1. ما هو الـ LocalStorage؟
+
+هو عبارة عن قاعدة بيانات بسيطة مدمجة داخل متصفح المستخدم (موجودة في Chrome, Safari, الخ). تسمح لنا بتخزين بيانات نصية (String) بحجم يصل إلى 5 ميجابايت تقريباً وتظل موجودة حتى لو أغلق المستخدم المتصفح أو أعاد تشغيل الكمبيوتر.
+
+> 💡 **مقارنة بـ Dart/Flutter:**
+> الـ `localStorage` في جافاسكريبت يعادل استخدام باقة `shared_preferences` الشهيرة في تطبيقات Flutter. كلاهما يعتمد على تخزين أزواج (Key-Value) وتخزين نصوص بسيطة.
+
+---
+
+## 2. دالة الحفظ (Save Data)
+
+سننشئ دالة تقوم بتحويل مصفوفة الـ `tasks` الخاصة بنا إلى نص، وحفظها في المتصفح.
+
+```javascript
+function saveToLocalStorage() {
+  // LocalStorage لا يقبل المصفوفات أو الكائنات المعقدة، يقبل نصوصاً فقط!
+  // لذلك، نستخدم JSON.stringify لتحويل المصفوفة إلى نص (String)
+  const tasksString = JSON.stringify(tasks);
+  
+  // حفظ النص في الذاكرة تحت مفتاح (Key) باسم "my_tasks"
+  localStorage.setItem("my_tasks", tasksString);
+}
+```
+
+**متى نستدعي هذه الدالة؟**
+يجب أن نستدعيها **كلما حدث تعديل** على مصفوفة المهام. 
+بما أن دالة `renderTasks()` تُستدعى دائماً بعد كل تعديل (إضافة/حذف/تحديد)، فإن أفضل مكان لوضع دالة الحفظ هو في نهايتها لضمان الحفظ التلقائي الأكيد.
+
+```javascript
+function renderTasks() {
+  // ... (كود الرسم الذي كتبناه سابقاً)
+  
+  // إضافة الحفظ هنا في نهاية الدالة!
+  saveToLocalStorage();
+}
+```
+
+---
+
+## 3. دالة الاسترجاع (Load Data) عند بدء التطبيق
+
+الآن، عندما يفتح المستخدم الصفحة لأول مرة، نريد قراءة الذاكرة وعرض المهام القديمة المحفوظة (إن وجدت).
+
+```javascript
+function loadFromLocalStorage() {
+  // قراءة القيمة المحفوظة في المتصفح بناءً على المفتاح
+  const savedTasks = localStorage.getItem("my_tasks");
+  
+  if (savedTasks) {
+    // إذا كانت هناك بيانات فعلية (ليس null)
+    // يجب إعادتها من نص JSON جامد إلى مصفوفة جافاسكريبت حقيقية قابلة للتعديل
+    tasks = JSON.parse(savedTasks);
+  } else {
+    // إذا لم تكن هناك بيانات (أول مرة يفتح المستخدم التطبيق)
+    tasks = [];
+  }
+  
+  // أمر الشاشة برسم الواجهة بالبيانات التي تم استرجاعها
+  renderTasks();
+}
+
+// استدعاء التحميل فور فتح الصفحة كأول أمر للتطبيق!
+loadFromLocalStorage();
+```
+
+---
+
+## 4. الكود النهائي للمشروع بالكامل (app.js)
+
+إليك الكود المجمع والمنسق لتطبيق To-Do List المتكامل:
+
+```javascript
+const taskInput = document.getElementById('task-input');
+const addBtn = document.getElementById('add-btn');
+const taskList = document.getElementById('task-list');
+
+let tasks = [];
+
+// 1. استرجاع البيانات القديمة فور تشغيل التطبيق
+loadFromLocalStorage();
+
+// 2. مستمع أحداث لزر الإضافة
+addBtn.addEventListener('click', () => {
+  const taskText = taskInput.value.trim();
+  if (taskText !== "") {
+    tasks.push({ id: Date.now(), text: taskText, completed: false });
+    taskInput.value = "";
+    renderTasks();
+  }
+});
+
+// 3. دالة الرسم الأساسية التي تحدث واجهة المستخدم
+function renderTasks() {
+  taskList.innerHTML = "";
+  
+  tasks.forEach((task) => {
+    const li = document.createElement("li");
+    if (task.completed) {
+      li.classList.add("completed");
+    }
+
+    li.innerHTML = `
+      <span class="task-text" onclick="toggleTask(${task.id})">${task.text}</span>
+      <button class="delete-btn" onclick="deleteTask(${task.id})">Delete</button>
+    `;
+    taskList.appendChild(li);
+  });
+  
+  // الحفظ الأوتوماتيكي في المتصفح بعد كل عملية رسم
+  saveToLocalStorage();
+}
+
+// 4. دوال التحكم (مربوطة بكائن Window لتعمل من داخل HTML السطري)
+window.toggleTask = function(id) {
+  tasks = tasks.map(task => task.id === id ? { ...task, completed: !task.completed } : task);
+  renderTasks();
+}
+
+window.deleteTask = function(id) {
+  tasks = tasks.filter(task => task.id !== id);
+  renderTasks();
+}
+
+// 5. دوال المتصفح (LocalStorage)
+function saveToLocalStorage() {
+  localStorage.setItem("my_tasks", JSON.stringify(tasks));
+}
+
+function loadFromLocalStorage() {
+  const savedTasks = localStorage.getItem("my_tasks");
+  if (savedTasks) {
+    tasks = JSON.parse(savedTasks);
+  } else {
+    tasks = [];
+  }
+}
+```
+
+---
+
+## ⚡ Performance Notes
+
+:::tip تحويل الدوال الشاملة (Global Functions)
+في المثال أعلاه، استخدمنا `window.toggleTask` لكي نتعرف عليها عبر خاصية `onclick` بداخل النص المكتوب بـ `innerHTML`. هذا الأسلوب يعمل جيداً في المشاريع الصغيرة. في المشاريع الكبرى، يُفضل استخدام الـ Event Delegation عبر إضافة المستمع `addEventListener` للعنصر الأب `<ul>` واستشعار ضغطات الأزرار داخله، فهذا يمنع التلوث العام لكائن المتصفح (Global Namespace).
+:::
+
+---
+
+## ⚠️ الأخطاء الشائعة (Common Mistakes)
+
+```javascript
+// ❌ 1 - حفظ مصفوفة أو كائن مباشرة
+localStorage.setItem("data", [1, 2, 3]); 
+// سيتم حفظه كنص مكسور "1,2,3" ولن تستطيع استعادته كمصفوفة!
+
+// ✅ الحل: استخدم JSON دائماً
+localStorage.setItem("data", JSON.stringify([1, 2, 3]));
+
+// ❌ 2 - نسيان تحويل البيانات عند القراءة
+const arr = localStorage.getItem("data");
+arr.forEach(...) // 💥 خطأ! arr الآن عبارة عن نص String ولا تملك دالة forEach
+
+// ✅ الحل: استخدم JSON.parse 
+const arr = JSON.parse(localStorage.getItem("data"));
+```
+
+---
+
+## Interview Questions & Answers
+
+<details>
+<summary><strong>Q1: ما الفرق بين LocalStorage و SessionStorage في المتصفح؟</strong></summary>
+
+- **LocalStorage:** يحفظ البيانات للأبد، ولن تُمسح إلا إذا قام المستخدم بمسح سجل التصفح (Clear Cache/Cookies) أو مسحها برمجياً عبر الكود `localStorage.clear()`.
+- **SessionStorage:** يعمل بنفس الطريقة تماماً، ولكنه يمسح البيانات تلقائياً وبشكل نهائي بمجرد إغلاق المستخدم لتبويب (Tab) المتصفح. مناسب لبيانات التسوق المؤقتة.
+</details>
+
+---
+
+<ExerciseBox title="🏋️ تمرين عملي أخير (Exercise)">
+
+1. أضف دوال `saveToLocalStorage` و `loadFromLocalStorage` لكودك.
+2. اختبر التطبيق: أضف مهمتين.
+3. قم بتحديث الصفحة (Refresh / F5).
+4. 🎉 المفاجأة المذهلة: مهامك ستظل موجودة! لقد صممت للتو تطبيق ويب كامل!
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 ماذا بعد؟ (Next Steps)</strong></summary>
+
+يمكنك تطوير هذا المشروع الصغير لجعله أقوى:
+- أضف ميزة تعديل اسم المهمة بنقرتين.
+- أضف أزرار تصفية (فلترة) لإظهار: "الكل"، "المكتمل فقط"، "غير المكتمل".
+- حسّن شكل الـ CSS وأضف Animation بسيط عند مسح مهمة.
+</details>
+
+---
+
+<SummaryBox title="🎉 مبروك!">
+
+**لقد أتممت الكورس المصغر "JavaScript from Zero".**
+لقد انتقلت من فهم المتغيرات البسيطة إلى التلاعب العميق بواجهة المتصفح وتخزين البيانات.
+الآن لديك أساس صلب جداً وجاهز بنسبة 100% للانتقال لتعلم إطارات العمل الحديثة مثل React أو Angular، أو كتابة أكواد خلفية باستخدام Node.js. 
+لقد تعلمت كيف تفكر بعقلية مطور جافاسكريبت حديث، مع البقاء متصلاً ومستفيداً من أساسياتك القوية في لغة Dart!
+
+</SummaryBox>

@@ -1,0 +1,201 @@
+---
+id: exceptions
+title: "6.1 Exception Handling"
+sidebar_label: "6.1 Exception Handling"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 6.1 معالجة الأخطاء (Exception Handling)
+
+لا يوجد برنامج بدون أخطاء. ولكن الفرق بين البرنامج الجيد والسيء هو كيف يتعامل مع هذه الأخطاء (Exceptions).
+إذا قام المستخدم بإدخال نص في مكان مخصص للأرقام، أو حاول البرنامج قراءة ملف غير موجود، فإن بايثون ستوقف البرنامج تماماً وتطبع رسالة خطأ (Crash). 
+
+لتجنب هذا، نستخدم تقنية `try...except`.
+
+---
+
+## 1. أساسيات الـ `try` و `except`
+
+الفكرة: "حاول (try) تنفيذ هذا الكود، وإذا حدث خطأ، التقطه (except) وتعامل معه بدلاً من إيقاف البرنامج".
+
+```python
+try:
+    # الكود المحتمل فشله
+    age = int(input("Enter your age: "))
+    print(f"You will be {age + 1} next year.")
+    
+except ValueError:
+    # سيتم تنفيذ هذا فقط إذا أدخل المستخدم نصاً بدل الرقم
+    print("Error: Please enter a valid number, not text!")
+
+print("Program continues normally...")
+```
+
+في هذا المثال، إذا كتب المستخدم `twenty` بدلاً من `20`، ستطلق بايثون خطأ اسمه `ValueError`. وبفضل بلوك الـ `except`، قمنا باصطياده وطباعة رسالة لطيفة، واستمر البرنامج في العمل!
+
+---
+
+## 2. معالجة أخطاء متعددة
+
+أحياناً يكون السطر الواحد معرضاً لأنواع مختلفة من الأخطاء. يمكنك وضع أكثر من `except` لتحديد تصرف مختلف لكل نوع.
+
+```python
+try:
+    num = int(input("Enter a number to divide 10 by: "))
+    result = 10 / num
+    print(f"Result: {result}")
+
+except ValueError:
+    print("Please enter numbers only!")
+
+except ZeroDivisionError:
+    print("Math error: Cannot divide by zero!")
+
+except Exception as e:
+    # Exception هو الكلاس الأب لكل الأخطاء، نصطاد به أي خطأ غير متوقع
+    print(f"An unexpected error occurred: {e}")
+```
+
+---
+
+## 3. الكلمات المفتاحية `finally` و `else`
+
+في بايثون، بلوك معالجة الأخطاء يمكن أن يحتوي على جزأين إضافيين:
+
+- **`else`:** يتم تنفيذه **فقط** إذا لم يحدث أي خطأ في بلوك الـ `try`.
+- **`finally`:** يتم تنفيذه **دائماً**، سواء حدث خطأ أو لم يحدث. مفيد جداً لإغلاق الملفات أو قواعد البيانات لضمان عدم بقائها مفتوحة.
+
+```python
+try:
+    x = int(input("Enter a positive number: "))
+    
+except ValueError:
+    print("That's not a number!")
+    
+else:
+    print("Good job! You entered a valid number.")
+    
+finally:
+    print("--- End of input process ---")
+```
+
+---
+
+## 4. إطلاق الأخطاء بنفسك (`raise`)
+
+أحياناً تريد إيقاف شيء ما وتوليد خطأ بنفسك لأن الشروط المنطقية الخاصة بك لم تتحقق، حتى وإن لم تعتبرها بايثون خطأ برمجياً.
+
+نستخدم كلمة **`raise`** (وهي توازي `throw` في C++).
+
+```python
+def apply_discount(price, discount):
+    if discount < 0 or discount > 100:
+        # نطلق خطأ لأن الخصم غير منطقي
+        raise ValueError("Discount must be between 0 and 100")
+        
+    return price - (price * (discount / 100))
+
+# تجربة الكود
+try:
+    final_price = apply_discount(200, 150) # خصم 150%!
+    
+except ValueError as e:
+    print(f"Failed: {e}")
+```
+
+---
+
+## ⚡ Performance Notes
+
+:::tip تكلفة الـ `try/except` (Zero-cost Exceptions)
+في الإصدارات القديمة من بايثون، كان مجرد وضع الكود داخل `try` يبطئ البرنامج قليلاً حتى لو لم يحدث خطأ. 
+ولكن، بداية من **بايثون 3.11**، تم تقديم ميزة (Zero-cost exceptions). الآن، وضع الكود في `try` لا يكلف أي شيء (أداؤه سريع جداً) طالما لم يحدث الخطأ! التكلفة الوحيدة تحدث فقط عند تفعيل الـ `except`. 
+لذلك، أصبح أسلوب EAFP (It's Easier to Ask for Forgiveness than Permission) هو الأسلوب المفضل والأسوأ أداءً في بايثون بدلاً من التحقق من الشروط بـ `if`.
+:::
+
+---
+
+## ⚠️ الأخطاء الشائعة (Common Mistakes)
+
+```python
+# ❌ 1 - التقاط كل الأخطاء بشكل أعمى (Bare Except)
+try:
+    x = 10 / 0
+except: 
+    # 💥 كارثة! هذا سيلتقط كل شيء، حتى لو ضغط المستخدم (Ctrl+C) لإيقاف البرنامج سيمنعه من التوقف!
+    # كما أنه سيخفي الأخطاء البرمجية النحوية (Syntax Errors) ويجعل إصلاح الكود مستحيلاً.
+    print("An error occurred")
+
+# ✅ الصحيح: حدد الخطأ بدقة
+except ZeroDivisionError:
+    print("Math Error")
+```
+
+---
+
+## Interview Questions & Answers
+
+<details>
+<summary><strong>Q1: هل يفضل استخدام `except Exception:` لصيد كل الأخطاء ورياحة البال؟</strong></summary>
+
+هذه ممارسة سيئة جداً وتُسمى (Bare except) أو (Catch-all). 
+التقاط كل الأخطاء بشكل أعمى قد يخفي أخطاء برمجية حقيقية (Bugs) في كودك كنت يجب أن تراها وتصلحها. يجب دائماً أن تلتقط الأخطاء التي "تتوقعها" فقط (مثل `ValueError`, `FileNotFoundError`)، وتترك الأخطاء الأخرى تظهر لتتمكن من إصلاح الكود الأساسي.
+</details>
+
+<details>
+<summary><strong>Q2: متى يكون استخدام `else` بعد `try/except` مفيداً؟ ألا يمكننا وضع كود הـ `else` داخل `try`؟</strong></summary>
+
+نعم يمكنك وضعه داخل `try`، ولكن القاعدة الذهبية تقول: **"اجعل بلوك الـ try صغيراً قدر الإمكان"**. 
+إذا وضعت كل كودك داخل `try`، قد يحدث خطأ `ValueError` من مكان آخر غير الذي تتوقعه ويتم اصطياده بالخطأ. استخدام `else` يجعل الكود منظماً، فهو يعني: "الكود المعرض للخطأ نجح، الآن استمر في العمل بأمان".
+</details>
+
+---
+
+<ExerciseBox title="🏋️ Exercise - آلة حاسبة محمية">
+
+قم بكتابة برنامج يطلب من المستخدم إدخال رقمين.
+ثم يطبع حاصل قسمة الرقم الأول على الثاني.
+قم بحماية البرنامج من الخطأين الشائعين:
+1. أن يدخل المستخدم نصوصاً بدل الأرقام (`ValueError`).
+2. أن يدخل المستخدم صفراً في الرقم الثاني (`ZeroDivisionError`).
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي</strong></summary>
+
+```python
+try:
+    num1 = float(input("Enter first number: "))
+    num2 = float(input("Enter second number: "))
+    
+    result = num1 / num2
+    
+except ValueError:
+    print("Error: You must enter numbers!")
+    
+except ZeroDivisionError:
+    print("Error: You cannot divide by zero!")
+    
+else:
+    print(f"The result is: {result}")
+    
+finally:
+    print("Operation completed.")
+```
+
+</details>
+
+---
+
+<SummaryBox title="📌 Lesson Summary">
+
+- استخدم **`try`** لتجربة الكود المعرض للأخطاء.
+- استخدم **`except`** لاصطياد الأخطاء (ويفضل تحديد نوع الخطأ).
+- استخدم **`else`** لتنفيذ كود في حالة نجاح الـ `try` تماماً.
+- استخدم **`finally`** للأكواد التي يجب أن تعمل دائماً (كالتنظيف وإغلاق الملفات).
+- استخدم **`raise`** لتوليد ورمي أخطاء مخصصة متى أردت.
+
+</SummaryBox>

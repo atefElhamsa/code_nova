@@ -20,9 +20,9 @@ function useMouseGlow(ref: React.RefObject<HTMLElement>) {
 }
 
 function CourseCard({ 
-  type, title, titleAr, descEn, descAr, tech, path 
+  type, title, titleAr, descEn, descAr, tech, path, lessonCount 
 }: { 
-  type: 'js' | 'flutter', title: string, titleAr: string, descEn: string, descAr: string, tech: string[], path: string 
+  type: 'js' | 'flutter' | 'cpp' | 'python', title: string, titleAr: string, descEn: string, descAr: string, tech: string[], path: string, lessonCount: string 
 }) {
   return (
     <div className={`course-card ${type}-card`}>
@@ -30,13 +30,20 @@ function CourseCard({
       <div className="card-content">
         <div className="card-header">
           <div className="icon-wrapper">
-            {type === 'js' ? (
+            {type === 'js' && (
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-            ) : (
+            )}
+            {type === 'flutter' && (
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path><line x1="16" y1="8" x2="2" y2="22"></line><line x1="17.5" y1="15" x2="9" y2="6.5"></line></svg>
             )}
+            {type === 'cpp' && (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline><line x1="19" y1="12" x2="19" y2="12"></line><line x1="21" y1="12" x2="21" y2="12"></line><line x1="12" y1="9" x2="12" y2="15"></line><line x1="9" y1="12" x2="15" y2="12"></line></svg>
+            )}
+            {type === 'python' && (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C9.27 2 8 3.09 8 5v2h4v1H5.5C3.57 8 2 9.57 2 11.5v3C2 16.43 3.57 18 5.5 18H7v-2.5C7 13.57 8.57 12 10.5 12H14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3h-2zM10 4.5a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"></path><path d="M12 22c2.73 0 4-1.09 4-3v-2h-4v-1h6.5c1.93 0 3.5-1.57 3.5-3.5v-3C22 7.57 20.43 6 18.5 6H17v2.5C17 10.43 15.43 12 13.5 12H10c-1.66 0-3 1.34-3 3v4c0 1.66 1.34 3 3 3h2zM14 19.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"></path></svg>
+            )}
           </div>
-          <span className="badge">{type === 'js' ? '23 Lessons' : '33 Lessons'}</span>
+          <span className="badge">{lessonCount}</span>
         </div>
         
         <h3 className="title" dir="ltr">{title} <span className="title-ar" dir="rtl">{titleAr}</span></h3>
@@ -119,6 +126,7 @@ export default function Hub() {
               descAr="تعلم الجافاسكريبت من الصفر واحتراف التعامل مع المتصفح والبرمجة المتقدمة."
               tech={['ES6+', 'DOM', 'Async']}
               path="/javascript"
+              lessonCount="23 Lessons"
             />
             
             <CourseCard 
@@ -129,6 +137,29 @@ export default function Hub() {
               descAr="احترف تطوير الموبايل بمعمارية MVVM الصارمة وأفضل ممارسات الكود."
               tech={['Flutter', 'Dart', 'MVVM']}
               path="/flutter"
+              lessonCount="33 Lessons"
+            />
+
+            <CourseCard 
+              type="cpp"
+              title="C++ Mastery"
+              titleAr="إتقان C++"
+              descEn="From basics to OOP, STL & Memory Management. The language of systems."
+              descAr="من الأساسيات للبرمجة الكائنية والـ STL وإدارة الذاكرة. لغة الأنظمة والألعاب."
+              tech={['OOP', 'STL', 'Pointers']}
+              path="/cpp"
+              lessonCount="20 Lessons"
+            />
+
+            <CourseCard 
+              type="python"
+              title="Python Pro"
+              titleAr="بايثون الاحترافي"
+              descEn="The most popular language for AI, Data Science & Web Development."
+              descAr="أكثر لغة مطلوبة في سوق العمل. بوابتك للذكاء الاصطناعي وتحليل البيانات."
+              tech={['OOP', 'APIs', 'Generators']}
+              path="/python"
+              lessonCount="20 Lessons"
             />
           </section>
 
@@ -232,6 +263,8 @@ export default function Hub() {
         
         .js-card:hover { border-color: rgba(250, 204, 21, 0.4); box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 40px rgba(250, 204, 21, 0.1); transform: translateY(-5px); }
         .flutter-card:hover { border-color: rgba(14, 165, 233, 0.4); box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 40px rgba(14, 165, 233, 0.1); transform: translateY(-5px); }
+        .cpp-card:hover { border-color: rgba(249, 115, 22, 0.4); box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 40px rgba(249, 115, 22, 0.1); transform: translateY(-5px); }
+        .python-card:hover { border-color: rgba(55, 118, 171, 0.5); box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 40px rgba(55, 118, 171, 0.15); transform: translateY(-5px); }
 
         .card-content { position: relative; z-index: 2; display: flex; flex-direction: column; height: 100%; }
 
@@ -239,6 +272,8 @@ export default function Hub() {
         .icon-wrapper { width: 56px; height: 56px; border-radius: 16px; display: flex; align-items: center; justify-content: center; transition: transform 0.4s; }
         .js-card .icon-wrapper { background: rgba(250, 204, 21, 0.1); color: #facc15; border: 1px solid rgba(250, 204, 21, 0.2); }
         .flutter-card .icon-wrapper { background: rgba(14, 165, 233, 0.1); color: #38bdf8; border: 1px solid rgba(14, 165, 233, 0.2); }
+        .cpp-card .icon-wrapper { background: rgba(249, 115, 22, 0.1); color: #f97316; border: 1px solid rgba(249, 115, 22, 0.2); }
+        .python-card .icon-wrapper { background: rgba(55, 118, 171, 0.15); color: #4da8da; border: 1px solid rgba(55, 118, 171, 0.3); }
         .icon-wrapper svg { width: 28px; height: 28px; }
         .course-card:hover .icon-wrapper { transform: scale(1.1) rotate(-5deg); }
 
@@ -266,6 +301,8 @@ export default function Hub() {
         
         .js-card .start-btn:hover { background: #facc15; color: #000; border-color: #facc15; box-shadow: 0 10px 20px rgba(250,204,21,0.2); }
         .flutter-card .start-btn:hover { background: #0ea5e9; color: #fff; border-color: #0ea5e9; box-shadow: 0 10px 20px rgba(14,165,233,0.2); }
+        .cpp-card .start-btn:hover { background: #f97316; color: #fff; border-color: #f97316; box-shadow: 0 10px 20px rgba(249,115,22,0.25); }
+        .python-card .start-btn:hover { background: #3776ab; color: #fff; border-color: #3776ab; box-shadow: 0 10px 20px rgba(55,118,171,0.25); }
         .start-btn:hover .arrow { opacity: 1; transform: translateX(5px); }
 
         @media (max-width: 1024px) {

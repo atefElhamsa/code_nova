@@ -1,0 +1,205 @@
+---
+id: file-handling-json
+title: "6.2 File Handling & JSON"
+sidebar_label: "6.2 File Handling & JSON"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 6.2 التعامل مع الملفات و JSON
+
+في هذا الدرس سنتعلم كيف نحفظ بياناتنا بشكل دائم على القرص الصلب بدلاً من فقدانها عند إغلاق البرنامج. وسنتعرف على أسهل وأفضل أداة لذلك: الكلمة المفتاحية `with open()`. بالإضافة إلى كيفية قراءة وكتابة ملفات الـ JSON المنتشرة جداً في تطبيقات الويب.
+
+---
+
+## 1. فتح وقراءة الملفات
+
+لقراءة ملف في بايثون نستخدم الدالة المدمجة `open()`. تأخذ هذه الدالة مسار الملف و "وضع الفتح" (Mode).
+- `'r'`: للقراءة فقط (Read) - الافتراضي.
+- `'w'`: للكتابة، ويمسح المحتوى القديم (Write).
+- `'a'`: للكتابة، ويضيف على المحتوى القديم (Append).
+
+```python
+# الطريقة الكلاسيكية (لا يُنصح بها)
+file = open("data.txt", "r")
+content = file.read()
+print(content)
+file.close() # إذا نسيت هذا السطر، سيظل الملف معلقاً في الذاكرة!
+```
+
+### الطريقة الحديثة: `with open()` (Context Manager)
+هذه هي الطريقة الصحيحة والآمنة. ميزتها أنها **تغلق الملف تلقائياً** بمجرد خروجك من المسافة البادئة (Indentation)، حتى لو حدث خطأ (Exception) أثناء العمل!
+
+```python
+# فتح الملف للقراءة بفضل with
+with open("data.txt", "r") as file:
+    content = file.read()
+    print(content)
+# هنا تم إغلاق الملف تلقائياً بأمان!
+```
+
+---
+
+## 2. الكتابة في الملفات
+
+للكتابة، يجب تغيير الوضع إلى `'w'` أو `'a'`.
+
+```python
+# سيقوم بمسح الملف وكتابة هذه الأسطر الجديدة
+with open("notes.txt", "w") as file:
+    file.write("Hello, CodeNova!\n")
+    file.write("This is a new line.")
+
+# إضافة (Append) دون مسح القديم
+with open("notes.txt", "a") as file:
+    file.write("\nAdding one more line at the end.")
+```
+
+---
+
+## 3. التعامل مع ملفات JSON
+
+الـ **JSON** (JavaScript Object Notation) هو الصيغة القياسية لنقل البيانات في الويب والتطبيقات الحديثة.
+من حسن الحظ أن هيكل الـ JSON متطابق بنسبة 99% مع الـ **Dictionaries (القواميس)** في بايثون!
+
+للتعامل معه نحتاج استدعاء المكتبة المدمجة `json`.
+
+### أ. كتابة بيانات القاموس إلى ملف JSON (`json.dump`)
+
+```python
+import json
+
+# لدينا قاموس بايثون عادي
+user_data = {
+    "name": "Ahmed",
+    "age": 28,
+    "skills": ["Python", "C++", "Flutter"],
+    "is_active": True
+}
+
+# حفظ القاموس في ملف JSON
+with open("user.json", "w") as file:
+    # نمرر القاموس، ثم الملف، ثم نطلب منه تجميل الكود بمسافات (indent)
+    json.dump(user_data, file, indent=4)
+
+print("Data saved to user.json successfully.")
+```
+
+### ب. قراءة بيانات من ملف JSON وتحويلها لقاموس (`json.load`)
+
+```python
+import json
+
+# قراءة الملف
+with open("user.json", "r") as file:
+    # تحميل البيانات كقاموس بايثون (Dictionary)
+    loaded_data = json.load(file)
+
+print(type(loaded_data)) # <class 'dict'>
+print(f"Welcome back, {loaded_data['name']}!")
+print(f"Your first skill is: {loaded_data['skills'][0]}")
+```
+
+---
+
+## ⚡ Performance Notes
+
+:::tip قراءة الملفات الضخمة (Big Data)
+إذا كان لديك ملف حجمه 10 جيجابايت، واستخدمت الدالة `file.read()`، ستقوم بايثون بمحاولة سحب الـ 10 جيجا كلها إلى الرام (RAM) دفعة واحدة، مما سيؤدي لانهيار جهازك (MemoryError)!
+**نصيحة الأداء:** الطريقة الأسرع والأكثر أماناً لقراءة الملفات الضخمة هي المرور عليها سطراً بسطر باستخدام حلقة `for`.
+```python
+with open("huge_data.txt", "r") as file:
+    for line in file:
+        print(line) # هكذا لن نستهلك أي شيء يذكر من الرام!
+```
+:::
+
+---
+
+## ⚠️ الأخطاء الشائعة (Common Mistakes)
+
+```python
+# ❌ 1 - نسيان تحديد الـ Encoding للغة العربية
+# with open("arabic.txt", "w") as file:
+#     file.write("مرحباً بك في كودنوفا")
+# 💥 في أنظمة ويندوز، قد يتم تشفير الملف بطريقة خاطئة ويظهر كنصوص غير مفهومة (طلامس)!
+
+# ✅ الصحيح: حدد التشفير العالمي utf-8 دائماً
+with open("arabic.txt", "w", encoding="utf-8") as file:
+    file.write("مرحباً بك في كودنوفا")
+
+# ❌ 2 - نسيان حرف 'w' واستخدام 'r' للكتابة
+# with open("data.txt", "r") as file:
+#     file.write("Hello") # 💥 UnsupportedOperation: not writable
+```
+
+---
+
+## Interview Questions & Answers
+
+<details>
+<summary><strong>Q1: ما الفرق بين `json.dump()` و `json.dumps()`؟</strong></summary>
+
+- **`json.dump()`**: (بدون s) تقوم بكتابة بيانات الـ JSON **مباشرة في ملف**. تأخذ معاملين (البيانات، وكائن الملف).
+- **`json.dumps()`**: (مع s، اختصار String) تقوم بتحويل القاموس إلى **نص (String) عادي** بصيغة JSON لكي ترسله كاستجابة (API Response) أو تطبعه، ولا تكتبه في ملف.
+
+نفس الشيء للتحويل العكسي: `json.load()` تقرأ من ملف، و `json.loads()` تقرأ من نص.
+</details>
+
+<details>
+<summary><strong>Q2: لماذا نستخدم `with open()` بدلاً من الطريقة القديمة `file.close()`؟</strong></summary>
+
+لأنها آمنة 100%. إذا حدث خطأ (Exception) أثناء قراءة الملف بالطريقة القديمة وانكسر البرنامج، فإن السطر `file.close()` لن يُنفذ، مما يؤدي إلى Memory Leak وترك الملف مقفولاً من نظام التشغيل. الـ `with` تضمن إغلاق الملف في كافة الظروف.
+</details>
+
+---
+
+<ExerciseBox title="🏋️ Exercise - حفظ الإعدادات">
+
+1. قم بإنشاء قاموس `dict` باسم `settings` يحتوي على (theme: "Dark"، language: "ar"، volume: 80).
+2. استخدم `with open()` ومكتبة `json` لحفظ هذا القاموس في ملف باسم `config.json`.
+3. في كود منفصل (أو تحته)، قم بقراءة هذا الملف لقاموس جديد.
+4. اطبع قيمة الـ `theme` المحفوظة.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي</strong></summary>
+
+```python
+import json
+
+# 1. إنشاء القاموس
+settings = {
+    "theme": "Dark",
+    "language": "ar",
+    "volume": 80
+}
+
+# 2. الحفظ في ملف JSON
+with open("config.json", "w") as file:
+    json.dump(settings, file, indent=4)
+
+print("Settings saved.")
+
+# 3. القراءة من الملف
+with open("config.json", "r") as file:
+    loaded_settings = json.load(file)
+
+# 4. طباعة قيمة معينة
+print("Current Theme:", loaded_settings["theme"])
+```
+
+</details>
+
+---
+
+<SummaryBox title="📌 Lesson Summary">
+
+- استخدم دائماً **`with open("filename", "mode") as file:`** لفتح الملفات بأمان.
+- Modes: `'r'` للقراءة، `'w'` للكتابة (مسح القديم)، `'a'` للإضافة.
+- استخدم **`json.dump(data, file)`** لحفظ قاموس بايثون كملف JSON.
+- استخدم **`json.load(file)`** لقراءة ملف JSON وتحويله لقاموس بايثون.
+
+</SummaryBox>

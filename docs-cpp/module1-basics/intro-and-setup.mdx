@@ -1,0 +1,168 @@
+---
+id: intro-and-setup
+title: "1.1 Introduction & Setup"
+sidebar_label: "1.1 Introduction & Setup"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 1.1 مقدمة عن C++ وإعداد بيئة العمل
+
+في هذا الدرس، سنتعرف على لغة C++، لماذا نتعلمها، وكيف نجهز بيئة العمل الخاصة بنا لكتابة أول برنامج (Hello World).
+
+---
+
+## الأهداف التعليمية
+
+1. معرفة تاريخ لغة C++ ومميزاتها.
+2. إعداد بيئة العمل (Compiler + Code Editor).
+3. كتابة أول برنامج بلغة C++ وتشغيله.
+4. فهم الهيكل الأساسي لأي برنامج C++.
+
+---
+
+## 1. ما هي لغة C++ ولماذا نتعلمها؟
+
+لغة **C++** هي امتداد للغة C الشهيرة، تم تطويرها بواسطة Bjarne Stroustrup في عام 1979. أهم إضافة قدمتها هي دعم البرمجة الكائنية (Object-Oriented Programming).
+
+**لماذا C++؟**
+- **السرعة الخارقة (Performance):** C++ قريبة جداً من عتاد الجهاز (Hardware)، ولذلك تُستخدم في بناء محركات الألعاب (Unreal Engine)، أنظمة التشغيل، والمتصفحات (Chrome).
+- **التحكم بالذاكرة (Memory Management):** تمنحك تحكم كامل بكيفية تخصيص الذاكرة وتحريرها (Pointers).
+- **واسعة الانتشار:** تعلمها يجعلك تفهم كيف تعمل اللغات الأخرى من الداخل.
+
+---
+
+## 2. إعداد بيئة العمل (Setup)
+
+لكي تكتب وتنفذ كود C++، تحتاج إلى شيئين:
+1. **Code Editor:** برنامج لكتابة الكود (مثل Visual Studio Code).
+2. **Compiler:** برنامج يترجم الكود الذي كتبته إلى لغة الآلة (0 و 1) ليفهمها الكمبيوتر. أشهرها GCC (MinGW للويندوز).
+
+### خطوات التثبيت السريعة:
+1. حمل وثبّت [Visual Studio Code](https://code.visualstudio.com/).
+2. من داخل VS Code، اذهب إلى الإضافات (Extensions) وابحث عن إضافة **C/C++** (من Microsoft) وثبّتها.
+3. لمستخدمي **ويندوز**: يُنصح بتثبيت MSYS2 الذي يحتوي على مترجم GCC (MinGW-w64).
+4. لمستخدمي **ماك**: افتح الـ Terminal واكتب `xcode-select --install` لتثبيت أدوات Clang.
+5. لمستخدمي **لينكس**: اكتب `sudo apt install build-essential`.
+
+> ✅ **نصيحة للمبتدئين:** إذا كنت تريد البدء فوراً بدون تثبيت برامج، يمكنك استخدام مترجم أونلاين مثل [OnlineGDB](https://www.onlinegdb.com/) أو [Programiz](https://www.programiz.com/cpp-programming/online-compiler).
+
+---
+
+## 3. أول برنامج C++ (Hello World)
+
+لنكتب برنامجاً يطبع جملة "Hello, CodeNova!" على الشاشة.
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+int main() {
+    cout << "Hello, CodeNova!" << endl;
+    return 0;
+}
+```
+
+### تحليل الكود (كيف يعمل؟)
+
+1. `#include <iostream>`:
+   هذا السطر يخبر المترجم بأننا نريد استخدام مكتبة الإدخال والإخراج القياسية (Input/Output Stream). بدونها لا يمكننا الطباعة على الشاشة.
+   
+2. `using namespace std;`:
+   الكثير من أدوات C++ موجودة داخل "مساحة اسم" (namespace) تسمى `std` (اختصار standard). هذا السطر يوفر علينا كتابة `std::` قبل كل أمر.
+
+3. `int main() { ... }`:
+   هذه هي نقطة البداية (Entry Point) لأي تطبيق C++. عندما تُشغّل البرنامج، يبدأ التنفيذ دائماً من داخل دالة الـ `main`.
+
+4. `cout << "Hello, CodeNova!" << endl;`:
+   - `cout`: تعني Character Output، وتُستخدم للطباعة على الشاشة.
+   - `<<`: معامل الإخراج (Insertion Operator) يوجه النص إلى الشاشة.
+   - `endl`: تعني End Line، وتطبع سطر جديد.
+   - `;`: كل جملة (Statement) في C++ يجب أن تنتهي بفاصلة منقوطة.
+
+5. `return 0;`:
+   تُنهي البرنامج وتخبر نظام التشغيل بأن البرنامج انتهى بنجاح (رقم 0 يعني نجاح التنفيذ).
+
+---
+
+## ⚡ Performance Notes
+
+:::tip المترجم وأعلام التحسين (Optimization Flags)
+لغة C++ سريعة جداً بطبيعتها، ولكن الأداء الحقيقي يظهر عند تفعيل ما يسمى بـ **Optimization Flags** أثناء الترجمة (Compilation). استخدام علم مثل `-O3` مع المترجم GCC يخبره بإعادة كتابة الكود الخاص بك خلف الكواليس ليكون أسرع بأقصى درجة ممكنة، وهو أمر بالغ الأهمية في تطوير محركات الألعاب وأنظمة التداول السريع.
+:::
+
+---
+
+## ⚠️ الأخطاء الشائعة (Common Mistakes)
+
+```cpp
+// ❌ 1 - نسيان الفاصلة المنقوطة
+#include <iostream>
+using namespace std;
+int main() {
+    cout << "Hello" // 💥 خطأ: نسيان الفاصلة المنقوطة هو أشهر خطأ يقع فيه المبتدئون
+    return 0;
+}
+
+// ❌ 2 - الخلط بين main() و Main()
+// لغة C++ حساسة لحالة الأحرف (Case-Sensitive). نقطة الدخول يجب أن تكون main() بحروف صغيرة.
+```
+
+---
+
+## Interview Questions & Answers
+
+<details>
+<summary><strong>Q1: ما الفرق بين C و C++؟</strong></summary>
+
+لغة C تدعم البرمجة الإجرائية (Procedural) فقط، ولا تدعم الكائنات (Classes and Objects). أما C++ فهي امتداد للـ C تدعم البرمجة الكائنية (OOP)، الـ Templates، ومكتبة الـ STL المدمجة.
+</details>
+
+<details>
+<summary><strong>Q2: لماذا نستخدم `using namespace std;` وما عيوبها؟</strong></summary>
+
+نستخدمها لتوفير الوقت بدلاً من كتابة `std::cout` و `std::endl`. 
+**العيوب:** في المشاريع الضخمة، قد يحدث تضارب في الأسماء (Name Clashing) إذا كان هناك دوال بنفس الاسم في مكتبات مختلفة. ولذلك يُنصح المطورون المحترفون بكتابة `std::cout` بدلاً من استدعاء كامل الـ namespace.
+</details>
+
+---
+
+<ExerciseBox title="🏋️ Exercise - أول كود">
+
+في المترجم (سواء على جهازك أو أونلاين)، اكتب برنامجاً يقوم بالآتي:
+1. طباعة اسمك في السطر الأول.
+2. طباعة هدفك من تعلم C++ في السطر الثاني.
+*(تذكر استخدام `endl` للنزول لسطر جديد).*
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي</strong></summary>
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+int main() {
+    cout << "My name is Ahmed." << endl;
+    cout << "I want to become a game developer using C++!" << endl;
+    
+    return 0;
+}
+```
+
+</details>
+
+---
+
+<SummaryBox title="📌 Lesson Summary">
+
+- C++ لغة قوية وسريعة جداً وتدعم الـ OOP.
+- نحتاج إلى **محرر أكواد** و **مترجم (Compiler)** لتحويل الكود إلى برنامج حقيقي.
+- يبدأ أي تطبيق C++ من دالة `main()`.
+- نستخدم `#include <iostream>` لتفعيل الطباعة، ونستخدم `cout` لطباعة النصوص.
+
+</SummaryBox>

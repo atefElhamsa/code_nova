@@ -1,0 +1,244 @@
+---
+id: operator-overloading
+title: "7.1 Operator Overloading"
+sidebar_label: "7.1 Operator Overloading"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 7.1 تجاوز المعاملات (Operator Overloading)
+
+من أجمل مميزات C++ هي القدرة على تعليم اللغة كيف تتعامل مع الكلاسات التي صنعناها نحن، وذلك عبر تغيير وظيفة المعاملات الرياضية (`+`, `-`, `==`) لتعمل مع كائناتنا!
+
+---
+
+## 1. ما هو الـ Operator Overloading؟
+
+إذا كان لدينا `int x = 5, y = 10;` فيمكننا بسهولة كتابة `x + y`.
+لكن، ماذا لو كان لدينا كلاس يمثل `Vector2D` (نقطة في مستوى ثنائي الأبعاد لها X و Y) وأنشأنا كائنين `v1` و `v2`؟
+الكومبايلر لا يعرف كيف يجمع `v1 + v2` لأنها كائنات معقدة. هنا يأتي دور الـ Operator Overloading لنُعرّف عملية الجمع بأنفسنا.
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Vector2D {
+  public:
+    int x, y;
+
+    Vector2D(int x = 0, int y = 0) {
+        this->x = x;
+        this->y = y;
+    }
+
+    // هنا نقوم بعمل Overload لمعامل الجمع (+)
+    // تُرجع كائناً جديداً من نفس الكلاس
+    Vector2D operator+(const Vector2D& other) {
+        Vector2D result;
+        result.x = this->x + other.x;
+        result.y = this->y + other.y;
+        return result;
+    }
+};
+
+int main() {
+    Vector2D v1(10, 5);
+    Vector2D v2(20, 15);
+
+    // الآن يمكننا جمع الكائنات مباشرة!
+    Vector2D v3 = v1 + v2;
+
+    cout << "v3.X = " << v3.x << ", v3.Y = " << v3.y << endl; // X=30, Y=20
+
+    return 0;
+}
+```
+
+---
+
+## 2. تجاوز معامل المقارنة (`==`)
+
+أمر شائع جداً هو التحقق مما إذا كان كائنان متطابقين. الكومبايلر لا يستطيع المقارنة افتراضياً، لذلك سنعلمه كيف.
+
+```cpp
+class Person {
+  public:
+    string name;
+    int age;
+
+    Person(string n, int a) : name(n), age(a) {} // طريقة مختصرة للـ Constructor
+
+    // Overload لمعامل اليساوي
+    bool operator==(const Person& other) {
+        // نعتبر الشخصين متطابقين إذا تطابق الاسم والعمر
+        return (this->name == other.name && this->age == other.age);
+    }
+};
+
+int main() {
+    Person p1("Ahmed", 25);
+    Person p2("Ahmed", 25);
+    Person p3("Omar", 30);
+
+    if (p1 == p2) {
+        cout << "p1 and p2 are the same person." << endl;
+    }
+
+    if (!(p1 == p3)) {
+        cout << "p1 and p3 are different." << endl;
+    }
+
+    return 0;
+}
+```
+
+---
+
+## 3. تجاوز معامل الطباعة (`<<`)
+
+هل حاولت يوماً كتابة `cout << p1;` لطباعة الكائن بالكامل؟ سيعطيك خطأ لأن `cout` لا يعرف كيف يطبع كلاس `Person`.
+لتجاوز معامل الطباعة (`<<`)، يجب أن نجعله `friend` للكلاس لأنه لا ينتمي للكلاس مباشرة بل ينتمي لكلاس `ostream` (مكتبة الإخراج).
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Point {
+  private:
+    int x, y;
+
+  public:
+    Point(int x, int y) : x(x), y(y) {}
+
+    // نجعله صديقاً (friend) ليتمكن من قراءة x و y الخاصة
+    friend ostream& operator<<(ostream& out, const Point& p);
+};
+
+// تعريف الدالة خارج الكلاس
+ostream& operator<<(ostream& out, const Point& p) {
+    out << "(" << p.x << ", " << p.y << ")";
+    return out; // نرجع الـ stream لندعم السلسلة cout << p1 << p2;
+}
+
+int main() {
+    Point p1(4, 7);
+    
+    // سحر الـ C++!
+    cout << "My point is: " << p1 << endl; 
+    
+    return 0;
+}
+```
+
+---
+
+## ⚡ Performance Notes
+
+:::tip تحسين الـ Return Value Optimization (RVO)
+في دالة الجمع `operator+`، نضطر لإرجاع "نسخة جديدة" من الكائن (`return result;`). قديماً، كان هذا بطيئاً جداً لأنه ينسخ الكائن بأكمله في الذاكرة. 
+ولكن في C++ الحديثة، هناك تقنية قوية جداً في المترجم تسمى **RVO**، تقوم بإلغاء هذا النسخ تماماً وتبني النتيجة مباشرة في مكانها النهائي في الذاكرة. لذلك لا تقلق من إرجاع كائنات كاملة من دوال הـ Overloading، فالأداء سيكون مثالياً!
+:::
+
+---
+
+## ⚠️ الأخطاء الشائعة (Common Mistakes)
+
+```cpp
+class Counter {
+  public:
+    int count = 0;
+    
+    // ❌ 1 - تعديل الكائن الأصلي في معامل لا يجب أن يفعل ذلك
+    Counter operator+(const Counter& other) {
+        this->count += other.count; // 💥 خطأ منطقي كارثي! عملية الجمع (a + b) يجب ألا تُغير a، بل تُرجع قيمة جديدة!
+        return *this;
+    }
+
+    // ❌ 2 - نسيان علامة المرجع const &
+    // Counter operator+(Counter other) 
+    // 💥 هذا سيعمل، ولكنه بطيء جداً لأنه سينسخ الكائن بالكامل في كل مرة تجمع فيها!
+};
+```
+
+---
+
+## Interview Questions & Answers
+
+<details>
+<summary><strong>Q1: هل يمكن عمل Overload لجميع المعاملات في C++؟</strong></summary>
+
+معظم المعاملات يمكن تجاوزها (`+`, `-`, `*`, `==`, `<`, `[]`, `()`)، ولكن هناك 4 معاملات **لا يمكن** تجاوزها في C++ وهي:
+1. `.` (Dot operator للوصول للأعضاء).
+2. `.*` (Pointer to member).
+3. `::` (Scope resolution operator).
+4. `?:` (Ternary operator).
+</details>
+
+<details>
+<summary><strong>Q2: ما هي كلمة `friend` التي استخدمناها؟</strong></summary>
+
+كلمة `friend` تُستخدم لمنح دالة خارجية (أو كلاس خارجي) الصلاحية للوصول إلى المتغيرات الـ `private` والـ `protected` الخاصة بكلاس معين. في حالة معامل الطباعة `<<`، احتجنا لجعل الدالة `friend` لأنها تخص مكتبة خارجية (`ostream`) ولكنها تحتاج لقراءة بيانات الكلاس.
+</details>
+
+---
+
+<ExerciseBox title="🏋️ Exercise - تجاوز معامل الطرح">
+
+قم بكتابة كلاس اسمه `BankAccount` يحتوي على `balance`.
+قم بعمل Overload لمعامل الطرح (`-`) بحيث يمكننا سحب الأموال بهذا الشكل:
+`account1 = account1 - 500;`
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي</strong></summary>
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class BankAccount {
+  public:
+    double balance;
+
+    BankAccount(double b) : balance(b) {}
+
+    // Overload للناقص
+    BankAccount operator-(double amount) {
+        BankAccount result(this->balance); // نسخة جديدة
+        if (amount <= result.balance) {
+            result.balance -= amount;
+        } else {
+            cout << "Insufficient funds!" << endl;
+        }
+        return result;
+    }
+};
+
+int main() {
+    BankAccount myAcc(1000);
+    
+    // سحب 300
+    myAcc = myAcc - 300;
+    cout << "Balance: " << myAcc.balance << endl; // 700
+
+    // محاولة سحب 1000
+    myAcc = myAcc - 1000; // Insufficient funds!
+
+    return 0;
+}
+```
+
+</details>
+
+---
+
+<SummaryBox title="📌 Lesson Summary">
+
+- **Operator Overloading** يمنح المعاملات العادية (`+`, `==`, `<<`) معنى جديداً عند التعامل مع الكائنات المخصصة (Custom Objects).
+- نستخدم الصيغة `ReturnType operator+(parameters)`.
+- تجاوز المعاملات يجعل الكود الخاص بك نظيفاً جداً وأقرب للرياضيات المألوفة.
+- تُستخدم كلمة `friend` للسماح للدوال الخارجية (مثل دالة الطباعة `<<`) بالوصول للبيانات المخفية `private`.
+
+</SummaryBox>

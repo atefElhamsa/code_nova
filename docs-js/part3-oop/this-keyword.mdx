@@ -1,0 +1,213 @@
+---
+id: this-keyword
+title: "3.4 The `this` Keyword"
+sidebar_label: "3.4 The 'this' Keyword"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 3.4 الكلمة المفتاحية `this`
+
+تعتبر الكلمة المفتاحية `this` في جافاسكريبت من أعقد المفاهيم التي تربك المبتدئين وحتى المحترفين القادمين من لغات أخرى.
+
+في هذا الدرس، سنحل شفرة هذه الكلمة، ونتعلم كيف ولماذا تتصرف بطريقة مختلفة تماماً عما تعودت عليه في لغة Dart.
+
+---
+
+##  الأهداف التعليمية
+
+1. فهم الكلمة المفتاحية `this` في جافاسكريبت ولماذا تتغير قيمتها.
+2. معرفة الاختلاف الجوهري لسلوك `this` بين Dart و JavaScript.
+3. فهم متى نفقد الـ Context الخاص بالكائن.
+4. حل مشاكل الـ Scope ببراعة باستخدام الدوال السهمية (Arrow Functions).
+5. الإجابة على أهم أسئلة المقابلات الشخصية حول `this`.
+
+---
+
+## 1. المشكلة (The Problem with `this`)
+
+في لغة Dart ومُعظم اللغات المعتمدة على الـ Classes (Java, C#)، كلمة `this` تشير دائماً وابداً إلى الـ Instance (الكائن الحالي) الذي يملك الدالة، **بغض النظر** عن المكان الذي يتم استدعاء الدالة منه.
+
+أما في **جافاسكريبت**، قيمة `this` مرنة وغير ثابتة، وهي **تتغير بناءً على كيفية استدعاء الدالة!** (يُطلق على هذا اسم `Execution Context`). الكائن ليس هو المالك الأبدي لـ `this`!
+
+### مثال يوضح المشكلة
+```javascript
+const user = {
+  name: "Ali",
+  printName: function() {
+    console.log(this.name);
+  }
+};
+
+// 1. هنا تعمل بشكل سليم لأننا استدعيناها من خلال الكائن (user.)
+user.printName(); // "Ali"
+
+// 2. لكن ماذا لو خزنّا الدالة في متغير وقمنا باستدعائها لاحقاً؟
+const detachedFunction = user.printName;
+
+// هنا ستفشل! لأن this فقدت ارتباطها بكائن الـ user وأصبحت مجهولة!
+detachedFunction(); // Output: undefined
+```
+
+---
+
+## 2. السلوك الافتراضي لـ `this`
+
+إذاً، كيف نعرف قيمة `this`؟ انظر إلى **من قام باستدعاء الدالة**:
+
+- **داخل Object Method (مثال `user.printName()`):** تشير `this` إلى الكائن (Object) نفسه.
+- **داخل دالة عادية (Function Declaration) غير مرتبطة بكائن:** تشير `this` إلى الكائن العام (في المتصفح هو `window`)، وإذا كنت تستخدم وضع الـ Strict Mode `use strict` ستكون `undefined`.
+- **داخل Event Listener (في الـ DOM):** تشير `this` إلى عنصر הـ HTML الذي تم الضغط عليه والتفاعل معه.
+
+---
+
+## 3. الحل: الدوال السهمية (Arrow Functions)
+
+الدوال السهمية `() => {}` ليست مجرد اختصار لشكل الدالة. الاختلاف الأكبر هو أن **الدوال السهمية ليس لها `this` خاص بها!**
+
+بدلاً من ذلك، هي ترث (تلتقط) قيمة `this` من النطاق (Scope) المحيط بها مباشرة لحظة كتابتها (Lexical Scoping). هذا السلوك هو **بالضبط** ما يتوقعه مطورو Dart!
+
+### مثال للمشكلة والحل مع `setTimeout`:
+
+```javascript
+class Counter {
+  constructor() {
+    this.count = 0;
+  }
+
+  // ❌ الطريقة الخاطئة باستخدام دالة عادية (Function)
+  startBad() {
+    setTimeout(function() {
+      // this هنا تشير لكائن المتصفح Window وليست كلاس Counter!
+      // الدالة العادية خلقت this جديدة خاصة بها ونسيت الأب!
+      this.count++; 
+      console.log("Bad:", this.count); // NaN (Not a Number)
+    }, 1000);
+  }
+
+  // ✅ الطريقة الصحيحة باستخدام (Arrow Function)
+  startGood() {
+    setTimeout(() => {
+      // Arrow Function لا تملك this أبداً!
+      // فتضطر للبحث عن this في الدالة الأب (startGood) وتجد الكائن بسلام
+      this.count++;
+      console.log("Good:", this.count); // 1
+    }, 1000);
+  }
+}
+
+const myCounter = new Counter();
+myCounter.startBad();
+myCounter.startGood();
+```
+
+---
+
+## ⚡ Performance Notes
+
+:::tip متى لا تستخدم الـ Arrow Functions؟
+كما رأينا، الـ Arrow Functions ممتازة داخل الـ Callbacks والـ setTimeout. ولكن **لا** تستخدمها أبداً لتعريف دالة أساسية بداخل Object Literal إذا كنت تنوي استخدام `this` بداخلها، لأنها سترث الـ `this` من خارج الكائن بالكامل (غالباً المتصفح `window`) وسيفشل كودك.
+
+```javascript
+// ❌ سيء جداً
+const obj = {
+  score: 10,
+  getScore: () => { console.log(this.score); } // undefined!
+};
+
+// ✅ استخدم الدوال العادية للـ Methods داخل الـ Objects
+const objGood = {
+  score: 10,
+  getScore() { console.log(this.score); } // 10
+};
+```
+:::
+
+---
+
+## ⚠️ الأخطاء الشائعة (Common Mistakes)
+
+```javascript
+// ❌ 1 - تمرير Methods كـ Callbacks بدون الحفاظ على الـ Context
+class App {
+  constructor() { this.appName = "CodeNova"; }
+  render() { console.log(`Rendering ${this.appName}`); }
+}
+
+const myApp = new App();
+// المتصفح سيستدعي الدالة بشكل مجهول ويفقد الـ this
+document.getElementById("btn").addEventListener("click", myApp.render); 
+// 💥 خطأ: this.appName غير معرف
+
+// ✅ الحل: غلفها بـ Arrow Function
+document.getElementById("btn").addEventListener("click", () => myApp.render());
+```
+
+---
+
+## Interview Questions & Answers
+
+<details>
+<summary><strong>Q1: كيف يمكن إجبار الدالة على استخدام `this` معين (Explicit Binding)؟</strong></summary>
+
+توفر جافاسكريبت 3 دوال مدمجة للتحكم بـ `this`:
+1. `call(obj)`: تستدعي الدالة فوراً وتربط `this` بالكائن `obj`.
+2. `apply(obj, [args])`: مثل `call` ولكن تأخذ المعاملات كمصفوفة.
+3. `bind(obj)`: لا تستدعي الدالة، بل ترجع **دالة جديدة** مرتبطة للأبد بالكائن `obj` لتستدعيها لاحقاً.
+</details>
+
+<details>
+<summary><strong>Q2: ما هي قيمة `this` في الـ Arrow Function؟</strong></summary>
+
+الـ Arrow Function لا تملك `this` خاصاً بها (No own binding). قيمة `this` بداخلها هي نفس قيمة `this` في الكود المحيط بها (Lexical Context). إذا كان الكود المحيط بها لا يملك `this` (مثل ملف جافاسكريبت فارغ)، فستكون قيمتها الكائن العام `window`.
+</details>
+
+---
+
+<ExerciseBox title="🏋️ تمرين عملي (Exercise)">
+
+1. أنشئ كائناً اسمه `school` يمتلك مصفوفة من الطلاب `students: ["Ali", "Sara"]` واسماً للمدرسة `name: "Nova School"`.
+2. داخل الكائن، أنشئ Method تسمى `printStudents()`.
+3. داخل `printStudents`، استخدم `this.students.forEach(...)` لطباعة اسم كل طالب متبوعاً باسم المدرسة `this.name`.
+4. جرّب تمرير `function` عادية داخل الـ `forEach` ولاحظ كيف ستفقد الـ `this.name`.
+5. غيّر الدالة الداخلية إلى `Arrow Function` ولاحظ أن المشكلة انحلت.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل (Solution)</strong></summary>
+
+```javascript
+const school = {
+  name: "Nova School",
+  students: ["Ali", "Sara"],
+  
+  printStudents() {
+    // محاولة فاشلة باستخدام Function عادية
+    // this.students.forEach(function(student) {
+    //   console.log(`${student} is at ${this.name}`); // this.name سيكون undefined!
+    // });
+
+    // الحل الناجح باستخدام Arrow Function
+    this.students.forEach((student) => {
+      console.log(`${student} is at ${this.name}`); // Ali is at Nova School
+    });
+  }
+};
+
+school.printStudents();
+```
+
+</details>
+
+---
+
+<SummaryBox title="📌 ملخص الدرس (Summary)">
+
+- كلمة `this` في جافاسكريبت مرنة وتتحدد بناءً على **من قام باستدعاء الدالة**، وليس أين كُتبت الدالة.
+- إذا خزنت Method من داخل Object في متغير خارجي واستدعيته، سيضيع السياق (Context) وتفقد الـ `this`.
+- **الدوال العادية** تنشئ `this` جديد خاص بها.
+- **الدوال السهمية (Arrow Functions)** ليس لها `this` خاص بها وتأخذه من البيئة المحيطة (الأب)، ولذلك نستخدمها بكثرة في الـ Callbacks لضمان عدم ضياع الكائن الأصلي!
+
+</SummaryBox>

@@ -1,0 +1,184 @@
+---
+id: dom-manipulation
+title: "5.1 DOM Manipulation"
+sidebar_label: "5.1 DOM Manipulation"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 5.1 التعديل على واجهة المتصفح (DOM Manipulation)
+
+تخيل أن كود الـ HTML هو الهيكل العظمي للموقع، والـ CSS هو الجلد والملابس. أين تقع جافاسكريبت؟ جافاسكريبت هي العضلات والجهاز العصبي الذي يحرك هذا الهيكل! للقيام بذلك، تحتاج جافاسكريبت إلى واجهة للتعامل مع هذا الهيكل، وهذه الواجهة تسمى **DOM**.
+
+---
+
+##  الأهداف التعليمية
+
+1. فهم ما هو الـ Document Object Model (DOM) وكيف يمثل الصفحة.
+2. تحديد العناصر (Selecting Elements) في المتصفح باحترافية.
+3. تعديل خصائص ومحتوى العناصر (Manipulating Elements).
+4. التعامل مع الـ CSS Classes برمجياً.
+
+---
+
+## 1. ما هو الـ DOM؟
+
+الـ DOM باختصار هو **شجرة (Tree)** تمثل هيكل صفحة الـ HTML. عندما يقرأ المتصفح ملف الـ HTML، يقوم بتحويل كل وسم (Tag) إلى كائن (Object) داخل الـ DOM، لكي تتمكن جافاسكريبت من الوصول إليه وتعديله بكل سهولة.
+
+> 💡 **مقارنة بـ Dart/Flutter:**
+> شجرة الـ DOM تشبه جداً شجرة الـ Widget Tree في Flutter. كل وسم `<div>` أو `<p>` يعادل ويدجت `Container` أو `Text`. وجافاسكريبت تُستخدم لتحديث هذه الشجرة (مثلما تفعل دالة `setState`).
+
+---
+
+## 2. اختيار العناصر (Selecting Elements)
+
+لكي نعدل على عنصر معين، يجب أن نمسك به أولاً! المتصفح يوفر لنا الكائن العام العظيم `document` للبحث داخل الصفحة.
+
+### أ. بالطرق القديمة (ولكن لا تزال تستخدم)
+```javascript
+// يجلب عنصراً واحداً فقط بناءً على الـ ID الفريد
+const title = document.getElementById("main-title");
+
+// يجلب كل العناصر التي تحمل هذا الكلاس (يرجع HTMLCollection يشبه المصفوفة)
+const buttons = document.getElementsByClassName("btn");
+```
+
+### ب. باستخدام Query Selector (الطريقة الأحدث والأقوى)
+تسمح لك هذه الطريقة باستخدام **محددات CSS (CSS Selectors)** لاختيار العناصر، مما يمنحك مرونة هائلة!
+
+```javascript
+// يجلب أول عنصر يطابق المحدد (كلاس btn-primary الموجود داخل div)
+const firstButton = document.querySelector("div .btn-primary");
+
+// يجلب جميع العناصر التي تطابق المحدد (يرجع NodeList يمكن عمل forEach عليها)
+const allLinks = document.querySelectorAll("a.nav-link");
+```
+
+---
+
+## 3. تعديل العناصر (Manipulation)
+
+بعد الإمساك بالعنصر، يمكننا تغيير محتواه، لونه، أو أي خاصية فيه.
+
+### تغيير النصوص والـ HTML
+```javascript
+const title = document.querySelector("#title");
+
+// تغيير النص العادي فقط (آمن جداً ويحمي من هجمات XSS)
+title.textContent = "Welcome to CodeNova!";
+
+// تغيير المحتوى كـ HTML (يمكن إدخال وسوم جديدة، احذر من استخدامه مع بيانات المستخدمين!)
+title.innerHTML = "Welcome to <span style='color:red;'>CodeNova!</span>";
+```
+
+### تغيير التنسيقات (Inline Styles)
+```javascript
+const box = document.querySelector(".box");
+
+// تعديل CSS مباشرة عبر خاصية style 
+// لاحظ استخدام CamelCase بدلاً من الشَرطة (-) في أسماء الخصائص
+box.style.backgroundColor = "blue"; // في الـ CSS تكتب background-color
+box.style.fontSize = "20px";
+box.style.display = "none"; // لإخفاء العنصر تماماً
+```
+
+### تغيير الفئات (Classes)
+تغيير الـ Style مباشرة سطر بسطر يعتبر سيئاً. الأفضل هو تجهيز الكلاسات في الـ CSS وتبديلها برمجياً!
+```javascript
+const menu = document.querySelector(".menu");
+
+menu.classList.add("active");    // إضافة كلاس
+menu.classList.remove("hidden"); // إزالة كلاس
+menu.classList.toggle("open");   // السحر! إذا كان موجوداً يحذفه، وإذا لم يكن موجوداً يضيفه!
+```
+
+---
+
+## ⚡ Performance Notes
+
+:::tip تقليل الـ DOM Reflow
+تحديث الـ DOM هو **أبطأ** عملية في جافاسكريبت. كل مرة تعدل فيها عنصر، يقوم المتصفح بإعادة رسم الشاشة (Reflow/Repaint). إذا أردت إضافة 100 عنصر `<li>` لقائمة، لا تقم بإضافتها واحدة تلو الأخرى داخل الـ Loop! بدلاً من ذلك، اجمعها في متغير نصي أو في `DocumentFragment`، ثم أضفها للـ DOM دفعة واحدة خارج الـ Loop لتسريع الأداء بشكل خيالي.
+:::
+
+---
+
+## ⚠️ الأخطاء الشائعة (Common Mistakes)
+
+```javascript
+// ❌ 1 - وضع كود جافاسكريبت في الـ <head> بدون defer
+// إذا تم تنفيذ السكريبت قبل أن يقوم المتصفح ببناء الـ DOM، لن يجد العناصر!
+const btn = document.querySelector("#btn"); // null
+
+// ✅ الحل الأول: وضع <script> في نهاية الـ <body>
+// ✅ الحل الثاني (الأفضل): استخدام <script src="..." defer></script> 
+
+// ❌ 2 - محاولة عمل forEach على getElementsByClassName
+const elements = document.getElementsByClassName("box");
+elements.forEach(...) // 💥 خطأ! هذا HTMLCollection وليس مصفوفة حقيقية.
+
+// ✅ الحل: استخدم querySelectorAll لأنها ترجع NodeList تدعم الـ forEach، أو حولها لمصفوفة Array.from(elements)
+```
+
+---
+
+## Interview Questions & Answers
+
+<details>
+<summary><strong>Q1: ما الفرق بين `textContent` و `innerText`؟</strong></summary>
+
+- `textContent`: تجلب النص كما هو مكتوب في الكود المصدري، بما في ذلك المسافات الزائدة والعناصر المخفية بـ CSS (مثل `display: none`). وهي أسرع لأنها لا تحسب الـ CSS.
+- `innerText`: تقرأ الـ CSS أولاً، وتجلب النص كما يظهر للمستخدم على الشاشة بالضبط (لا تجلب النصوص المخفية). وهي أبطأ لأنها تسبب Reflow.
+</details>
+
+<details>
+<summary><strong>Q2: ما هي ثغرة XSS وكيف يتسبب بها الـ `innerHTML`؟</strong></summary>
+
+ثغرة الـ Cross-Site Scripting تحدث عندما تستقبل نصاً من مستخدم (مثل تعليق) وتعرضه باستخدام `innerHTML`. إذا كتب المستخدم كود سكريبت خبيث `<script>stealCookies()</script>` سيتم تنفيذه على أجهزة الزوار الآخرين! لذلك يجب استخدام `textContent` دائماً لعرض النصوص لحمايتها، لأنها تعامل كل شيء كنص عادي فقط ولا تنفذ الأكواد.
+</details>
+
+---
+
+<ExerciseBox title="🏋️ تمرين عملي (Exercise)">
+
+قم بإنشاء ملف `index.html` واكتب فيه عنصر بسيط:
+```html
+<h1 id="heading" class="title">Hello World</h1>
+```
+وفي ملف `script.js` المربوط به:
+1. استخدم `querySelector` للامساك بالعنصر `h1`.
+2. غيّر النص ليصبح `"DOM is Awesome!"` باستخدام الخاصية الآمنة.
+3. غيّر لونه إلى اللون الأحمر باستخدام الـ Inline Style.
+4. قم بإزالة الكلاس `title` منه.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل (Solution)</strong></summary>
+
+```javascript
+// 1. اختيار العنصر
+const heading = document.querySelector("#heading");
+
+// 2. تغيير النص بأمان
+heading.textContent = "DOM is Awesome!";
+
+// 3. تغيير اللون
+heading.style.color = "red";
+
+// 4. إزالة الكلاس
+heading.classList.remove("title");
+```
+
+</details>
+
+---
+
+<SummaryBox title="📌 ملخص الدرس (Summary)">
+
+- الـ `DOM` هو الواجهة بين كود الـ HTML الثابت وجافاسكريبت التفاعلية.
+- `querySelector` و `querySelectorAll` هي أفضل وأحدث الطرق لتحديد العناصر لأنها تعتمد على مرونة محددات CSS.
+- يمكنك تعديل أي شيء في الصفحة: النصوص (`textContent`)، الألوان (`style`)، والكلاسات (`classList`).
+- تجنب استخدام `innerHTML` مع بيانات لا تثق بها لحماية موقعك من الاختراق.
+
+</SummaryBox>

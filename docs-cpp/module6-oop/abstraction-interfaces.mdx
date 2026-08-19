@@ -1,0 +1,226 @@
+---
+id: abstraction-interfaces
+title: "6.3 Abstraction & Interfaces"
+sidebar_label: "6.3 Abstraction & Interfaces"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 6.3 التجريد (Abstraction) والواجهات (Interfaces)
+
+التجريد (Abstraction) هو المبدأ الرابع في الـ OOP. فكرته بسيطة: **أخفِ التعقيدات الداخلية، واعرض للمستخدم الواجهة البسيطة فقط**. 
+مثلاً، عندما تقود السيارة، أنت تضغط على دواسة البنزين لتتسارع، لا يهمك كيف يحترق الوقود داخل المحرك.
+
+في C++، نُطبق التجريد عن طريق **الكلاسات المجردة (Abstract Classes)**.
+
+---
+
+## 1. الكلاس المجرد (Abstract Class) والدوال النقية (Pure Virtual Functions)
+
+الكلاس المجرد هو كلاس **لا يمكن إنشاء كائنات (Objects) منه مباشرة**. وظيفته الوحيدة هي أن يكون "عقداً" أو "قاعدة" ترث منها الكلاسات الأخرى.
+لجعل الكلاس مجرداً، نضع بداخله دالة افتراضية نقية (Pure Virtual Function) عن طريق كتابة `= 0` في نهايتها.
+
+```cpp
+#include <iostream>
+using namespace std;
+
+// Abstract Class
+class CoffeeMachine {
+  public:
+    // Pure Virtual Function
+    // أي كلاس يرث من هذا الكلاس "مجبر" على كتابة هذه الدالة
+    virtual void makeCoffee() = 0; 
+    
+    // دالة عادية (مسموح بوجودها في الكلاس المجرد)
+    void turnOn() {
+        cout << "Machine is warming up..." << endl;
+    }
+};
+
+class EspressoMachine : public CoffeeMachine {
+  public:
+    // تنفيذ الدالة الإجبارية
+    void makeCoffee() override {
+        cout << "Making a strong Espresso!" << endl;
+    }
+};
+
+int main() {
+    // CoffeeMachine c; // ❌ خطأ! لا يمكن إنشاء كائن من كلاس مجرد
+    
+    EspressoMachine myMachine;
+    myMachine.turnOn();
+    myMachine.makeCoffee();
+
+    return 0;
+}
+```
+
+---
+
+## 2. الواجهات (Interfaces) في C++
+
+في لغات مثل Java أو C#، توجد كلمة مفتاحية خاصة اسمها `interface`. في C++ لا توجد هذه الكلمة، ولكننا **نُحاكيها** عن طريق إنشاء كلاس مجرد (Abstract Class) **كل دواله** عبارة عن دوال افتراضية نقية `= 0` ولا يحتوي على أي متغيرات (Member Variables).
+
+الواجهة (Interface) تمثل "عقداً" يجب على أي كلاس ينفذها أن يحترمه بالكامل.
+
+```cpp
+// هذا الكلاس يمثل Interface (واجهة)
+class IPlayable {
+  public:
+    virtual void play() = 0;
+    virtual void pause() = 0;
+    virtual void stop() = 0;
+};
+
+// كلاس مشغل الفيديو يطبق هذه الواجهة
+class VideoPlayer : public IPlayable {
+  public:
+    void play() override {
+        cout << "Playing video..." << endl;
+    }
+    void pause() override {
+        cout << "Video paused." << endl;
+    }
+    void stop() override {
+        cout << "Video stopped." << endl;
+    }
+};
+
+// كلاس مشغل الصوت يطبق نفس الواجهة
+class AudioPlayer : public IPlayable {
+  public:
+    void play() override {
+        cout << "Playing audio..." << endl;
+    }
+    void pause() override {
+        cout << "Audio paused." << endl;
+    }
+    void stop() override {
+        cout << "Audio stopped." << endl;
+    }
+};
+```
+### لماذا نستخدم الـ Interfaces؟
+لنفترض أن لديك زر "Play" في واجهة المستخدم (UI)، هذا الزر لا يهمه إذا كان الملف فيديو أو صوتاً، هو فقط يتعامل مع أي شيء نوعه `IPlayable` ويستدعي `.play()`. هذا يقلل الاعتماديات (Coupling) ويجعل الكود مرناً جداً.
+
+---
+
+## ⚡ Performance Notes
+
+:::tip تكلفة الدوال الافتراضية (Virtual Table Overhead)
+التجريد والواجهات تعتمد على الـ `virtual functions`. خلف الكواليس، تنشئ C++ جدولاً في الذاكرة يسمى (vtable) لكل كلاس يحتوي على دوال افتراضية للبحث عن الدالة الصحيحة أثناء وقت التشغيل (Runtime). هذه العملية تستغرق وقتاً إضافياً صغيراً جداً جداً مقارنة بالدوال العادية. في 99% من التطبيقات هذا لا يهم، ولكن في الأنظمة فائقة الحساسية للوقت (High-Frequency Trading) قد يحاول المبرمجون تجنب الـ virtual functions قدر الإمكان واستخدام تقنيات أخرى مثل الـ (Templates).
+:::
+
+---
+
+## ⚠️ الأخطاء الشائعة (Common Mistakes)
+
+```cpp
+class Animal {
+  public:
+    virtual void speak() = 0; // Pure virtual
+};
+
+int main() {
+    // ❌ 1 - محاولة إنشاء كائن من كلاس مجرد
+    Animal myAnimal; // 💥 خطأ: المترجم سيرفض ذلك تماماً لأن Animal كلاس غير مكتمل!
+
+    return 0;
+}
+```
+
+---
+
+## Interview Questions & Answers
+
+<details>
+<summary><strong>Q1: ما الفرق بين الـ Encapsulation والـ Abstraction؟</strong></summary>
+
+- **Encapsulation (الكبسلة):** هو إخفاء "البيانات" (Variables) لغرض الحماية (باستخدام private). 
+- **Abstraction (التجريد):** هو إخفاء "التعقيد وطريقة العمل" لغرض التبسيط (باستخدام Abstract Classes/Interfaces). أنت تعرف "ماذا" تفعل الدالة وليس "كيف" تفعلها.
+</details>
+
+<details>
+<summary><strong>Q2: هل يمكن أن يحتوي الـ Abstract Class على متغيرات ودوال عادية (ليست Pure Virtual)؟</strong></summary>
+
+نعم، في C++، الـ Abstract Class يمكن أن يحتوي على متغيرات ودوال تعمل بشكل طبيعي، طالما أنه يحتوي على الأقل على دالة واحدة `= 0` (Pure Virtual). 
+أما إذا كانت **كل** دواله `= 0` ولا يحتوي على متغيرات، فهو يُعتبر Interface.
+</details>
+
+---
+
+<ExerciseBox title="🏋️ Exercise - واجهة الطيران">
+
+1. أنشئ Interface (كلاس مجرد كل دواله `= 0`) باسم `IFlyable`، بداخله دالتين: `takeOff()` و `land()`.
+2. أنشئ كلاس `Bird` ينفذ (يرث) هذه الواجهة واطبع رسائل مناسبة.
+3. أنشئ كلاس `Airplane` ينفذ نفس الواجهة واطبع رسائل مناسبة.
+4. في `main`، قم بإنشاء كائن من كل نوع واستدعِ دوالهما.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي</strong></summary>
+
+```cpp
+#include <iostream>
+using namespace std;
+
+// Interface
+class IFlyable {
+  public:
+    virtual void takeOff() = 0;
+    virtual void land() = 0;
+};
+
+// Bird
+class Bird : public IFlyable {
+  public:
+    void takeOff() override {
+        cout << "Bird is flapping wings and taking off." << endl;
+    }
+    void land() override {
+        cout << "Bird lands softly on a tree." << endl;
+    }
+};
+
+// Airplane
+class Airplane : public IFlyable {
+  public:
+    void takeOff() override {
+        cout << "Airplane engines starting. Taking off from runway." << endl;
+    }
+    void land() override {
+        cout << "Airplane landing gear deployed. Landing safely." << endl;
+    }
+};
+
+int main() {
+    Bird myBird;
+    Airplane myPlane;
+
+    cout << "--- Bird ---" << endl;
+    myBird.takeOff();
+    myBird.land();
+
+    cout << "\n--- Airplane ---" << endl;
+    myPlane.takeOff();
+    myPlane.land();
+
+    return 0;
+}
+```
+
+</details>
+
+---
+
+<SummaryBox title="📌 Lesson Summary">
+
+- **التجريد (Abstraction)** يخفي التعقيد وراء واجهات بسيطة.
+- الكلاس المجرد (Abstract Class) لا يمكن إنشاء كائنات منه، ويُستخدم كقاعدة للكلاسات الأخرى.
+- يُصنع الكلاس المجرد بإضافة **دالة افتراضية نقية (Pure Virtual Function)** وتنتهي بـ `= 0`.
+- **الواجهة (Interface)** هي كلاس مجرد يحتوي *فقط* على دوال افتراضية نقية ولا يحتوي على بيانات.
+
+</SummaryBox>

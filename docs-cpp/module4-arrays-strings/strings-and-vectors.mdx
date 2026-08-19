@@ -1,0 +1,204 @@
+---
+id: strings-and-vectors
+title: "4.2 Strings & Vectors"
+sidebar_label: "4.2 Strings & Vectors"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 4.2 النصوص (Strings) والمصفوفات المرنة (Vectors)
+
+تعلمنا في الدرس السابق أن المصفوفات (Arrays) في C++ حجمها "ثابت" وتفتقر للمرونة. في هذا الدرس، سنتعرف على أداتين من أقوى أدوات مكتبة الـ STL في C++: الـ `string` (للتعامل مع النصوص كأنها مصفوفة حروف) والـ `vector` (مصفوفة ذكية مرنة الحجم).
+
+---
+
+## 1. النصوص (C++ std::string)
+
+النص في البرمجة هو ببساطة "مصفوفة من الأحرف" (Array of Characters). 
+في لغة C القديمة (C-style strings)، كانت النصوص تُعرف هكذا `char name[] = "Ali";` وكانت مزعجة جداً في التعامل. 
+أما في C++ الحديثة، نستخدم الـ `std::string` الذي يوفر لنا دوال جاهزة ومرونة هائلة.
+
+```cpp
+#include <iostream>
+#include <string> // ضروري
+using namespace std;
+
+int main() {
+    string firstName = "Code";
+    string lastName = "Nova";
+    
+    // دمج النصوص (Concatenation)
+    string fullName = firstName + " " + lastName; 
+    cout << fullName << endl; // CodeNova
+
+    // معرفة طول النص
+    cout << "Length: " << fullName.length() << endl; // أو size()
+    
+    // الوصول للأحرفเหมือน مصفوفة
+    cout << "First char: " << fullName[0] << endl; // C
+    
+    // تعديل حرف معين
+    fullName[0] = 'N'; // NodeNova
+    
+    return 0;
+}
+```
+
+---
+
+## 2. المصفوفات المرنة (std::vector)
+
+مشكلة المصفوفة العادية (Array) أنك إذا عرفتها بـ 5 عناصر، فلا يمكنك إضافة العنصر رقم 6.
+هنا يأتي دور **`vector`**! وهو عبارة عن مصفوفة "ديناميكية" تكبر وتصغر تلقائياً بناءً على العناصر التي تضعها فيها. يُعتبر الـ `vector` البديل الحديث والمفضل للمصفوفات التقليدية.
+
+لتعريف Vector يجب استدعاء مكتبة `<vector>`.
+
+```cpp
+#include <iostream>
+#include <vector> // ضروري
+using namespace std;
+
+int main() {
+    // تعريف vector فارغ من الأرقام الصحيحة
+    vector<int> numbers;
+    
+    // إضافة عناصر لنهاية الـ vector
+    numbers.push_back(10);
+    numbers.push_back(20);
+    numbers.push_back(30);
+    
+    // طباعة العنصر الأول
+    cout << "First element: " << numbers[0] << endl;
+    
+    // معرفة عدد العناصر الحالي
+    cout << "Size: " << numbers.size() << endl; // 3
+    
+    // إزالة العنصر الأخير
+    numbers.pop_back(); // سيزيل الرقم 30
+    cout << "New Size: " << numbers.size() << endl; // 2
+    
+    return 0;
+}
+```
+
+### المرور على عناصر الـ Vector
+
+تماماً مثل المصفوفات العادية، أسهل طريقة للمرور على العناصر هي `for-each` loop:
+
+```cpp
+vector<string> names = {"Ali", "Omar", "Sara"};
+names.push_back("Khaled"); // إضافة عنصر رابع
+
+for (string name : names) {
+    cout << name << " ";
+}
+```
+
+---
+
+## ⚡ Performance Notes
+
+:::tip إعادة حجز الذاكرة في الفيكتور (Vector Reallocation)
+الـ `vector` يكبر حجمه ديناميكياً، ولكن كيف؟ عندما يمتلئ، يقوم بحجز مساحة جديدة في الذاكرة (غالباً ضعف المساحة القديمة)، وينسخ العناصر القديمة، ثم يمسح المساحة القديمة. عملية "النسخ" هذه مكلفة جداً.
+**الحل:** إذا كنت تعرف مسبقاً أنك ستضيف 1000 عنصر، استخدم الدالة `numbers.reserve(1000);` قبل البدء في الإضافة. هذا يحجز مساحة لـ 1000 عنصر مرة واحدة ويوفر الكثير من الأداء!
+:::
+
+---
+
+## ⚠️ الأخطاء الشائعة (Common Mistakes)
+
+```cpp
+// ❌ 1 - تعديل الـ vector أثناء المرور عليه بـ for-each
+vector<int> nums = {1, 2, 3};
+for (int n : nums) {
+    if (n == 2) {
+        nums.push_back(4); // 💥 خطأ كارثي: تعديل حجم الـ vector أثناء المرور عليه قد يغير مكانه في الذاكرة ويسبب Crash
+    }
+}
+
+// ❌ 2 - استخدام [ ] للوصول לעنصر غير موجود
+vector<int> vec = {10, 20};
+cout << vec[5]; // 💥 سيطبع قيمة عشوائية أو يسبب Segmentation Fault
+// ✅ الأفضل استخدام vec.at(5) لاكتشاف الخطأ مبكراً
+```
+
+---
+
+## Interview Questions & Answers
+
+<details>
+<summary><strong>Q1: متى أستخدم Array العادية ومتى أستخدم Vector؟</strong></summary>
+
+- استخدم **Array** إذا كنت متأكداً بنسبة 100% أن حجم البيانات ثابت ولن يتغير أبداً طوال البرنامج (مثل أشهر السنة، أيام الأسبوع، رقعة الشطرنج). ميزتها أنها أسرع قليلاً وتستهلك ذاكرة أقل.
+- استخدم **Vector** في 95% من الحالات المتبقية، خصوصاً إذا كانت البيانات قادمة من المستخدم أو قاعدة بيانات ولا تعرف عددها، لسهولة الإضافة والحذف ومرونتها.
+</details>
+
+<details>
+<summary><strong>Q2: ما هي الدالة الأفضل للوصول لعناصر الـ vector، استخدام `[ ]` أم `at()`؟</strong></summary>
+
+استخدام `numbers[5]` (الـ brackets) أسرع، لكنه لا يتحقق من الحدود (مثل الـ Array العادية).
+استخدام `numbers.at(5)` أبطأ قليلاً، لكنه آمن جداً، لأنه إذا لم يكن هناك عنصر خامس، سيقوم بإطلاق استثناء (Throw Exception) ولن يتسبب في انهيار البرنامج بشكل صامت.
+</details>
+
+---
+
+<ExerciseBox title="🏋️ Exercise - قائمة المهام (To-Do List)">
+
+استخدم `vector` من نوع `string` لإنشاء قائمة مهام.
+1. أضف 3 مهام إلى القائمة باستخدام `push_back`.
+2. استخدم حلقة `for` لطباعة جميع المهام مرقمة (1. كذا، 2. كذا).
+3. احذف آخر مهمة تمت إضافتها باستخدام `pop_back`.
+4. اطبع القائمة مرة أخرى لتتأكد من الحذف.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي</strong></summary>
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <string>
+
+using namespace std;
+
+int main() {
+    vector<string> tasks;
+
+    // 1. إضافة المهام
+    tasks.push_back("Learn C++ Vectors");
+    tasks.push_back("Do Homework");
+    tasks.push_back("Play Video Games");
+
+    // 2. طباعة المهام مرقمة (استخدمنا for العادية لنستفيد من الفهرس i)
+    cout << "--- My Tasks ---" << endl;
+    for (int i = 0; i < tasks.size(); i++) {
+        cout << i + 1 << ". " << tasks[i] << endl;
+    }
+
+    // 3. حذف آخر مهمة
+    tasks.pop_back();
+
+    // 4. طباعة القائمة بعد التحديث
+    cout << "\n--- Updated Tasks ---" << endl;
+    for (int i = 0; i < tasks.size(); i++) {
+        cout << i + 1 << ". " << tasks[i] << endl;
+    }
+
+    return 0;
+}
+```
+
+</details>
+
+---
+
+<SummaryBox title="📌 Lesson Summary">
+
+- **`std::string`**: للتعامل مع النصوص ككائنات، يدعم الدمج `+` ومعرفة الطول `length()`.
+- **`std::vector`**: المصفوفة الديناميكية في C++. تتمدد وتنكمش تلقائياً.
+- تُستخدم `push_back()` لإضافة عنصر في النهاية، و `pop_back()` لحذفه.
+- تُستخدم `size()` لمعرفة عدد عناصر الـ vector.
+
+</SummaryBox>

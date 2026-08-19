@@ -1,0 +1,204 @@
+---
+id: variables-and-data-types
+title: "1.2 Variables & Data Types"
+sidebar_label: "1.2 Variables & Data Types"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 1.2 المتغيرات، أنواع البيانات، والعمليات الأساسية
+
+تتميز بايثون بالمرونة العالية؛ فهي لغة **ديناميكية النوع (Dynamically Typed)**، مما يعني أنك لا تحتاج إلى إخبار بايثون بنوع المتغير (int, string, double) قبل إنشائه كما نفعل في اللغات الأخرى. المفسر ذكي بما يكفي ليعرف النوع بمفرده بناءً على القيمة التي تدخلها!
+
+---
+
+## 1. إنشاء المتغيرات (Variables)
+
+المتغير هو مساحة في الذاكرة لتخزين البيانات. في بايثون، ننشئ المتغير ببساطة بكتابة اسمه ووضع علامة `=` ثم القيمة.
+
+```python
+# لاحظ: لم نكتب int أو string قبل المتغيرات!
+name = "Ahmed"     # نص (String)
+age = 25           # رقم صحيح (Integer)
+height = 1.75      # رقم عشري (Float)
+is_student = True  # قيمة منطقية (Boolean) - لاحظ أن الحرف الأول Capital
+
+print(name)
+print(age)
+```
+
+**قواعد التسمية النظيفة (Clean Code) في بايثون:**
+بايثون تعتمد أسلوب الـ **snake_case**، وهو فصل الكلمات بشرطة سفلية `_`، وكل الحروف صغيرة.
+مثال صحيح: `user_age`, `first_name`
+مثال خاطئ: `UserAge`, `1st_name` (لا يمكن أن يبدأ برقم).
+
+---
+
+## 2. أنواع البيانات الأساسية (Data Types)
+
+بايثون تحدد النوع تلقائياً. لمعرفة نوع أي متغير، نستخدم دالة `type()`.
+
+| النوع في بايثون | الوصف | مثال |
+|---|---|---|
+| `str` | نص (String) يُكتب بين `" "` أو `' '` | `"Hello"`, `'Python'` |
+| `int` | رقم صحيح (Integer) | `10`, `-5`, `0` |
+| `float` | رقم عشري (Floating point) | `3.14`, `-0.5` |
+| `bool` | قيمة منطقية (Boolean) | `True`, `False` |
+
+```python
+x = 10
+print(type(x)) # <class 'int'>
+
+x = "CodeNova"
+print(type(x)) # <class 'str'> (نعم، يمكنك تغيير نوع المتغير في بايثون بسهولة!)
+```
+
+---
+
+## 3. المدخلات من المستخدم (`input`)
+
+كما نستخدم `print()` للطباعة، نستخدم `input()` لطلب بيانات من المستخدم.
+
+```python
+name = input("Enter your name: ")
+print("Welcome,", name)
+```
+
+> ⚠️ **ملاحظة خطيرة:** دالة `input()` دائماً تُرجع البيانات على شكل **نص (String)**. إذا أدخل المستخدم رقم `5`، فإن بايثون تراه كـ `"5"`.
+
+إذا أردنا عمل عمليات حسابية، يجب تحويل النوع أولاً باستخدام `int()` أو `float()`. يسمى هذا بالـ **Type Casting**.
+
+```python
+age_string = input("Enter your age: ")
+age_number = int(age_string) # تحويل النص إلى رقم
+
+# أو بشكل مختصر واحترافي:
+# age = int(input("Enter your age: "))
+
+print("Next year you will be:", age_number + 1)
+```
+
+---
+
+## 4. العمليات الحسابية (Arithmetic Operators)
+
+| المعامل | الوصف | مثال |
+|---|---|---|
+| `+` | جمع | `5 + 2 = 7` |
+| `-` | طرح | `5 - 2 = 3` |
+| `*` | ضرب | `5 * 2 = 10` |
+| `/` | قسمة عادية (تُرجع دائماً float) | `5 / 2 = 2.5` |
+| `//` | قسمة صحيحة (تزيل الكسور) | `5 // 2 = 2` |
+| `%` | باقي القسمة | `5 % 2 = 1` |
+| `**` | الأُس | `5 ** 2 = 25` |
+
+---
+
+## 5. دمج النصوص (f-strings) - السحر الحقيقي!
+
+لدمج النصوص مع المتغيرات، توفر بايثون طرقاً كثيرة. ولكن أفضل وأسرع وأنظف طريقة على الإطلاق (منذ إصدار 3.6) هي الـ **f-strings** (Formatted Strings).
+ضع حرف `f` قبل علامة التنصيص، وضع المتغيرات داخل أقواس متعرجة `{}`.
+
+```python
+name = "Sara"
+age = 22
+gpa = 3.8
+
+# استخدام الـ f-string
+message = f"Hello, my name is {name}. I am {age} years old and my GPA is {gpa}."
+
+print(message)
+```
+هذه الطريقة تحول كل المتغيرات إلى نصوص تلقائياً وتدمجها بأسلوب أنيق جداً.
+
+---
+
+## ⚡ Performance Notes
+
+:::tip استخدام الـ f-strings للأداء وسهولة القراءة
+تعتبر الـ f-strings ليس فقط الطريقة الأجمل لدمج النصوص، بل هي **أسرع طريقة أيضاً** من حيث الأداء مقارنة بالأساليب القديمة (مثل `.format()` أو استخدام الـ `%`). استخدمها دائماً!
+:::
+
+---
+
+##  أسئلة المقابلات الشخصية (Interview Questions)
+
+<details>
+<summary><strong>Q1: ماذا يعني أن بايثون لغة Dynamically Typed؟ وما هي ميزتها وعيبها؟</strong></summary>
+
+- **المعنى:** النوع يتم تحديده في وقت التشغيل (Runtime) بناءً على القيمة، ويمكن للمتغير الواحد أن يحمل رقماً الآن ونصاً بعد قليل.
+- **الميزة:** سرعة الكتابة وتقليل الأكواد وتوفير مرونة عالية.
+- **العيب:** قد يتسبب ذلك في أخطاء (Bugs) مخفية يصعب اكتشافها إلا وقت تشغيل الكود (مثلاً إذا كنت تتوقع رقماً وجاءك نص). اللغات مثل C++ أو Java (Statically Typed) تمنع هذه الأخطاء وقت البناء (Compile-time).
+</details>
+
+<details>
+<summary><strong>Q2: ماذا يحدث إذا جمعنا `str` مع `str`؟ وماذا إذا ضربنا `str` في `int`؟</strong></summary>
+
+- جمع نصين يسمى Concatenation: `"Hello" + "World"` يعطي `"HelloWorld"`.
+- ضرب نص في رقم يكرر النص: `"Hi" * 3` يعطي `"HiHiHi"`. وهذه ميزة رائعة في بايثون!
+</details>
+
+---
+
+## ⚠️ الأخطاء الشائعة (Common Mistakes)
+
+```python
+# ❌ 1 - نسيان تحويل نوع بيانات الإدخال (Type Casting)
+age = input("Enter age: ")
+# print(age + 1) # 💥 TypeError: can only concatenate str (not "int") to str
+
+# ✅ الصحيح:
+age = int(input("Enter age: "))
+
+# ❌ 2 - كتابة المتغيرات بأسلوب غير بايثوني (Non-Pythonic)
+UserName = "Ali" # ❌ غير مفضل
+
+# ✅ الصحيح (snake_case):
+user_name = "Ali"
+```
+
+---
+
+<ExerciseBox title="🏋️ Exercise - حاسبة العمر التفصيلية">
+
+اكتب برنامجاً يقوم بالآتي:
+1. يطلب من المستخدم إدخال اسمه.
+2. يطلب منه إدخال **سنة الميلاد** الخاصة به.
+3. يحسب عمر المستخدم (العام الحالي ناقص سنة الميلاد).
+4. يستخدم الـ **f-string** لطباعة رسالة مرتبة، مثال:
+`"Hello Ali, you were born in 1995, so you are 29 years old."`
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي</strong></summary>
+
+```python
+# 1. طلب الاسم
+name = input("Enter your name: ")
+
+# 2. طلب سنة الميلاد وتحويلها إلى رقم (int) فوراً
+birth_year = int(input("Enter your birth year: "))
+
+# 3. حساب العمر
+current_year = 2024 # يمكنك استخدام السنة الحالية
+age = current_year - birth_year
+
+# 4. دمج النصوص وطباعتها بـ f-string
+print(f"Hello {name}, you were born in {birth_year}, so you are {age} years old.")
+```
+
+</details>
+
+---
+
+<SummaryBox title="📌 Lesson Summary">
+
+- لا داعي لتحديد نوع المتغير في بايثون (ديناميكية النوع).
+- دالة `type()` مفيدة لمعرفة نوع المتغير الحالي.
+- دالة `input()` تُرجع البيانات كنص (`str`) دائماً، ويجب تحويلها بـ `int()` للعمليات الحسابية (Type Casting).
+- نستخدم `//` للقسمة بدون كسور، و `**` للأسس.
+- الـ **f-strings** `f"Text {var}"` هي الطريقة الأفضل والأسرع لدمج المتغيرات مع النصوص.
+
+</SummaryBox>

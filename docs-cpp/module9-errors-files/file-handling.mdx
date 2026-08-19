@@ -1,0 +1,213 @@
+---
+id: file-handling
+title: "9.2 File Handling"
+sidebar_label: "9.2 File Handling"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 9.2 التعامل مع الملفات (File Handling)
+
+كل البيانات التي كنا نحفظها في المتغيرات والمصفوفات تُمسح وتضيع تماماً بمجرد إغلاق البرنامج (لأنها محفوظة في الـ RAM). لحفظ البيانات بشكل دائم (Permanent Storage)، نحتاج إلى كتابتها في ملفات على القرص الصلب.
+
+في C++، نستخدم مكتبة `<fstream>` (اختصاراً لـ File Stream) للتعامل مع الملفات.
+
+---
+
+## 1. الكلاسات الأساسية في `<fstream>`
+
+تحتوي هذه المكتبة على 3 كلاسات رئيسية:
+1. **`ofstream`** (Output File Stream): لإنشاء ملف و**الكتابة** فيه.
+2. **`ifstream`** (Input File Stream): لفتح ملف موجود مسبقاً و**القراءة** منه.
+3. **`fstream`**: يدعم العمليتين معاً (القراءة والكتابة).
+
+---
+
+## 2. الكتابة في ملف (Writing)
+
+للكتابة، نقوم بإنشاء كائن من `ofstream`، ونفتحه (أو ننشئه إذا لم يكن موجوداً). طريقة الكتابة مطابقة تماماً لطريقة استخدام `cout`.
+
+```cpp
+#include <iostream>
+#include <fstream> // ضروري للملفات
+using namespace std;
+
+int main() {
+    // 1. إنشاء الكائن وتحديد اسم الملف
+    ofstream myFile("data.txt");
+    
+    // 2. التحقق مما إذا كان الملف مفتوحاً وجاهزاً
+    if (myFile.is_open()) {
+        
+        // 3. الكتابة تماماً مثل cout
+        myFile << "Hello CodeNova!\n";
+        myFile << "This is my first file.\n";
+        
+        // 4. إغلاق الملف (مهم جداً لحفظ التغييرات وتحرير الموارد)
+        myFile.close();
+        
+        cout << "Successfully written to the file." << endl;
+    } else {
+        cout << "Unable to open file." << endl;
+    }
+
+    return 0;
+}
+```
+
+### وضع الإضافة (Append Mode)
+بشكل افتراضي، عند استخدام `ofstream` لملف موجود بالفعل، سيتم **مسح كل محتوياته القديمة** والكتابة فوقها! 
+إذا أردت "إضافة" نص جديد في نهاية الملف دون مسح القديم، استخدم وضع الـ Append:
+```cpp
+ofstream myFile("data.txt", ios::app); 
+```
+
+---
+
+## 3. القراءة من ملف (Reading)
+
+للقراءة، نستخدم كائن `ifstream`. القراءة تكون سطراً بسطر (عادة) باستخدام دالة `getline()` وحلقة `while`.
+
+```cpp
+#include <iostream>
+#include <fstream>
+#include <string>
+using namespace std;
+
+int main() {
+    // 1. استخدام ifstream للقراءة
+    ifstream myFile("data.txt");
+    string line;
+    
+    if (myFile.is_open()) {
+        // طالما أن هناك أسطر يمكن قراءتها، خزنها في متغير line
+        while (getline(myFile, line)) {
+            cout << line << endl; // اطبع السطر على الشاشة
+        }
+        
+        myFile.close();
+    } else {
+        // سيظهر هذا الخطأ إذا حاولت قراءة ملف غير موجود
+        cout << "Unable to open file for reading." << endl;
+    }
+
+    return 0;
+}
+```
+
+---
+
+## ⚡ Performance Notes
+
+:::tip بطء `endl` مع الملفات
+أغلب المبرمجين المبتدئين يكتبون `myFile << "Hello" << endl;`. 
+الكلمة `endl` لا تقوم فقط بالنزول لسطر جديد، بل تقوم بعملية تسمى `flush()` (وهي إجبار نظام التشغيل على كتابة البيانات من الذاكرة المؤقتة إلى القرص الصلب فوراً). الكتابة على القرص الصلب عملية بطيئة جداً جداً. 
+إذا كنت تكتب آلاف الأسطر في ملف، استخدم دائماً `\n` هكذا `myFile << "Hello\n";` وسيقوم نظام التشغيل بكتابتها دفعة واحدة بكفاءة مرعبة، وقد يتضاعف أداء برنامجك 10 مرات!
+:::
+
+---
+
+## ⚠️ الأخطاء الشائعة (Common Mistakes)
+
+```cpp
+// ❌ 1 - استخدام مسارات مطلقة (Absolute Paths)
+ofstream myFile("C:\\Users\\Ahmed\\Desktop\\data.txt"); 
+// 💥 خطأ كارثي: عندما ترسل هذا البرنامج لصديقك أو ترفعه على سيرفر، لن يعمل لأن مسار المجلد مختلف!
+// ✅ الصحيح: استخدام المسار النسبي (Relative Path)
+ofstream myFile("data.txt"); // سيتم إنشاؤه في نفس مجلد البرنامج
+
+// ❌ 2 - نسيان التحقق من is_open()
+ifstream file("test.txt");
+// file >> word; 
+// 💥 إذا كان الملف غير موجود، سيفشل البرنامج بصمت! دائماً استخدم if (file.is_open()) أولاً.
+```
+
+---
+
+## Interview Questions & Answers
+
+<details>
+<summary><strong>Q1: ماذا يحدث إذا نسينا عمل `close()` للملف؟</strong></summary>
+
+في معظم الحالات، عندما يتم تدمير الكائن (مثلاً بانتهاء الـ Scope)، سيقوم الـ Destructor الخاص بالـ `fstream` بإغلاق الملف تلقائياً. 
+ولكن الاعتماد على ذلك يُعتبر "ممارسة سيئة" (Bad Practice). عدم إغلاقه يدوياً قد يؤدي إلى:
+1. ضياع بعض البيانات التي لم تُكتب بعد من الـ (Buffer) إلى القرص الصلب.
+2. بقاء الملف مغلقاً (Locked) بحيث لا يمكن لأي برنامج آخر (أو نظام التشغيل) فتحه أو مسحه.
+</details>
+
+<details>
+<summary><strong>Q2: ما هي `ios::app` وما هي أوضاع الملفات الأخرى؟</strong></summary>
+
+`ios` هو كلاس يحتوي على الأوضاع (Modes). 
+- `ios::app`: (Append) إضافة في نهاية الملف.
+- `ios::trunc`: مسح المحتوى القديم (الوضع الافتراضي للكتابة).
+- `ios::in`: فتح للقراءة فقط.
+- `ios::out`: فتح للكتابة فقط.
+- `ios::binary`: قراءة/كتابة الملف كملف ثنائي (Binary) وليس كنص (مثل الصور أو الصوت).
+</details>
+
+---
+
+<ExerciseBox title="🏋️ Exercise - حفظ الدرجات واسترجاعها">
+
+1. استخدم `ofstream` لإنشاء ملف باسم `grades.txt`، واكتب فيه 3 درجات للطلاب (مثلاً: Ali: 90، Omar: 85) كل واحدة في سطر.
+2. أغلق الملف.
+3. استخدم `ifstream` لفتح نفس الملف الذي قمت بإنشائه الآن.
+4. اقرأ جميع الأسطر واطبعها على الشاشة.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي</strong></summary>
+
+```cpp
+#include <iostream>
+#include <fstream>
+#include <string>
+
+using namespace std;
+
+int main() {
+    // 1. الكتابة في الملف
+    ofstream outFile("grades.txt");
+    if (outFile.is_open()) {
+        outFile << "Ali: 90\n";
+        outFile << "Omar: 85\n";
+        outFile << "Sara: 95\n";
+        outFile.close(); // 2. الإغلاق
+        cout << "Grades saved successfully." << endl;
+    }
+
+    cout << "\n--- Reading from File ---\n";
+
+    // 3. القراءة من نفس الملف
+    ifstream inFile("grades.txt");
+    string line;
+    if (inFile.is_open()) {
+        // 4. المرور على الأسطر وطباعتها
+        while (getline(inFile, line)) {
+            cout << line << endl;
+        }
+        inFile.close();
+    } else {
+        cout << "Could not open file!" << endl;
+    }
+
+    return 0;
+}
+```
+
+</details>
+
+---
+
+<SummaryBox title="📌 Lesson Summary">
+
+- استخدم مكتبة `<fstream>` للتعامل مع الملفات.
+- `ofstream`: يستخدم للكتابة في الملف (Output). يشبه `cout`.
+- `ifstream`: يستخدم للقراءة من الملف (Input). يشبه `cin`.
+- للقراءة سطراً بسطر، استخدم `while(getline(file, line))` لضمان قراءة النص مع المسافات.
+- دائماً أغلق الملف باستخدام `close()` لتأكيد حفظ البيانات وتحريرها.
+
+</SummaryBox>

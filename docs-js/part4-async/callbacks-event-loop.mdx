@@ -1,0 +1,160 @@
+---
+id: callbacks-event-loop
+title: "4.1 Callbacks & Event Loop"
+sidebar_label: "4.1 Callbacks & Event Loop"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 4.1 دالة الرد (Callbacks) وحلقة الأحداث (Event Loop)
+
+في جافاسكريبت، هناك سؤال مشهور جداً: كيف يمكن للغة أن تكون أحادية المسار (Single-threaded) ومع ذلك لا يتجمد المتصفح عند جلب بيانات ضخمة من الإنترنت؟ السر يكمن في سحر **حلقة الأحداث (Event Loop)**!
+
+---
+
+##  الأهداف التعليمية
+
+1. فهم طبيعة جافاسكريبت بأنها أحادية المسار (Single-threaded).
+2. معرفة كيفية تعامل المتصفح مع المهام عبر الـ Event Loop.
+3. استخدام دالة الرد (Callback Function) لتنفيذ أكواد غير متزامنة.
+4. فهم الكارثة المعروفة بـ Callback Hell.
+
+---
+
+## 1. هل جافاسكريبت أحادية المسار؟ (Single-threaded)
+
+نعم! جافاسكريبت تنفذ الأوامر سطراً بسطر في مسار واحد (Thread) فقط. يعني هذا نظرياً أنها لا تستطيع فعل شيئين في نفس الوقت.
+
+ولكن، كيف نقوم بجلب بيانات من الإنترنت ونحن نتفاعل مع الصفحة بدون أن يتجمد المتصفح؟ 
+هنا يأتي دور المتصفح (Web APIs) والـ Event Loop!
+
+> 💡 **مقارنة بـ Dart:**
+> Dart أيضاً Single-threaded وتعتمد على مفهوم الـ `Event Loop` لتشغيل الكود غير المتزامن (Asynchronous Code) تماماً مثل جافاسكريبت! المفهوم الهندسي هنا متطابق بنسبة كبيرة.
+
+---
+
+## 2. ما هو الـ Event Loop؟
+
+باختصار: جافاسكريبت تقوم بتنفيذ الأكواد المتزامنة (التي تنتهي فوراً) أولاً. أي كود يحتاج لوقت (مثل جلب بيانات أو مؤقت زمني) يتم إرساله إلى المتصفح (Web API) ليقوم به في الخلفية دون تعطيل جافاسكريبت. 
+
+وعندما ينتهي المتصفح من المهمة، يضع "دالة الرد" في طابور (Task Queue)، ثم يقوم الـ **Event Loop** (الحارس) بمراقبة جافاسكريبت، وبمجرد أن يجدها فارغة، يدفع هذه الدالة إليها لتنفيذها.
+
+---
+
+## 3. دوال الرد (Callbacks)
+
+دالة الرد (Callback) هي ببساطة: "دالة تمررها كمتغير لدالة أخرى، ليتم استدعاؤها لاحقاً".
+
+```javascript
+console.log("1. Start");
+
+// setTimeout من دوال المتصفح وتأخذ Callback
+setTimeout(() => {
+  console.log("2. Data loaded from database");
+}, 2000); // تأخير ثانيتين
+
+console.log("3. End");
+
+/* المخرجات ستكون:
+1. Start
+3. End
+2. Data loaded from database (بعد ثانيتين)
+*/
+```
+
+### مشكلة الـ Callback Hell
+إذا كان لديك عدة عمليات غير متزامنة تعتمد على بعضها (مثلاً تجلب مستخدم، ثم تجلب منشوراته، ثم تجلب تعليقاته)، ستضطر لوضع Callbacks داخل بعضها البعض، مما ينتج عنه كود متداخل بشكل مخيف يسمى (Callback Hell أو هرم الموت).
+
+```javascript
+// مثال نظري للـ Callback Hell
+getUser(1, (user) => {
+  getPosts(user.id, (posts) => {
+    getComments(posts[0].id, (comments) => {
+      console.log(comments);
+    });
+  });
+});
+```
+
+---
+
+## ⚡ Performance Notes
+
+:::tip المزامنة البلوكية (Blocking Code)
+حذارِ من كتابة كود رياضي معقد جداً (مثل حلقة `for` تمر بمليار رقم) بداخل جافاسكريبت مباشرة! لأن الـ Thread سيتجمد بالكامل ولن يعمل الـ Event Loop، وبالتالي سيتجمد المتصفح بأكمله ولن يستطيع المستخدم حتى الضغط على أي زر. هذه العمليات الثقيلة يجب وضعها في (Web Workers) لتتم في الخلفية.
+:::
+
+---
+
+## ⚠️ الأخطاء الشائعة (Common Mistakes)
+
+```javascript
+// ❌ 1 - توقع أن دالة غير متزامنة ستنهي عملها فوراً
+let data = null;
+setTimeout(() => { data = "Loaded!"; }, 1000);
+console.log(data); 
+// 💥 سيطبع null! لأن الـ console.log تتنفذ فوراً قبل أن تنتهي الـ setTimeout.
+
+// ✅ الحل: وضع الـ console.log بداخل الـ Callback.
+```
+
+---
+
+## Interview Questions & Answers
+
+<details>
+<summary><strong>Q1: ماذا سيطبع هذا الكود ولماذا؟</strong></summary>
+
+```javascript
+console.log('A');
+setTimeout(() => console.log('B'), 0);
+console.log('C');
+```
+
+**الإجابة:** سيطبع `A`، ثم `C`، ثم `B`.
+حتى وإن كان الوقت `0`، فإن دالة `setTimeout` تُرسل للـ Web API، وتذهب الدالة لـ Task Queue. والـ Event Loop لن يسمح للـ Task Queue بالدخول إلا بعدما ينتهي الكود المتزامن بالكامل (طباعة C).
+</details>
+
+---
+
+<ExerciseBox title="🏋️ تمرين عملي (Exercise)">
+
+قم بكتابة كود يطبع الآتي بالترتيب الموضح باستخدام الـ Callbacks:
+1. اطبع `"Task 1 started"`.
+2. اطبع `"Task 2 started"`.
+3. استخدم `setTimeout` لطباعة `"Task 1 finished"` بعد ثانيتين.
+4. استخدم `setTimeout` لطباعة `"Task 2 finished"` بعد ثانية واحدة.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل (Solution)</strong></summary>
+
+```javascript
+console.log("Task 1 started");
+console.log("Task 2 started");
+
+setTimeout(() => {
+  console.log("Task 1 finished");
+}, 2000);
+
+setTimeout(() => {
+  console.log("Task 2 finished");
+}, 1000);
+
+// ستنتهي Task 2 قبل Task 1 لأن وقتها أقصر، رغم أنها كُتبت بعدها!
+```
+
+</details>
+
+---
+
+<SummaryBox title="📌 ملخص الدرس (Summary)">
+
+- جافاسكريبت `Single-threaded` مثل Dart، لكنها لا تتوقف بفضل الـ `Event Loop`.
+- الـ `Callback` هو تمرير دالة ليتم تنفيذها في وقت لاحق عند انتهاء المهمة.
+- الـ `Event Loop` يراقب المسار، وإذا كان فارغاً، يسحب المهام الجاهزة من الطابور (Queue) لينفذها.
+- الاستخدام المفرط للـ Callbacks المتداخلة يؤدي لـ `Callback Hell`.
+
+</SummaryBox>

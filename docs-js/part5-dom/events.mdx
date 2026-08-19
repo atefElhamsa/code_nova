@@ -1,0 +1,175 @@
+---
+id: events
+title: "5.2 Events & Event Listeners"
+sidebar_label: "5.2 Events"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 5.2 الأحداث والمستمعات (Events & Event Listeners)
+
+موقع بدون أحداث هو كصورة ساكنة! التفاعل يبدأ عندما يضغط المستخدم على زر، أو يكتب في حقل، أو يمرر الماوس فوق صورة. في هذا الدرس سنتعلم كيف نجعل جافاسكريبت تستشعر هذه الحركات وترد عليها بقوة.
+
+---
+
+##  الأهداف التعليمية
+
+1. فهم كيفية التفاعل مع المستخدم عبر الأحداث (Events).
+2. إضافة مستمعات الأحداث `addEventListener` للعناصر.
+3. استخراج البيانات من كائن الحدث (The Event Object).
+4. إيقاف السلوك الافتراضي للمتصفح.
+5. الإجابة على أسئلة المقابلات المتقدمة حول Event Bubbling.
+
+---
+
+## 1. ما هي الأحداث (Events)؟
+
+الحدث هو أي شيء يفعله المستخدم (أو المتصفح) على الصفحة: الضغط على زر (Click)، تمرير الفأرة (Hover)، الكتابة في حقل نصي (Typing)، أو حتى التمرير (Scrolling) وانتهاء تحميل الصفحة.
+
+> 💡 **مقارنة بـ Dart/Flutter:**
+> الحدث `click` في المتصفح يعادل تماماً استخدام `GestureDetector(onTap: ...)` أو `onPressed` الخاصة بالأزرار في Flutter!
+
+---
+
+## 2. إضافة مستمع للحدث (Event Listener)
+
+لكي نجعل جافاسكريبت تستجيب لحدث معين يقع على عنصر محدد، يجب أن نربط "مستمعاً" بهذا العنصر باستخدام دالة `addEventListener`.
+
+### الصيغة العامة:
+```javascript
+element.addEventListener('نوع الحدث', دالة الرد (Callback));
+```
+
+### مثال: الضغط على زر
+```javascript
+const btn = document.querySelector("#submit-btn");
+
+btn.addEventListener("click", () => {
+  console.log("Button was clicked!");
+  btn.textContent = "Clicked!"; // تغيير النص بعد الضغط
+});
+```
+
+---
+
+## 3. كائن الحدث (The Event Object)
+
+دالة الرد (Callback) التي نمررها، يمكنها استقبال "معامل" (Parameter) يرسله المتصفح أوتوماتيكياً، ونرمز له غالباً بـ `e` أو `event`. 
+هذا الكائن ثمين جداً لأنه يحتوي على جميع التفاصيل والمعلومات حول الحدث الذي وقع!
+
+```javascript
+const inputField = document.querySelector("#username-input");
+
+// الاستماع لحدث الإدخال (يتفعل مع كل حرف يكتبه المستخدم)
+inputField.addEventListener("input", (e) => {
+  // e.target يشير للعنصر نفسه الذي وقع عليه الحدث (الـ input)
+  // .value تجلب النص المكتوب بداخله حالياً
+  console.log("User is typing:", e.target.value);
+});
+```
+
+> 💡 **مقارنة بـ Dart:** في Flutter، الدالة المُمررة لـ `onChanged` في حقل النص `TextField` تستقبل الـ `String` المكتوب مباشرة. في جافاسكريبت نصل إليه عبر كائن الحدث `e.target.value`.
+
+### إيقاف السلوك الافتراضي (Prevent Default)
+أحياناً نريد منع المتصفح من القيام بردة فعله الافتراضية. على سبيل المثال، الضغط على زر `Submit` بداخل `Form` يؤدي لتحديث الصفحة بالكامل بشكل افتراضي. لمنع ذلك:
+
+```javascript
+const form = document.querySelector("#login-form");
+
+form.addEventListener("submit", (e) => {
+  e.preventDefault(); // إيقاف تحديث الصفحة! مهم جداً في تطبيقات الـ SPA!
+  console.log("Form submitted via JS!");
+});
+```
+
+---
+
+## ⚡ Performance Notes
+
+:::tip تفويض الأحداث (Event Delegation)
+إذا كان لديك قائمة `<ul>` تحتوي على 1000 عنصر `<li>`، وتود إضافة حدث `click` لكل عنصر. من الكارثي إضافة 1000 `addEventListener`!
+بدلاً من ذلك، أضف مستمعاً **واحداً فقط** للأب `<ul>`. عندما يضغط المستخدم على أي `<li>`، سيتصاعد الحدث للأب (Event Bubbling). حينها يمكنك التحقق من العنصر الذي تم الضغط عليه عبر `e.target`.
+```javascript
+ul.addEventListener("click", (e) => {
+  if (e.target.tagName === "LI") {
+    console.log("Clicked on:", e.target.textContent);
+  }
+});
+```
+هذه التقنية توفر الذاكرة بشكل هائل وتُسأل في كل المقابلات تقريباً!
+:::
+
+---
+
+## ⚠️ الأخطاء الشائعة (Common Mistakes)
+
+```javascript
+// ❌ 1 - استدعاء الدالة فوراً عند تمريرها!
+const btn = document.querySelector("#btn");
+function sayHi() { console.log("Hi"); }
+
+btn.addEventListener("click", sayHi()); 
+// 💥 خطأ: الأقواس () تجعل الدالة تعمل فوراً قبل أن يضغط المستخدم!
+
+// ✅ الحل: مرر اسم الدالة فقط كـ Reference
+btn.addEventListener("click", sayHi);
+// ✅ أو مررها بداخل Arrow Function
+btn.addEventListener("click", () => sayHi());
+```
+
+---
+
+## Interview Questions & Answers
+
+<details>
+<summary><strong>Q1: ما هو الـ Event Bubbling والـ Event Capturing؟</strong></summary>
+
+عندما تضغط على عنصر (مثل `<button>`) موجود داخل الأب `<div>` والأب موجود داخل الـ `<body>`.
+- **Event Capturing (الالتقاط):** الحدث يبدأ من أعلى الشجرة (Window) وينزل تدريجياً حتى يصل للزر.
+- **Event Bubbling (التصاعد):** بعدما يصل للزر، يبدأ في التصاعد لأعلى. فيمر عبر الـ `<div>` ثم `<body>` ويفعل مستمعات الأحداث الخاصة بهم.
+التصاعد هو السلوك الافتراضي في `addEventListener`، ويمكن إيقافه باستخدام `e.stopPropagation()`.
+</details>
+
+---
+
+<ExerciseBox title="🏋️ تمرين عملي (Exercise)">
+
+1. في ملف HTML، أضف زراً `<button id="my-btn">Click Me</button>`.
+2. في ملف جافاسكريبت، امسك الزر.
+3. أضف مستمع حدث لنوع `click`.
+4. اجعل الدالة تقوم بتغيير لون خلفية الصفحة بالكامل عشوائياً.
+   - تلميح: للوصول لجسم الصفحة استخدم `document.body.style.backgroundColor`.
+   - تلميح 2: قم بإنشاء مصفوفة ألوان `["red", "blue", "green"]` واختر واحداً منها في كل ضغطة.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل (Solution)</strong></summary>
+
+```javascript
+const btn = document.querySelector("#my-btn");
+const colors = ["#ff595e", "#ffca3a", "#8ac926", "#1982c4", "#6a4c93"];
+
+btn.addEventListener("click", () => {
+  // اختيار رقم عشوائي بناءً على طول المصفوفة
+  const randomIdx = Math.floor(Math.random() * colors.length);
+  
+  // تغيير لون الخلفية
+  document.body.style.backgroundColor = colors[randomIdx];
+});
+```
+
+</details>
+
+---
+
+<SummaryBox title="📌 ملخص الدرس (Summary)">
+
+- نستخدم `addEventListener` لربط الأكواد بأفعال المستخدم.
+- لا تضع أقواس الاستدعاء `()` بجوار اسم الدالة الممررة، وإلا ستعمل فوراً.
+- كائن الحدث `e` مفيد جداً لمعرفة تفاصيل الحدث (مثل العنصر الذي تم الضغط عليه `e.target`).
+- استخدم `e.preventDefault()` لإيقاف التحديث التلقائي للصفحة عند إرسال النماذج.
+- استخدم **Event Delegation** للأداء الأفضل عند التعامل مع قوائم طويلة.
+
+</SummaryBox>

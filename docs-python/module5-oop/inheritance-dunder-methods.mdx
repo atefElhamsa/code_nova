@@ -1,0 +1,259 @@
+---
+id: inheritance-dunder-methods
+title: "5.2 Inheritance & Dunder Methods"
+sidebar_label: "5.2 Inheritance & Dunder Methods"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 5.2 الوراثة والطرق السحرية (Dunder Methods)
+
+في هذا الدرس سنكمل رحلتنا مع الـ OOP في بايثون. سنتعلم كيف نمنع تكرار الكود عن طريق جعل كلاس يرث من كلاس آخر. وسنتعرف على أسرار بايثون الداخلية عبر الـ Dunder Methods (الطرق السحرية) التي تجعل الكائنات التي نصنعها تتفاعل بذكاء مع أوامر بايثون مثل `print` و `+`.
+
+---
+
+## 1. الوراثة (Inheritance)
+
+الوراثة تسمح للكلاس الابن (Child) باكتساب كل خصائص ودوال الكلاس الأب (Parent)، ثم إضافة لمسته الخاصة.
+في بايثون، لكي نورث كلاس من كلاس، نكتب اسم الأب بين قوسين بجوار اسم الابن.
+
+```python
+# الكلاس الأب (Parent)
+class Animal:
+    def __init__(self, name):
+        self.name = name
+
+    def speak(self):
+        print("Some generic sound")
+
+# الكلاس الابن (Child) يرث من Animal
+class Dog(Animal):
+    
+    # Overriding (تخطي الدالة)
+    # أعدنا كتابة الدالة لتناسب الكلب
+    def speak(self):
+        print(f"{self.name} says Woof!")
+
+# إنشاء الكائن
+my_dog = Dog("Rex")
+my_dog.speak() # سيطبع: Rex says Woof!
+```
+
+### استخدام دالة `super()`
+ماذا لو أردت في الكلاس الابن إضافة متغيرات جديدة (مثل فصيلة الكلب) ولكنك لا تريد إعادة كتابة كود التهيئة (الاسم) الموجود في الكلاس الأب؟ نستخدم دالة `super()` لاستدعاء الـ `__init__` الخاص بالأب!
+
+```python
+class Dog(Animal):
+    def __init__(self, name, breed):
+        # استدعاء دالة __init__ في الكلاس الأب لمعالجة الـ name
+        super().__init__(name)
+        # إضافة المتغير الجديد الخاص بالابن
+        self.breed = breed
+
+dog2 = Dog("Max", "Golden Retriever")
+print(dog2.name)  # Max (حصل عليه من الأب)
+print(dog2.breed) # Golden Retriever
+```
+
+---
+
+## 2. الطرق السحرية (Magic / Dunder Methods)
+
+هل تساءلت يوماً لماذا عند طباعة قائمة `print(my_list)` تراها بشكل أنيق، بينما عند طباعة كائن تصنعه بنفسك `print(car1)` يظهر لك شيء بشع مثل `<__main__.Car object at 0x00...>`؟ 
+
+الطرق السحرية (أو Dunder وهي اختصار Double Underscore لأنها تبدأ وتنتهي بشرطتين مثل `__init__`) تسمح لنا بتغيير سلوك بايثون الافتراضي مع كائناتنا.
+
+### أ. الدالة `__str__` (للطباعة المنظمة)
+إذا أضفت هذه الدالة لكلاسك، بايثون ستستدعيها تلقائياً عندما تكتب `print(object)`.
+
+```python
+class Book:
+    def __init__(self, title, author):
+        self.title = title
+        self.author = author
+
+    # تغيير شكل الكائن عند طباعته
+    def __str__(self):
+        return f"'{self.title}' by {self.author}"
+
+my_book = Book("Python Crash Course", "Eric Matthes")
+
+# بدلاً من ظهور مكان الكائن في الذاكرة، سيطبع النص المنظم الذي أرجعناه
+print(my_book) # 'Python Crash Course' by Eric Matthes
+```
+
+### ب. الدوال الحسابية `__add__`, `__sub__` وغيرها (Operator Overloading)
+نستطيع تعريف ماذا يحدث إذا حاول المستخدم جمع كائنين `obj1 + obj2` باستخدام `__add__`.
+
+```python
+class Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    # ماذا نفعل عند استخدام +
+    def __add__(self, other):
+        # نرجع كائن جديد من نوع Point يمثل مجموع الـ x والـ y
+        return Point(self.x + other.x, self.y + other.y)
+
+    def __str__(self):
+        return f"Point({self.x}, {self.y})"
+
+p1 = Point(10, 5)
+p2 = Point(2, 3)
+
+# الكومبايلر هنا يستدعي p1.__add__(p2) خلف الكواليس
+p3 = p1 + p2 
+
+print(p3) # Point(12, 8)
+```
+
+---
+
+## 3. الخاصيات الديكورية (Property Decorators)
+
+تذكر في C++ كيف كنا نصنع `Getter` و `Setter` لكل متغير مخفي لنحميه؟ (مثلاً `getBalance` و `setBalance`). 
+في بايثون، لدينا طريقة أنيقة جداً باستخدام الـ `@property` لجعل الـ Getter والـ Setter تعمل وكأنها متغير عادي عند استخدامها.
+
+```python
+class Product:
+    def __init__(self, name, price):
+        self.name = name
+        self.__price = price # متغير مخفي
+
+    # هذا الديكوريتور يحول هذه الدالة لتتصرف كأنها متغير للقراءة (Getter)
+    @property
+    def price(self):
+        return self.__price
+
+    # هذا الديكوريتور يحول هذه الدالة لتتصرف كأنها متغير للكتابة (Setter)
+    @price.setter
+    def price(self, new_price):
+        if new_price > 0:
+            self.__price = new_price
+        else:
+            print("Price cannot be negative!")
+
+item = Product("Laptop", 1000)
+
+# لاحظ: لا نستخدم أقواس () لأنها تتصرف كمتغير!
+print(item.price) 
+
+item.price = -50 # Price cannot be negative!
+item.price = 1200 # تم التعديل بنجاح
+print(item.price) # 1200
+```
+هذا الأسلوب (Pythonic) يجعل كودك محمياً ونظيفاً في نفس الوقت.
+
+---
+
+## ⚡ Performance Notes
+
+:::tip تكلفة الوراثة العميقة (Deep Inheritance)
+بايثون لغة ديناميكية، فعندما تستدعي دالة في كائن يرث من الأب، يبحث המترجم عن الدالة في الكلاس الحالي، فإن لم يجدها يبحث في الأب، ثم الجد، وهكذا (MRO Lookup). 
+كلما كانت شجرة الوراثة عميقة ومعقدة، كلما أبطأ ذلك من سرعة استدعاء الدوال. 
+**نصيحة الأداء:** تجنب الوراثة العميقة واستخدم بدلاً منها الـ (Composition)، وهو وضع الكائنات داخل كائنات أخرى بدلاً من الوراثة.
+:::
+
+---
+
+## ⚠️ الأخطاء الشائعة (Common Mistakes)
+
+```python
+class Parent:
+    def __init__(self):
+        self.money = 1000
+
+class Child(Parent):
+    def __init__(self):
+        # ❌ 1 - نسيان استدعاء super().__init__()
+        self.name = "Ali"
+
+c = Child()
+# print(c.money) 
+# 💥 خطأ كارثي (AttributeError)! الكلاس الابن ألغى دالة التهيئة الخاصة بالأب، ولم يستدعها، فبالتالي المتغير money لم يتم إنشاؤه في الذاكرة من الأساس!
+
+# ✅ الصحيح:
+# class Child(Parent):
+#     def __init__(self):
+#         super().__init__()
+#         self.name = "Ali"
+```
+
+---
+
+## Interview Questions & Answers
+
+<details>
+<summary><strong>Q1: هل تدعم بايثون الوراثة المتعددة (Multiple Inheritance)؟</strong></summary>
+
+نعم! بايثون قوية جداً وتسمح للكلاس بالوراثة من أكثر من أب في نفس الوقت. `class Child(Father, Mother):`.
+وفي حالة وجود دالة بنفس الاسم في الكلاسيّن الأبويين (وهو ما يُعرف بمشكلة الـ Diamond Problem)، تقوم بايثون بحلها بذكاء باستخدام خوارزمية تسمى (MRO - Method Resolution Order) لتبحث في الكلاس الأول (اليسار) ثم الثاني (اليمين) لتقرر أي دالة ستُشغل.
+</details>
+
+<details>
+<summary><strong>Q2: ما الفرق بين `__str__` و `__repr__`؟</strong></summary>
+
+- `__str__`: الهدف منها قراءة الكائن بشكل "بشري" وجميل. وتُستدعى عند استخدام `print()`.
+- `__repr__`: الهدف منها عرض الكائن بشكل يفهمه "المطورون". وتُستدعى غالباً إذا كنت في الـ Console وطبعت اسم الكائن بدون `print()`. غالباً نبرمجها لترجع كود بايثون الصالح لإعادة إنشاء هذا الكائن (مثلاً `Point(12, 8)`).
+</details>
+
+---
+
+<ExerciseBox title="🏋️ Exercise - كلاس الحساب البنكي الأنيق">
+
+1. أنشئ كلاس `BankAccount` يأخذ `owner` و `balance`.
+2. استخدم `@property` لعمل Getter للـ balance، وعمل Setter يمنع تعيين رصيد أقل من صفر.
+3. استخدم الـ Dunder method `__str__` لترجع رسالة أنيقة مثلاً: `"Ali's Account has $500"`.
+4. أنشئ كائناً وجرب تعديل الرصيد وطباعته بـ `print`.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي</strong></summary>
+
+```python
+class BankAccount:
+    def __init__(self, owner, balance):
+        self.owner = owner
+        self._balance = balance
+
+    @property
+    def balance(self):
+        return self._balance
+
+    @balance.setter
+    def balance(self, amount):
+        if amount >= 0:
+            self._balance = amount
+        else:
+            print("Error: Balance cannot be negative.")
+
+    def __str__(self):
+        return f"{self.owner}'s Account has ${self._balance}"
+
+# التجربة
+acc = BankAccount("Ali", 500)
+print(acc) # Ali's Account has $500
+
+acc.balance = 1000 # Setter يعمل كמתغير عادي
+print(acc) # Ali's Account has $1000
+
+acc.balance = -200 # Error: Balance cannot be negative.
+```
+
+</details>
+
+---
+
+<SummaryBox title="📌 Lesson Summary">
+
+- **الوراثة (Inheritance)**: `class Child(Parent):` تمنح الابن خصائص الأب لمنع تكرار الكود.
+- استخدم **`super()`** للوصول لدوال الأب بداخل كلاس الابن (خصوصاً `__init__`).
+- **Dunder Methods (Magic Methods)**: تغير طريقة تفاعل بايثون مع الكائنات المخصصة. 
+- **`__str__`**: لتحديد المظهر الجمالي للكائن عند الطباعة `print`.
+- **`__add__`**: لتجاوز المعامل الرياضي `+` (Operator Overloading).
+- استخدم **`@property`** لعمل Getters و Setters احترافية تُستخدم وكأنها متغيرات عادية.
+
+</SummaryBox>

@@ -39,7 +39,29 @@ void checkScore(int score) {
 }
 ```
 
-> 💡 **نصيحة الكود النظيف (Clean Code):** تجنب الشروط المتداخلة المعقدة (Nested if-else) لأنها تصعب القراءة وتزيد من الأخطاء. استخدم بدلاً منها **شروط الحماية المبكرة (Guard Clauses)** لتسهيل القراءة ا�## 3. حلقات التكرار (Loops)
+### الشروط المتداخلة (Nested If-Else)
+في بعض الأحيان تحتاج للتحقق من شرط إضافي فقط في حال تحقق الشرط الأول. هذا يسمى بالشرط المتداخل (Nested If):
+
+```dart
+bool isLoggedIn = true;
+bool isAdmin = false;
+
+if (isLoggedIn) {
+  if (isAdmin) {
+    print('Welcome to the Admin Dashboard');
+  } else {
+    print('Welcome to your Profile');
+  }
+} else {
+  print('Please login first');
+}
+```
+
+> 💡 **نصيحة الكود النظيف (Clean Code):** تجنب الشروط المتداخلة المعقدة والعميقة (Deeply Nested if-else) لأنها تصعب القراءة وتسمى بـ (Arrow Code). استخدم بدلاً منها **شروط الحماية المبكرة (Guard Clauses)** أو دمج الشروط باستخدام المعاملات المنطقية `&&` لتسهيل القراءة.
+
+---
+
+## 3. حلقات التكرار (Loops)
 
 تُستخدم حلقات التكرار لتنفيذ جزء معين من الكود عدة مرات دون الحاجة لتكرار كتابته:
 
@@ -72,6 +94,22 @@ while (count > 0) {
 }
 // المخرجات: 3, 2, 1
 ```
+
+### الحلقات المتداخلة (Nested Loops)
+وهي عبارة عن حلقة تكرار داخل حلقة تكرار أخرى. تُستخدم بكثرة عند التعامل مع البيانات ثنائية الأبعاد (مثل المصفوفات 2D Arrays، شبكات الإحداثيات، أو الجداول).
+
+في الحلقات المتداخلة، مع كل دورة **واحدة** من الحلقة الخارجية، يتم تنفيذ الحلقة الداخلية **بالكامل**.
+
+```dart
+// مثال: طباعة جدول ضرب مصغر
+for (int i = 1; i <= 3; i++) { // الحلقة الخارجية (Outer Loop)
+  print('--- Table $i ---');
+  for (int j = 1; j <= 3; j++) { // الحلقة الداخلية (Inner Loop)
+    print('$i x $j = ${i * j}');
+  }
+}
+```
+*ملاحظة الأداء:* الحلقات المتداخلة تضاعف وقت المعالجة (O(n²))، لذا تجنبها إذا كان هناك بديل أسرع للمصفوفات الضخمة.
 
 ---
 
@@ -281,72 +319,4 @@ void main() {
 
 </SummaryBox>
 
----
 
-##  Common Mistakes
-
-```dart
-// ❌ 1 - Nested Ternary Operators (Hard to read)
-String result = score > 90 ? 'A' : score > 80 ? 'B' : 'C';
-
-// ✅ Better: Use a simple if-else or switch for clarity
-String result;
-if (score > 90) result = 'A';
-else if (score > 80) result = 'B';
-else result = 'C';
-
-
-// ❌ 2 - Forgetting cases in old switch
-switch (status) {
-  case OrderStatus.pending: // What if it's shipped? No warning!
-    print('Pending');
-}
-
-// ✅ Better: Use Switch Expressions (Compiler warns if not exhaustive)
-var msg = switch (status) {
-  OrderStatus.pending => 'Pending',
-  _ => 'Other', // Wildcard (_) covers everything else
-};
-
-
-// ❌ 3 - Modifying a list while iterating with for-in
-for (var item in items) {
-  if (item.isBad) items.remove(item); // 💥 ConcurrentModificationError
-}
-
-// ✅ Better: Use removeWhere
-items.removeWhere((item) => item.isBad);
-```
-
----
-
-<ExerciseBox title="🏋️ Exercise - Control Flow Practice">
-
-اكتب `main()` function تعمل الآتي:
-
-1. عرّف `enum UserRole { admin, editor, viewer, guest }`.
-2. عرّف متغير `UserRole currentUser = UserRole.editor;`.
-3. استخدم **Switch Expression** لإنشاء متغير نصي `permissions` بناءً على الـ role:
-   - admin: "Full Access"
-   - editor: "Edit Access"
-   - viewer: "Read Only"
-   - guest: "Limited Access"
-4. اطبع الـ `permissions`.
-5. اعمل `List<int> numbers = [10, 15, 20, 25, 30];`.
-6. استخدم `for-in` loop للمرور على الـ numbers، واستخدم `if` لطباعة الأرقام الزوجية (Even) فقط. (تلميح: استخدم `number % 2 == 0`).
-
-</ExerciseBox>
-
----
-
-<SummaryBox title="📌 Lesson Summary">
-
-- **If-Else / Ternary (`? :`)**: لاتخاذ القرارات.
-- **Loops (`for`, `for-in`, `while`)**: لتكرار العمليات.
-- **Enums**: لتعريف حالات محددة وآمنة.
-- **Switch Expressions**: الطريقة الحديثة والأنظف لاتخاذ قرارات ترجع قيم (Dart 3).
-- **Pattern Matching**: قوة جديدة في Dart لاختبار وتفكيك البيانات المعقدة بسهولة.
-
-> ⚠️ **Note:** الأمثلة هنا كلها بتشتغل بدون أي Classes. في دروس قادمة هنتعلم إزاي ندمج الشروط دي جوه الـ UI في Flutter.
-
-</SummaryBox>

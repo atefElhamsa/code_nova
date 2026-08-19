@@ -1,0 +1,205 @@
+---
+id: functions-basics
+title: "3.1 Functions Basics"
+sidebar_label: "3.1 Functions Basics"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 3.1 أساسيات الدوال (Functions Basics)
+
+كلما زاد حجم برنامجك، أصبح من المستحيل كتابته بالكامل داخل الدالة `main`. **الدالة (Function)** هي مجموعة من الأكواد مجمعة تحت اسم واحد، تؤدي مهمة محددة، ويمكنك استدعاؤها متى شئت. 
+الدوال تجعل الكود قابلاً لإعادة الاستخدام (Reusable) ومنظماً.
+
+---
+
+## 1. تركيب الدالة (Syntax)
+
+تتكون أي دالة في C++ من ثلاثة أجزاء رئيسية:
+1. **نوع الإرجاع (Return Type):** نوع البيانات الذي ستعطيك إياه الدالة (مثل `int`, `double` أو `void` إذا كانت لا تُرجع شيئاً).
+2. **الاسم (Name):** اسم يعبر عن وظيفتها.
+3. **المُعاملات (Parameters):** البيانات التي تأخذها الدالة كمدخلات (بين الأقواس).
+
+```cpp
+// 1. ReturnType  2. Name   3. Parameters
+int               addNumbers(int x, int y) {
+    // جسم الدالة
+    int sum = x + y;
+    return sum; // إرجاع النتيجة
+}
+```
+
+---
+
+## 2. تعريف واستدعاء الدالة
+
+يجب تعريف الدالة **قبل** استدعائها في دالة `main`، أو كتابة تصريحها (Declaration) في الأعلى وتعريفها بالأسفل.
+
+```cpp
+#include <iostream>
+using namespace std;
+
+// تعريف دالة لا تُرجع شيئاً وتطبع نصاً فقط (void)
+void greetUser(string name) {
+    cout << "Welcome, " << name << "!" << endl;
+}
+
+// دالة تأخذ رقمين وترجع حاصل ضربهما
+int multiply(int a, int b) {
+    return a * b;
+}
+
+int main() {
+    // استدعاء الدوال
+    greetUser("Ali"); 
+    
+    int result = multiply(5, 4);
+    cout << "5 x 4 = " << result << endl;
+
+    return 0;
+}
+```
+
+---
+
+## 3. الـ Scope (نطاق المتغيرات)
+
+أحد أهم المفاهيم في الدوال هو الـ Scope. المتغير المُعرّف داخل دالة معينة **لا يُرى** خارجها، ويسمى متغير محلي (Local Variable).
+
+```cpp
+void calculate() {
+    int x = 10; // متغير محلي، موجود فقط داخل calculate
+}
+
+int main() {
+    calculate();
+    // cout << x; // ❌ خطأ: main لا تعرف شيئاً عن المتغير x
+    return 0;
+}
+```
+*ملاحظة: يمكنك تعريف متغيرات عامة (Global Variables) خارج كل الدوال، ولكن يُنصح بتجنبها في الكود النظيف لأن تتبع الأخطاء فيها يكون صعباً.*
+
+---
+
+## 4. الفرق بين Arguments و Parameters
+
+- **Parameters (المُعاملات):** هي المتغيرات التي تُعرّفها في قوس الدالة عند كتابتها (مثل `int a, int b`).
+- **Arguments (الوسائط):** هي القيم الفعلية التي تُمررها للدالة عند استدعائها (مثل `multiply(5, 4)`؛ 5 و 4 هي Arguments).
+
+---
+
+## 5. الدوال المدمجة (Built-in Functions)
+
+لغة C++ تحتوي على العديد من الدوال الجاهزة في مكتباتها، مثل مكتبة `<cmath>` للرياضيات:
+
+```cpp
+#include <iostream>
+#include <cmath> // استدعاء مكتبة الرياضيات
+using namespace std;
+
+int main() {
+    cout << sqrt(25) << endl; // الجذر التربيعي: 5
+    cout << pow(2, 3) << endl; // الأس (2 أس 3): 8
+    cout << round(2.6) << endl; // التقريب: 3
+    return 0;
+}
+```
+
+---
+
+## ⚡ Performance Notes
+
+:::tip تكلفة استدعاء الدوال (Function Call Overhead) و `inline`
+في كل مرة تستدعي فيها دالة، يقوم المعالج بحفظ حالة البرنامج الحالية في الذاكرة (Stack) والانتقال لتنفيذ الدالة ثم العودة. هذا يستغرق وقتاً ضئيلاً جداً يسمى (Overhead).
+للدوال القصيرة جداً (سطر أو سطرين) التي تُستدعى ملايين المرات، توفر C++ الكلمة المفتاحية `inline`. عند وضعها قبل الدالة (مثل `inline int add(int a, int b)`)، تطلب من المترجم استبدال استدعاء الدالة بالكود الفعلي الخاص بها لتجنب هذه التكلفة، مما يسرع التنفيذ.
+:::
+
+---
+
+## ⚠️ الأخطاء الشائعة (Common Mistakes)
+
+```cpp
+// ❌ 1 - عدم إرجاع قيمة من دالة غير void
+int calculateSum(int a, int b) {
+    int sum = a + b;
+    // 💥 خطأ: نسينا كتابة return sum;
+    // المترجم قد يسمح بذلك لكن البرنامج سيعطي نتائج عشوائية (Garbage Value).
+}
+
+// ❌ 2 - كتابة أوامر بعد return
+int multiply(int a, int b) {
+    return a * b;
+    cout << "This will never be printed!"; // 💥 أي كود بعد return لا يتم تنفيذه أبداً (Unreachable Code)
+}
+```
+
+---
+
+## Interview Questions & Answers
+
+<details>
+<summary><strong>Q1: ماذا يحدث إذا لم نكتب `return 0;` في نهاية `int main()` في C++ الحديثة؟</strong></summary>
+
+في معايير C++ الحديثة، إذا وصلت دالة `main` إلى النهاية ولم تجد `return 0;`، فإن المترجم يضيفها نيابةً عنك بشكل ضمني (Implicitly). ولكن بالنسبة لأي دالة أخرى ترجع `int`، يجب عليك كتابة `return` يدوياً.
+</details>
+
+<details>
+<summary><strong>Q2: ما هو الفرق بين Arguments و Parameters بالتحديد؟</strong></summary>
+
+- **Parameters (المُعاملات):** هي المتغيرات الوهمية (Placeholders) التي نكتبها عند **تعريف** الدالة (مثال: `int x` في `void print(int x)`).
+- **Arguments (الوسائط):** هي القيم الفعلية (Actual values) التي نمررها للدالة عند **استدعائها** (مثال: الرقم `5` في `print(5)`).
+</details>
+
+---
+
+<ExerciseBox title="🏋️ Exercise - دالة لدرجة الحرارة">
+
+اكتب دالة تُسمى `celsiusToFahrenheit` تقبل المعاملات التالية:
+- درجة الحرارة بالسيليزي (نوعه `double`).
+
+تقوم الدالة بإرجاع الدرجة المقابلة بالفهرنهايت (`double`).
+*معادلة التحويل: `(C * 1.8) + 32 = F`*
+
+في دالة `main`، اطلب من المستخدم إدخال الدرجة بالسيليزي، واستدعِ دالتك لطباعة النتيجة.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي</strong></summary>
+
+```cpp
+#include <iostream>
+using namespace std;
+
+// دالة التحويل
+double celsiusToFahrenheit(double celsius) {
+    return (celsius * 1.8) + 32;
+}
+
+int main() {
+    double cTemp;
+    cout << "Enter temperature in Celsius: ";
+    cin >> cTemp;
+
+    // استدعاء الدالة
+    double fTemp = celsiusToFahrenheit(cTemp);
+    
+    cout << cTemp << " Celsius is " << fTemp << " Fahrenheit." << endl;
+
+    return 0;
+}
+```
+
+</details>
+
+---
+
+<SummaryBox title="📌 Lesson Summary">
+
+- استخدم **الدوال (Functions)** لتقسيم الكود الكبير إلى مهام صغيرة قابلة لإعادة الاستخدام.
+- الدالة التي لا تُرجع شيئاً يكون نوعها `void`.
+- يجب تعريف الدالة أو التصريح عنها قبل استخدامها في `main`.
+- المتغيرات التي يتم تعريفها داخل دالة، تنتهي وتنحذف من الذاكرة بمجرد انتهاء عمل الدالة (Local Scope).
+
+</SummaryBox>

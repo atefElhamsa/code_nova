@@ -1,0 +1,176 @@
+---
+id: template-literals-operators
+title: "6.2 Template Literals & Modern Operators"
+sidebar_label: "6.2 Modern Operators"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 6.2 أحدث وأفضل إضافات جافاسكريبت (Modern JS)
+
+جافاسكريبت لغة حية تتطور سنوياً. التحديثات الأخيرة لم تضف فقط ميزات ضخمة مثل הـ Classes والـ Promises، بل أضافت "سُكراً برمجياً" (Syntactic Sugar) وبعض المعاملات (Operators) الصغيرة التي تجعل كتابة الكود اليومي أسرع وأكثر أماناً. سنتعلم هنا أهم ثلاثة منها والتي لا يخلو منها أي كود حديث (خاصة في React).
+
+---
+
+##  الأهداف التعليمية
+
+1. استخدام Template Literals لدمج النصوص والمتغيرات بشكل أنظف.
+2. فهم المعامل الآمن (Optional Chaining `?.`) لحماية الكود من أخطاء الـ `null`.
+3. استخدام المعامل الافتراضي (Nullish Coalescing `??`) لتعيين قيم بطريقة دقيقة.
+
+---
+
+## 1. دمج النصوص (Template Literals)
+
+قديماً، لدمج نصوص (Strings) مع متغيرات (Variables)، كنا نضطر لاستخدام علامة زائد `+`، وهو ما كان يجعل الكود الطويل مزعجاً ومليئاً بالأخطاء المطبعية بسبب المسافات وعلامات الاقتباس المتداخلة.
+
+في التحديثات الحديثة، تم تقديم `Template Literals` باستخدام علامة النبرة الأفقية **`\`` (Backtick)** وعلامة **`${}`** لدمج المتغيرات.
+
+```javascript
+const name = "Ahmed";
+const age = 30;
+
+// الطريقة القديمة (مزعجة)
+console.log("My name is " + name + " and I am " + age + " years old.");
+
+// باستخدام Template Literals (حديثة وأنيقة)
+console.log(`My name is ${name} and I am ${age} years old.`);
+```
+
+> 💡 **مقارنة بـ Dart/Flutter:**
+> هذه الميزة متطابقة تماماً مع طريقة الـ String Interpolation في لغة Dart! (الفرق الوحيد هو أن Dart تستخدم الاقتباسات العادية مع علامة `$`).
+
+---
+
+## 2. المعامل الآمن (Optional Chaining `?.`)
+
+في كثير من الأحيان تحاول قراءة قيمة متداخلة وعميقة من كائن (Object) قادم من الإنترنت (API). ولكن ماذا لو كان الأب غير موجود (`null` أو `undefined`)؟ محاولة الوصول لخاصية داخله ستؤدي إلى توقف تطبيقك بالكامل (Crash).
+
+```javascript
+const user = {
+  name: "Ali"
+  // لا يوجد هنا كائن address 
+};
+
+// ❌ الطريقة القديمة 
+// console.log(user.address.street); 
+// 💥 TypeError: Cannot read properties of undefined (reading 'street')
+
+// ✅ باستخدام Optional Chaining (?.)
+console.log(user.address?.street); 
+// سيطبع undefined بكل أمان ولا ينهار التطبيق، لأن الجافاسكريبت تتوقف فور رؤية أن address غير موجود
+```
+
+> 💡 **مقارنة بـ Dart:**
+> هذا يطابق تماماً المعامل الآمن `?.` (Null-aware operator) في Dart للحماية من استثناءات Null.
+
+---
+
+## 3. المعامل الافتراضي (Nullish Coalescing `??`)
+
+يُستخدم لإعطاء **"قيمة افتراضية"** (Fallback Value) إذا كان المتغير الفعلي يحتوي صراحةً على `null` أو `undefined`.
+
+```javascript
+let savedScore = null;
+
+// اقرأ المتغير savedScore، وإذا كان معدوماً تماماً (??) استخدم الرقم 0
+let finalScore = savedScore ?? 0;
+
+console.log(finalScore); // 0
+```
+
+---
+
+## ⚡ Performance Notes
+
+:::tip ما الفرق بين `??` و `||`؟ (سؤال هام جداً)
+قد يبدوان متشابهين، لكن الفارق جوهري ويمكن أن يدمر منطق تطبيقك:
+- المعامل الكلاسيكي `||` (OR) يعتبر أي قيمة "كاذبة" (Falsy) وكأنها غير موجودة. (والقيم الكاذبة تشمل: الصفر `0`، والنص الفارغ `""`، والـ `false`).
+- أما `??` فهو دقيق جداً: لا يعطي القيمة الافتراضية إلا إذا كان المتغير **معدوماً تماماً** (`null` أو `undefined`). 
+
+```javascript
+let score = 0; // المستخدم لعب وحصل على صفر
+
+console.log(score || 10); // سيطبع 10! المتصفح تجاهل الصفر واعتبره قيمة فارغة! كارثة!
+console.log(score ?? 10); // سيطبع 0. المتصفح احترم الصفر لأنه رقم وليس null. ممتاز!
+```
+لذلك في الكود الحديث، عندما تتعامل مع أرقام أو نصوص قد تكون فارغة عن قصد، استخدم دائماً `??`.
+:::
+
+---
+
+## ⚠️ الأخطاء الشائعة (Common Mistakes)
+
+```javascript
+// ❌ 1 - استخدام الاقتباس العادي مع المتغيرات
+const name = "Sara";
+console.log('Hello ${name}'); // سيطبع النص حرفياً: Hello ${name}
+
+// ✅ الحل: استخدم الـ Backticks ` ` (الزر الموجود أسفل Esc في الكيبورد).
+console.log(`Hello ${name}`); // Hello Sara
+
+// ❌ 2 - استخدام Optional Chaining عند تعيين قيمة (Assignment)
+const obj = {};
+obj?.name = "Ali"; // 💥 SyntaxError: Invalid left-hand side in assignment
+// ✅ الـ ?. يُستخدم للقراءة فقط وليس للكتابة!
+```
+
+---
+
+## Interview Questions & Answers
+
+<details>
+<summary><strong>Q1: هل الـ Template Literals تدعم تعدد الأسطر (Multi-line)؟</strong></summary>
+
+نعم! وهذا أحد أقوى مميزاتها. قديماً لكتابة نص متعدد الأسطر كنا نستخدم `\n`. الآن باستخدام الـ Backticks، يمكنك النزول للسطر التالي كما تشاء وسيحافظ المتصفح على شكل التنسيق. مفيدة جداً عند كتابة قوالب HTML بداخل جافاسكريبت.
+```javascript
+const html = `
+  <div>
+    <h1>Hello</h1>
+  </div>
+`;
+```
+</details>
+
+---
+
+<ExerciseBox title="🏋️ تمرين عملي (Exercise)">
+
+1. قم بإنشاء كائن `profile` يحتوي على `username: "CodeNova"` وقيمة `theme` فارغة قيمتها صراحة `null`.
+2. قم بإنشاء متغير `finalTheme` يستخدم المعامل `??` لتعيين اللون الافتراضي `"dark"` إذا لم يكن هناك `theme` في الـ `profile`.
+3. استخدم الـ Optional Chaining لطباعة اسم الشارع `profile.settings?.address?.street`.
+4. اطبع رسالة ترحيبية تخبر المستخدم باسمه واللون الذي تم اختياره باستخدام الـ Template Literals.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل (Solution)</strong></summary>
+
+```javascript
+const profile = {
+  username: "CodeNova",
+  theme: null
+};
+
+// 1. القيمة الافتراضية الدقيقة
+const finalTheme = profile.theme ?? "dark";
+
+// 2. البحث الآمن (سيطبع undefined بدون أخطاء)
+console.log(profile.settings?.address?.street);
+
+// 3. دمج النصوص
+console.log(`Welcome ${profile.username}! Your theme is set to ${finalTheme}.`);
+```
+
+</details>
+
+---
+
+<SummaryBox title="📌 ملخص الدرس (Summary)">
+
+- الـ `Template Literals (\`...\`)` تجعل قراءة وكتابة النصوص المدمجة وذات الأسطر المتعددة سهلة جداً.
+- الـ `Optional Chaining (?.)` يحميك من توقف البرنامج عند محاولة قراءة خصائص من كائن قد يكون غير موجود (`null`).
+- الـ `Nullish Coalescing (??)` هو الخيار الآمن لإعطاء قيم افتراضية دون تجاهل الأصفار أو النصوص الفارغة كما يفعل معامل `||`.
+
+</SummaryBox>

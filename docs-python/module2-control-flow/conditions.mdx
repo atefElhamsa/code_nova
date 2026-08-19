@@ -1,0 +1,222 @@
+---
+id: conditions
+title: "2.1 Conditional Statements"
+sidebar_label: "2.1 Conditional Statements"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 2.1 الجمل الشرطية (Conditions)
+
+الجمل الشرطية تمكنك من جعل كودك يتخذ قرارات. الفكرة بسيطة: "إذا حدث كذا، افعل كذا، وإلا فافعل شيئاً آخر".
+في بايثون، نستخدم `if`, `elif`, و `else`.
+
+---
+
+## 1. جملة `if` والمسافات البادئة (Indentation)
+
+بايثون لا تستخدم الأقواس المعقوفة `{}` لتحديد بداية الكود ونهايته كما في C++ أو جافا. بدلاً من ذلك، تعتمد **بشكل كلي على المسافات البادئة (Indentation)** (غالباً 4 مسافات أو زر Tab واحد).
+
+```python
+age = 20
+
+if age >= 18:
+    # هذا السطر داخل الـ if بسبب الـ Tab
+    print("You are an adult.")
+    print("You can vote.")
+
+# هذا السطر خارج الـ if لأنه في بداية السطر
+print("Program ended.")
+```
+> ⚠️ **IndentationError:** إذا نسيت المسافة، أو جعلتها غير متساوية، سيعطيك المفسر خطأ ويرفض تشغيل الكود!
+
+---
+
+## 2. استخدام `else` و `elif`
+
+- **`else`:** تعني "وإلا"، وتُنفذ إذا كانت جميع الشروط السابقة خاطئة.
+- **`elif`:** اختصار لـ "else if"، وتُستخدم لإضافة شروط متعددة.
+
+```python
+score = 85
+
+if score >= 90:
+    print("Grade: A")
+elif score >= 80:
+    print("Grade: B") # هذا هو السطر الذي سيتم تنفيذه
+elif score >= 70:
+    print("Grade: C")
+else:
+    print("Grade: F")
+```
+
+### الشروط المتداخلة (Nested If-Else)
+
+يُقصد بها كتابة `if` داخل `if`. تعتمد بايثون بالكامل على **المسافات (Indentation)** لتحديد أي جملة `if` تتبع الأخرى.
+
+```python
+is_student = True
+has_id = False
+
+if is_student:
+    print("Student discount applies.")
+    # مسافة بادئة جديدة (Tab جديد) تعني أن هذا الكود داخل الـ if الأولى
+    if has_id:
+        print("Discount is 50%")
+    else:
+        print("Please show your ID to get the full discount.")
+else:
+    print("Regular price applies.")
+```
+> 💡 **نصيحة الكود النظيف:** كثرة الـ Indentation تجعل الكود غير مقروء. يمكنك دمج الشروط بـ `and` إذا لم تكن بحاجة لرسائل منفصلة (مثل: `if is_student and has_id:`).
+
+---
+
+## 3. العمليات المنطقية (`and`, `or`, `not`)
+
+في اللغات الأخرى تكتب `&&` أو `||`. في بايثون، نكتبها باللغة الإنجليزية الصريحة، مما يجعل الكود يقرأ كقصة!
+
+- **`and`:** يجب أن يكون كلا الشرطين صحيحين.
+- **`or`:** يكفي أن يكون أحدهما صحيحاً.
+- **`not`:** يعكس النتيجة المنطقية.
+
+```python
+has_ticket = True
+is_vip = False
+age = 25
+
+# مثال على and و or
+if has_ticket and age >= 18:
+    print("Welcome to the movie!")
+
+if is_vip or has_ticket:
+    print("You can enter the building.")
+
+# مثال على not
+if not is_vip:
+    print("Please wait in the regular line.")
+```
+
+---
+
+## 4. الـ Ternary Operator (الشرط المختصر)
+
+إذا كان لديك شرط بسيط نتيجته إما هذا أو ذاك، يمكنك كتابته في سطر واحد في بايثون بطريقة أنيقة جداً:
+
+**الصيغة:** `value_if_true if condition else value_if_false`
+
+```python
+weather = "rain"
+
+# بدلاً من 4 أسطر، نكتب سطر واحد
+action = "Take umbrella" if weather == "rain" else "Wear sunglasses"
+
+print(action) # Take umbrella
+```
+
+---
+
+## ⚡ Performance Notes
+
+:::tip التقييم المختصر (Short-Circuit Evaluation)
+بايثون ذكية جداً في التعامل مع `and` و `or`. 
+- في `if A and B`: إذا كانت `A` خاطئة (False)، فلن تقوم بايثون بتنفيذ أو قراءة `B` أبداً، لأن النتيجة ستكون False بكل الأحوال.
+- في `if A or B`: إذا كانت `A` صحيحة (True)، فلن تقرأ `B`، لأن النتيجة محسومة (True).
+**نصيحة الأداء:** ضع دائماً الشروط التي تأخذ وقتاً طويلاً للحساب (مثل البحث في قاعدة بيانات) في **الطرف الثاني** من الـ `and`، وضع الشروط السريعة في البداية!
+:::
+
+---
+
+## ⚠️ الأخطاء الشائعة (Common Mistakes)
+
+```python
+# ❌ 1 - مقارنة القيمة بـ True أو False بشكل صريح
+is_admin = True
+# if is_admin == True: # 💥 يعمل ولكنه أسلوب سيئ جداً ويعتبر خطأ للمبتدئين
+# ✅ الصحيح:
+if is_admin: 
+    print("Welcome Admin")
+
+# ❌ 2 - استخدام = بدلاً من == في المقارنة
+score = 100
+# if score = 100: # 💥 SyntaxError: لا يمكنك استخدام = لتعيين قيمة داخل جملة الشرط!
+# ✅ الصحيح:
+if score == 100:
+    print("Perfect!")
+```
+
+---
+
+## Interview Questions & Answers
+
+<details>
+<summary><strong>Q1: هل يوجد في بايثون `switch` statement؟</strong></summary>
+
+حتى وقت قريب (قبل إصدار 3.10)، **لم يكن هناك** جملة `switch` في بايثون، وكنا نعتمد على سلسلة من الـ `elif`. 
+ولكن، بداية من **Python 3.10**، تم تقديم الـ **`match-case`** وهي أقوى بكثير من الـ `switch` التقليدية في اللغات الأخرى (تسمى Pattern Matching).
+
+```python
+status = 404
+match status:
+    case 200:
+        print("OK")
+    case 404:
+        print("Not Found")
+    case _: # تعمل مثل الـ default
+        print("Unknown Error")
+```
+</details>
+
+<details>
+<summary><strong>Q2: ماذا يحدث إذا كان عندي شرط `if` ولم أقرر بعد ماذا سأكتب داخله؟</strong></summary>
+
+إذا تركت الـ `if` فارغة ستحصل على خطأ (IndentationError). لحل هذه المشكلة وفرت بايثون الكلمة المفتاحية **`pass`**، والتي تعني "تجاوز هذا الجزء ولا تفعل شيئاً الآن".
+```python
+if score == 100:
+    pass # سأكتب الكود لاحقاً
+else:
+    print("Keep trying")
+```
+</details>
+
+---
+
+<ExerciseBox title="🏋️ Exercise - آلة بيع التذاكر">
+
+برنامج يطلب من المستخدم إدخال عمره (`int`).
+- إذا كان العمر أصغر من 12، اطبع `Ticket is $5`
+- إذا كان من 12 إلى 18، اطبع `Ticket is $10`
+- إذا كان أكبر من 18، اطبع `Ticket is $15`
+*(تلميح: استخدم `if` و `elif` و `else`)*
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي</strong></summary>
+
+```python
+age = int(input("Enter your age: "))
+
+if age < 12:
+    print("Ticket is $5")
+elif age <= 18:
+    print("Ticket is $10")
+else:
+    print("Ticket is $15")
+```
+*لاحظ: لا نحتاج لكتابة `elif age >= 12 and age <= 18`، لأنه إذا لم يتحقق الشرط الأول (أصغر من 12)، فمن المؤكد أن العمر 12 فما فوق، لذلك نكتب `age <= 18` فقط ليكون الكود أنظف.*
+
+</details>
+
+---
+
+<SummaryBox title="📌 Lesson Summary">
+
+- بايثون تعتمد على **المسافات (Indentation)** لتحديد البلوكات بدلاً من الأقواس المعقوفة.
+- استخدم `if`, `elif`, `else` للشروط.
+- العمليات المنطقية تُكتب بالكلمات: `and`, `or`, `not`.
+- إذا أردت ترك البلوك فارغاً مؤقتاً، استخدم كلمة `pass`.
+- بدءاً من إصدار 3.10، يمكنك استخدام `match` / `case` بدلاً من الـ `switch`.
+
+</SummaryBox>

@@ -1,0 +1,226 @@
+---
+id: classes-and-objects
+title: "5.1 Classes & Objects"
+sidebar_label: "5.1 Classes & Objects"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 5.1 الكلاسات والكائنات (Classes & Objects) في بايثون
+
+البرمجة الكائنية (Object-Oriented Programming - OOP) هي أسلوب لتنظيم الكود بربط "البيانات" (Attributes) مع "السلوكيات" (Methods) في قالب واحد يُسمى **Class**.
+بايثون تعتبر لغة كائنية بامتياز؛ في الحقيقة، كل شيء في بايثون هو كائن (حتى الأرقام والنصوص!).
+
+---
+
+## 1. إنشاء أول كلاس (Class)
+
+نستخدم الكلمة المفتاحية `class` لإنشاء قالب (Blueprint). داخل هذا القالب يمكننا كتابة دوال (وتُسمى هنا Methods).
+
+```python
+# إنشاء الكلاس
+class Dog:
+    # دالة بداخل الكلاس
+    # كلمة self تعود على الكائن الذي يتم إنشاؤه، وهي إلزامية كأول مُعامل
+    def bark(self):
+        print("Woof woof!")
+
+# إنشاء كائن (Object) من الكلاس
+my_dog = Dog()
+my_dog.bark() # استدعاء الدالة
+```
+
+---
+
+## 2. دالة التهيئة `__init__` (الـ Constructor)
+
+في لغات مثل C++ نكتب الـ Constructor بنفس اسم الكلاس، ولكن في بايثون، دالة التهيئة لها اسم ثابت ومميز جداً: `__init__` (اختصار Initialization).
+هذه الدالة تُنفذ تلقائياً بمجرد أن تصنع كائناً جديداً. وتُستخدم لإعطاء قيم ابتدائية (Attributes) للكائن.
+
+```python
+class Car:
+    # دالة التهيئة تُستدعى تلقائياً
+    def __init__(self, brand, color):
+        # self.brand تعني "اربط هذه القيمة بالكائن نفسه"
+        self.brand = brand 
+        self.color = color
+
+    def start_engine(self):
+        print(f"The {self.color} {self.brand} is starting. Vroom!")
+
+# إنشاء الكائنات وتمرير القيم للـ __init__
+car1 = Car("Toyota", "Red")
+car2 = Car("BMW", "Black")
+
+# قراءة المتغيرات الخاصة بالكائن
+print(car1.brand) # Toyota
+
+# استدعاء الدوال
+car2.start_engine() # The Black BMW is starting. Vroom!
+```
+
+---
+
+## 3. الكبسلة (Encapsulation) و Name Mangling
+
+في لغات البرمجة الكائنية الأخرى (مثل Java و C++)، لدينا كلمات مفتاحية مثل `public` و `private` لمنع المبرمجين الآخرين من تعديل المتغيرات الحساسة مباشرة.
+**في بايثون، لا توجد هذه الكلمات المفتاحية!** 
+
+بدلاً من ذلك، نستخدم العُرف (Convention): 
+- إذا بدأ المتغير بشرطة سفلية واحدة `_name`، فهذا يعني للمبرمجين: "رجاءً لا تقم بتعديل هذا المتغير من الخارج، هو للاستخدام الداخلي فقط". (لكنه لا يمنعهم برمجياً).
+- إذا بدأ المتغير بشرطتين `__name`، فهنا تقوم بايثون بشيء يسمى **Name Mangling** لجعله مخفياً تقريباً ولا يمكن الوصول له بالاسم العادي.
+
+```python
+class BankAccount:
+    def __init__(self, owner, balance):
+        self.owner = owner
+        # شرطتين للإخفاء (Private)
+        self.__balance = balance 
+
+    def deposit(self, amount):
+        if amount > 0:
+            self.__balance += amount
+            print(f"Deposited {amount}.")
+
+    def show_balance(self):
+        print(f"Balance: {self.__balance}")
+
+account = BankAccount("Ali", 1000)
+
+account.deposit(500)
+account.show_balance()
+
+# account.__balance = 50000 ❌ خطأ (AttributeError)! لا يمكنك الوصول له بهذا الاسم من الخارج
+```
+
+---
+
+## 4. Class Methods و Static Methods
+
+في بعض الأحيان نريد دالة تعمل على مستوى الكلاس نفسه وليس على الكائنات، أو دالة لا تحتاج لـ `self` أصلاً.
+نستخدم الـ **Decorators** (وهي كلمات تبدأ بـ `@` تُكتب فوق الدالة لتغيير سلوكها).
+
+- **`@classmethod`:** تأخذ المُعامل `cls` (وهو الكلاس نفسه) بدلاً من `self`. مفيدة للتحكم في متغيرات الكلاس العامة.
+- **`@staticmethod`:** لا تأخذ `self` ولا `cls`. هي مجرد دالة عادية تم وضعها داخل الكلاس للتنظيم فقط.
+
+```python
+class MathUtils:
+    
+    @staticmethod
+    def add(a, b):
+        return a + b
+
+# لا نحتاج لإنشاء كائن لاستخدام الـ Static Method
+result = MathUtils.add(5, 10)
+print(result) # 15
+```
+
+---
+
+## ⚡ Performance Notes
+
+:::tip توفير الذاكرة باستخدام متغيرات الكلاس (Class Attributes) و `__slots__`
+إذا كان لديك متغير ثابت لجميع الكائنات (مثلاً `pi = 3.14` في كلاس الدائرة)، لا تضعه داخل `__init__` باستخدام `self` لأنه سيحجز مساحة في الذاكرة لكل كائن جديد. ضعه مباشرة تحت تعريف الكلاس كـ (Class Attribute) لمرة واحدة فقط.
+وللأداء الفائق والمشاريع الضخمة التي تصنع ملايين الكائنات، تستخدم بايثون ميزة متقدمة تسمى `__slots__` لإلغاء القاموس الداخلي لكل كائن وتقليل استهلاك الذاكرة بنسبة 40%!
+:::
+
+---
+
+## ⚠️ الأخطاء الشائعة (Common Mistakes)
+
+```python
+class Dog:
+    species = "Canine" # Class Attribute
+
+    def __init__(self, name):
+        self.name = name
+
+dog1 = Dog("Rex")
+dog2 = Dog("Max")
+
+# ❌ 1 - محاولة تعديل Class Attribute عن طريق الكائن
+dog1.species = "Wolf"
+# 💥 خطأ منطقي خفي! هذا السطر لم يعدل المتغير الأصلي، بل قام بإنشاء متغير محلي جديد خاص بـ dog1 فقط.
+print(dog2.species) # سيبقى Canine كما هو!
+
+# ✅ الصحيح لتعديله للجميع:
+Dog.species = "Wolf"
+```
+
+---
+
+## Interview Questions & Answers
+
+<details>
+<summary><strong>Q1: ما هي وظيفة الكلمة `self` ولماذا نكتبها في كل دالة؟</strong></summary>
+
+الكلمة `self` هي المؤشر الذي يربط الدالة بالكائن الفعلي الذي قام باستدعائها. 
+عندما تكتب `car1.start_engine()`، بايثون تقوم خلف الكواليس بإرسال `car1` كأول مُعامل للدالة، لذلك الدالة تحتاج لمتغير لاستقباله، ونحن نسميه `self` (وهو مجرد عُرف، يمكنك تسميته `this` أو أي اسم آخر، لكن يُنصح بشدة باستخدام `self`).
+بدون `self`، الدالة لن تعرف هل أنت تقصد ماركة (Brand) الخاصة بـ `car1` أم `car2`!
+</details>
+
+<details>
+<summary><strong>Q2: كيف يمكننا الوصول للمتغير المخفي بـ (Name Mangling) من الخارج إذا أردنا ذلك بشدة؟</strong></summary>
+
+الـ Name Mangling في بايثون ليس نظام حماية قوي كـ `private` في C++. هو مجرد نظام يغير اسم المتغير خلف الكواليس لتجنب التعارض. 
+بايثون تقوم بتغيير اسم المتغير `__balance` في كلاس `BankAccount` إلى `_BankAccount__balance`. يمكنك الوصول إليه من الخارج بهذه الطريقة المعقدة إن أردت! لذلك يقال: "في بايثون، كلنا بالغون هنا"، نحن نحترم الـ Conventions ولا نتحايل عليها.
+</details>
+
+---
+
+<ExerciseBox title="🏋️ Exercise - نظام إدارة موظفين بسيط">
+
+1. أنشئ كلاس باسم `Employee`.
+2. في دالة الـ `__init__`، اجعل الكلاس يقبل `name` و `salary`. 
+3. اجعل الراتب مخفياً (Private) باستخدام الـ `__`.
+4. أضف دالة `give_raise(amount)` لزيادة الراتب.
+5. أضف دالة `display()` لطباعة اسم الموظف وراتبه الحالي.
+6. اختبر الكود بإنشاء موظف، زيادة راتبه، ثم عرض بياناته.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي</strong></summary>
+
+```python
+class Employee:
+    def __init__(self, name, salary):
+        self.name = name
+        self.__salary = salary # Private attribute
+
+    def give_raise(self, amount):
+        if amount > 0:
+            self.__salary += amount
+            print(f"{self.name} got a raise of {amount}!")
+        
+    def display(self):
+        print(f"Employee: {self.name}, Salary: {self.__salary}")
+
+# 1. إنشاء الكائن
+emp = Employee("Ahmed", 5000)
+
+# 2. عرض البيانات
+emp.display()
+
+# 3. زيادة الراتب
+emp.give_raise(1000)
+emp.display()
+
+# محاولة الوصول للراتب مباشرة ستفشل
+# print(emp.__salary) # AttributeError
+```
+
+</details>
+
+---
+
+<SummaryBox title="📌 Lesson Summary">
+
+- **Class**: قالب يحتوي على متغيرات (Attributes) ودوال (Methods).
+- دالة **`__init__(self, ...)`**: هي الـ Constructor وتُستخدم لإعطاء قيم ابتدائية.
+- الكلمة **`self`** إلزامية كأول مُعامل في الدوال لتمثيل الكائن الحالي.
+- نستخدم الشرطتين **`__`** قبل اسم المتغير لمحاكات الـ Private ومنع تعديله من الخارج المباشر (Name Mangling).
+- استخدم **`@staticmethod`** للدوال التي لا تحتاج للتفاعل مع الكائن نفسه.
+
+</SummaryBox>

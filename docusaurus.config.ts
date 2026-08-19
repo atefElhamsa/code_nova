@@ -55,6 +55,24 @@ const config: Config = {
         sidebarPath: './sidebars-js.ts',
       },
     ],
+    [
+      '@docusaurus/plugin-content-docs',
+      {
+        id: 'cpp',
+        path: 'docs-cpp',
+        routeBasePath: 'docs-cpp',
+        sidebarPath: './sidebars-cpp.ts',
+      },
+    ],
+    [
+      '@docusaurus/plugin-content-docs',
+      {
+        id: 'python',
+        path: 'docs-python',
+        routeBasePath: 'docs-python',
+        sidebarPath: './sidebars-python.ts',
+      },
+    ],
   ],
 
   themeConfig: {
@@ -71,6 +89,8 @@ const config: Config = {
       items: [
         {to: '/flutter', label: 'Flutter Course', position: 'left'},
         {to: '/javascript', label: 'JavaScript Course', position: 'left'},
+        {to: '/cpp', label: 'C++ Course', position: 'left'},
+        {to: '/python', label: 'Python Course', position: 'left'},
         {to: '/settings', label: 'الإعدادات ⚙️', position: 'right'},
         {to: '/', label: 'Hub', position: 'right'},
       ],

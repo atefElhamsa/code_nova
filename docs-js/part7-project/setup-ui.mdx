@@ -1,0 +1,171 @@
+---
+id: setup-ui
+title: "7.1 Project Setup & UI"
+sidebar_label: "7.1 Setup & UI"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 7.1 إعداد المشروع وواجهة المستخدم (Project Setup & UI)
+
+حتى الآن، قمنا بكتابة أمثلة متفرقة. حان الوقت لربط كل شيء معاً! في هذا الموديول الختامي، سنقوم ببناء تطبيق حقيقي (To-Do List) باستخدام جافاسكريبت نقية (Vanilla JS).
+
+---
+
+##  الأهداف التعليمية
+
+1. تطبيق كل المفاهيم التي تعلمناها في مشروع عملي.
+2. إعداد بيئة المشروع من الصفر وبناء واجهة المستخدم (HTML & CSS).
+3. ربط ملف الجافاسكريبت بالـ HTML بشكل صحيح.
+4. تجهيز العناصر (DOM Elements) للتحكم بها لاحقاً.
+
+---
+
+## 1. فكرة المشروع
+
+سنقوم بإنشاء تطبيق قائمة مهام (To-Do List). التطبيق سيسمح للمستخدم بـ:
+1. إضافة مهمة جديدة.
+2. تحديد المهمة كمكتملة (Toggle).
+3. حذف المهمة.
+4. حفظ المهام في المتصفح حتى لا تضيع عند التحديث (LocalStorage).
+
+> 💡 **لماذا Vanilla JS؟**
+> كمطور Flutter، أنت معتاد على بناء الواجهات والمنطق معاً باستخدام لغة واحدة وبناء ويدجتس. هنا سنتعلم كيف نفصل الواجهة (HTML) عن المنطق (JS) خطوة بخطوة، وهو الأساس المتين قبل الانتقال لأطر عمل الويب مثل React التي تعيد دمجهم!
+
+---
+
+## 2. إعداد هيكل الـ HTML (index.html)
+
+قم بإنشاء مجلد جديد للمشروع على جهازك، وضع بداخله ملف `index.html`. هذا الملف سيمثل الهيكل العظمي للتطبيق الخاص بنا.
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JS To-Do List</title>
+  <style>
+    /* CSS بسيط للتنسيق للحصول على شكل أنيق وسريع */
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; background: #f4f7f6; padding: 50px; }
+    .container { background: white; padding: 25px; border-radius: 12px; max-width: 400px; margin: auto; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+    input { padding: 12px; width: 65%; border: 1px solid #ccc; border-radius: 6px; margin-right: 5px; outline: none; }
+    button { padding: 12px 18px; border: none; border-radius: 6px; background: #007bff; color: white; cursor: pointer; font-weight: bold; }
+    button:hover { background: #0056b3; }
+    ul { list-style: none; padding: 0; margin-top: 20px; }
+    li { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; transition: 0.3s; }
+    li:hover { background: #f9f9f9; }
+    .task-text { cursor: pointer; flex-grow: 1; text-align: left; padding: 0 10px; }
+    .completed .task-text { text-decoration: line-through; color: #aaa; }
+    .delete-btn { background: #dc3545; padding: 6px 12px; font-size: 12px; }
+    .delete-btn:hover { background: #a71d2a; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>🎯 My Tasks</h2>
+    
+    <!-- حقل الإدخال وزر الإضافة -->
+    <div>
+      <input type="text" id="task-input" placeholder="What needs to be done?">
+      <button id="add-btn">Add</button>
+    </div>
+
+    <!-- قائمة المهام الفارغة (التي سنملؤها بالجافاسكريبت لاحقاً) -->
+    <ul id="task-list"></ul>
+  </div>
+
+  <!-- ربط ملف الجافاسكريبت في نهاية الـ Body -->
+  <script src="app.js"></script>
+</body>
+</html>
+```
+
+---
+
+## 3. ربط ملف الجافاسكريبت وتحضير العناصر
+
+في السطر الأخير من الـ HTML، قمنا بكتابة `<script src="app.js"></script>`. 
+لذا، قم بإنشاء ملف `app.js` في نفس المجلد.
+
+مهمتنا الأولى هي التأكد من عمل الملف، ثم الإمساك بالعناصر الثلاثة الأساسية التي سنتفاعل معها (حقل النص، الزر، والقائمة).
+
+```javascript
+// app.js
+
+console.log("App is running successfully! 🚀");
+
+// اختيار العناصر الأساسية من الـ DOM باستخدام ID
+const taskInput = document.getElementById('task-input');
+const addBtn = document.getElementById('add-btn');
+const taskList = document.getElementById('task-list');
+
+// اختبار سريع لمعرفة ما إذا تم التقاط العناصر بنجاح
+console.log("Input Element:", taskInput);
+console.log("Button Element:", addBtn);
+```
+
+---
+
+## ⚡ Performance Notes
+
+:::tip وضع سكريبت الـ JS في المكان الصحيح
+دائماً ضع وسم `<script>` الخاص بجافاسكريبت قبل إغلاق وسم `</body>` مباشرة. لماذا؟ لأن المتصفح يقرأ الـ HTML من أعلى لأسفل. إذا وضعت السكريبت في الـ `<head>` وحاول الجافاسكريبت البحث عن زر بالـ ID الخاص به، فلن يجده لأن المتصفح لم يقم ببنائه بعد! (البديل الحديث هو وضع السكريبت في الـ head مع إضافة الكلمة السحرية `defer`).
+:::
+
+---
+
+## ⚠️ الأخطاء الشائعة (Common Mistakes)
+
+```javascript
+// ❌ 1 - الخطأ المطبعي في كتابة الـ ID
+const input = document.getElementById('task-inputs'); // 💥 null لأن الـ ID في الـ HTML هو task-input (بدون s)
+
+// ❌ 2 - نسيان كتابة امتداد الملف في الـ HTML
+// <script src="app"></script> // المتصفح لن يتعرف عليه بدون .js
+```
+
+---
+
+## Interview Questions & Answers
+
+<details>
+<summary><strong>Q1: لماذا نفصل الـ CSS والـ JS عن الـ HTML في ملفات خارجية؟ (Separation of Concerns)</strong></summary>
+
+هذا مبدأ هندسي أساسي يسمى (فصل الاهتمامات). 
+- الـ HTML يختص فقط بـ (الهيكل).
+- الـ CSS يختص فقط بـ (المظهر).
+- الـ JS يختص فقط بـ (السلوك).
+فصلهم في ملفات مستقلة يجعل الكود أنظف، يسهل قراءته وصيانته، ويسمح للمتصفح بتخزين (Cache) هذه الملفات بشكل مستقل لتسريع تحميل الموقع في الزيارات القادمة.
+</details>
+
+---
+
+<ExerciseBox title="🏋️ تمرين عملي (Exercise)">
+
+1. قم بإنشاء مجلد على سطح المكتب واسمه `TodoProject`.
+2. أنشئ بداخله الملفات `index.html` و `app.js`.
+3. انسخ أكواد الـ HTML والـ JS الموضحة أعلاه.
+4. افتح ملف `index.html` في متصفحك (بمجرد النقر المزدوج عليه).
+5. تأكد من ظهور التصميم الأنيق وتوفر حقل الإدخال.
+6. افتح الـ Developer Tools (اضغط F12) وانتقل لتبويب Console لتتأكد من طباعة جملة `App is running successfully! 🚀`.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 النتيجة المتوقعة (Solution)</strong></summary>
+
+يجب أن ترى واجهة بيضاء نظيفة بداخلها حقل نصي وزر أزرق. وفي الـ Console بالمتصفح، لا توجد أي أخطاء باللون الأحمر. أنت الآن جاهز لبرمجة التفاعل في الدرس القادم!
+</details>
+
+---
+
+<SummaryBox title="📌 ملخص الدرس (Summary)">
+
+- قمنا بإعداد الهيكل الخارجي `HTML` والتصميم المبدئي `CSS` لمشروع قائمة المهام.
+- استخدمنا `getElementById` للامساك بالعناصر المحورية التي سنتفاعل معها (زر الإضافة، حقل النص، مكان القائمة).
+- تأكدنا من ربط ملف الـ JS في نهاية الـ HTML لضمان تحميل العناصر أولاً.
+
+</SummaryBox>

@@ -1,0 +1,181 @@
+---
+id: args-kwargs-lambda
+title: "4.2 *args, **kwargs & Lambda"
+sidebar_label: "4.2 *args, **kwargs & Lambda"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 4.2 المفاهيم المتقدمة: *args, **kwargs والدوال المجهولة (Lambda)
+
+ماذا لو أردت كتابة دالة تجمع مجموعة أرقام، ولكنك لا تعرف هل سيمرر المستخدم رقمين، أو 5، أو 100 رقم؟ 
+في هذا الدرس، سنتعلم كيف نجعل دوالنا فائقة المرونة، وكيف نكتب دوالاً مصغرة في سطر واحد.
+
+---
+
+## 1. استقبال عدد غير محدود من القيم (`*args`)
+
+إذا أضفت النجمة `*` قبل اسم المعامل (ويُسمى عادة `*args` اختصاراً لـ arguments)، فإن الدالة ستجمع كل القيم المُمررة إليها وتضعها في **Tuple** واحد.
+
+```python
+# الدالة تستقبل أي عدد من الأرقام
+def add_all(*args):
+    print(args) # سيطبع Tuple مثل: (5, 10, 15)
+    
+    total = 0
+    for num in args: # يمكننا المرور عليها بحلقة for
+        total += num
+    return total
+
+print(add_all(5, 10))         # 15
+print(add_all(1, 2, 3, 4, 5)) # 15
+```
+
+---
+
+## 2. استقبال بيانات مفصلة (Key-Value) باستخدام (`**kwargs`)
+
+إذا أضفت نجمتين `**` قبل اسم المعامل (ويُسمى `**kwargs` اختصاراً لـ Keyword Arguments)، فإن الدالة ستستقبل البيانات على شكل أسماء وقيم وتحولها إلى **قاموس (Dictionary)**. 
+
+مفيدة جداً عندما تبني نظاماً ولا تعرف كل التفاصيل التي قد يدخلها المستخدم.
+
+```python
+def print_user_profile(name, **kwargs):
+    print(f"Profile for {name}:")
+    # kwargs هي قاموس Dictionary
+    for key, value in kwargs.items():
+        print(f"{key.capitalize()}: {value}")
+
+# نرسل أي عدد من البيانات بأسماء محددة
+print_user_profile("Ali", age=25, city="Cairo", job="Developer")
+
+# النتيجة:
+# Profile for Ali:
+# Age: 25
+# City: Cairo
+# Job: Developer
+```
+
+> ✅ **قاعدة الترتيب:** إذا أردت استخدام الجميع في دالة واحدة، يجب أن يكون الترتيب هكذا:
+> `def func(a, b, *args, **kwargs):`
+
+---
+
+## 3. دوال اللامدا (Lambda Functions)
+
+دالة الـ Lambda هي **دالة مجهولة (بدون اسم)**، وتُكتب في **سطر واحد فقط**. 
+نستخدمها عندما نحتاج إلى دالة بسيطة جداً لاستخدامها مرة واحدة (مثلاً في ترتيب القوائم، أو مع دوال `map` و `filter`).
+
+**الصيغة:** `lambda arguments : expression`
+
+```python
+# دالة عادية
+def square_normal(x):
+    return x ** 2
+
+# دالة Lambda تقوم بنفس العمل
+square_lambda = lambda x: x ** 2
+
+print(square_normal(5))  # 25
+print(square_lambda(5))  # 25
+
+# لامدا تقبل أكثر من معامل
+add = lambda x, y: x + y
+print(add(3, 4)) # 7
+```
+
+### متى يتألق سحر اللامدا حقاً؟
+عندما نمررها كمعامل لدوال أخرى مثل `filter()` أو للترتيب.
+لنفترض أن لدينا قائمة أرقام، ونريد استخراج الأرقام الزوجية فقط:
+
+```python
+numbers = [1, 2, 3, 4, 5, 6, 7, 8]
+
+# دالة filter تأخذ دالة (ترجع True/False) وقائمة
+# بدلاً من تعريف دالة خارجية، نستخدم لامدا سريعة
+evens = list(filter(lambda x: x % 2 == 0, numbers))
+
+print(evens) # [2, 4, 6, 8]
+```
+
+---
+
+## ⚡ Performance Notes
+
+:::tip تكلفة الـ Packing والـ Unpacking
+استخدام `*args` و `**kwargs` يوفر مرونة خيالية، لكن له ثمن! في كل مرة تستدعي فيها الدالة، تقوم بايثون بإنشاء (Tuple) جديد في الذاكرة لـ `*args` و (Dictionary) جديد لـ `**kwargs` وتعبئتها بالبيانات.
+**نصيحة الأداء:** إذا كنت تعرف أن الدالة ستستقبل دائماً بين 1 إلى 3 متغيرات، قم بتعريفها صراحة `def func(a=None, b=None, c=None)` بدلاً من `*args`. احتفظ بـ `*args` و `**kwargs` فقط عندما يكون عدد المتغيرات مجهولاً حقاً أو كبيراً جداً.
+:::
+
+---
+
+## ⚠️ الأخطاء الشائعة (Common Mistakes)
+
+```python
+# ❌ 1 - الترتيب الخاطئ للمتغيرات (SyntaxError)
+# def my_func(a, *args, c=10, b): 
+# 💥 خطأ! بايثون تشترط ترتيباً صارماً جداً عند تعريف الدوال.
+
+# ✅ الصحيح بالترتيب الآتي (Standard Order):
+# 1. المتغيرات العادية (Positional arguments)
+# 2. *args
+# 3. المتغيرات ذات القيم الافتراضية (Default arguments)
+# 4. **kwargs
+def correct_func(name, *args, age=18, **kwargs):
+    pass
+```
+
+---
+
+## Interview Questions & Answers
+
+<details>
+<summary><strong>Q1: هل أسماء `*args` و `**kwargs` إجبارية؟</strong></summary>
+
+لا. يمكنك تسميتها أي شيء، مثلاً `*numbers` أو `**details`. السر كله في علامة النجمة `*` (للـ Tuple) والنجمتين `**` (للـ Dictionary). ولكن في سوق العمل، جرت العادة والعرف (Convention) على تسميتها `args` و `kwargs` لتسهيل قراءة الكود على المبرمجين الآخرين.
+</details>
+
+<details>
+<summary><strong>Q2: هل يمكن أن تحتوي اللامدا (Lambda) على جمل شرطية متعددة `if / elif / else` وحلقات تكرارية `for`؟</strong></summary>
+
+الـ Lambda في بايثون مصممة لتكون جملة بسيطة جداً وتقوم بإرجاع قيمة واحدة، لذلك **لا يمكنك** كتابة `for` أو `while` بداخلها. ويمكنك كتابة `if/else` فقط باستخدام الصيغة المختصرة (Ternary Operator) مثل: `lambda x: "Even" if x % 2 == 0 else "Odd"`. إذا احتجت كوداً أطول، فاستخدم `def` العادية.
+</details>
+
+---
+
+<ExerciseBox title="🏋️ Exercise - معالجة الطلبات">
+
+1. اكتب دالة باسم `make_pizza`.
+2. الدالة تأخذ معامل أساسي `size` (حجم البيتزا).
+3. وتأخذ `*toppings` لأي عدد من الإضافات التي يريدها العميل.
+4. تقوم الدالة بطباعة الحجم، ثم تستخدم حلقة `for` لطباعة جميع الإضافات.
+5. اختبر الدالة باستدعائها مرتين: مرة مع إضافة واحدة، ومرة مع 3 إضافات.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي</strong></summary>
+
+```python
+def make_pizza(size, *toppings):
+    print(f"\nMaking a {size}-inch pizza with the following toppings:")
+    for topping in toppings:
+        print(f"- {topping}")
+
+# الاستدعاء
+make_pizza(12, "Mushrooms")
+make_pizza(16, "Pepperoni", "Extra Cheese", "Olives")
+```
+
+</details>
+
+---
+
+<SummaryBox title="📌 Lesson Summary">
+
+- **`*args`**: تجمع القيم العشوائية غير المحددة وتضعها في **Tuple**.
+- **`**kwargs`**: تجمع القيم ذات الأسماء (key=value) وتضعها في **Dictionary**.
+- **`lambda`**: أداة لصنع دوال من سطر واحد بدون اسم، ممتازة لتمريرها بداخل دوال أخرى مثل `filter()` أو لترتيب البيانات.
+
+</SummaryBox>

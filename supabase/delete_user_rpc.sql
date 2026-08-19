@@ -21,6 +21,9 @@ BEGIN
     RAISE EXCEPTION 'Unauthorized';
   END IF;
 
+  -- Delete access requests (subscriptions) related to this user
+  DELETE FROM public.course_access_requests WHERE user_id = p_user_id;
+
   -- Delete from auth.users (this will cascade to public.user_profiles)
   DELETE FROM auth.users WHERE id = p_user_id;
 

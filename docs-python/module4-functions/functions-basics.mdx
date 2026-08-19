@@ -1,0 +1,194 @@
+---
+id: functions-basics
+title: "4.1 Functions Basics"
+sidebar_label: "4.1 Functions Basics"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 4.1 أساسيات الدوال (Functions Basics)
+
+إذا كنت تكتب نفس الكود مراراً وتكراراً، فأنت تنتهك مبدأ (DRY - Don't Repeat Yourself). لحل هذه المشكلة، نستخدم **الدوال (Functions)** لتجميع الأكواد المتكررة تحت اسم واحد وإعادة استخدامها بسهولة.
+
+---
+
+## 1. تعريف الدالة (`def`)
+
+في بايثون، تُعرّف الدوال باستخدام الكلمة المفتاحية `def`، تليها التسمية والأقواس، ثم نقطتين رأسيتين `:`. وكما تعلمنا في الـ `if`، يجب أن يكون جسم الدالة مُزاحاً بمسافات (Indented).
+
+```python
+# تعريف الدالة
+def greet():
+    print("Welcome to CodeNova!")
+    print("Learn Python the right way.")
+
+# استدعاء الدالة (لن يتم طباعة شيء ما لم تستدعها)
+greet()
+greet() # سيتم طباعة الرسالة مرتين
+```
+
+---
+
+## 2. المُعاملات (Parameters) والقيم الافتراضية
+
+يمكن للدالة أن تأخذ مدخلات للعمل عليها وتسمى (Parameters). 
+الميزة الرائعة في بايثون هي **القيم الافتراضية (Default Parameters)**؛ يمكنك تحديد قيمة للمتغير بحيث إذا نسي المستخدم إدخالها، تستخدم الدالة هذه القيمة لتفادي الأخطاء.
+
+```python
+# name ليس له قيمة افتراضية، age له قيمة افتراضية 18
+def register_user(name, age=18):
+    print(f"Registered {name}, Age: {age}")
+
+# الاستدعاء العادي
+register_user("Ahmed", 25) # Registered Ahmed, Age: 25
+
+# الاستدعاء بدون العمر
+register_user("Omar") # Registered Omar, Age: 18
+```
+> ⚠️ **تحذير:** المعاملات التي لها قيم افتراضية يجب أن تُوضع في **آخر القائمة**. لا يمكنك كتابة `def my_func(age=18, name):` هذا سيعطي خطأ.
+
+---
+
+## 3. إرجاع القيم (`return`)
+
+الدوال يمكن أن تطبع شيئاً للمستخدم، ويمكن أيضاً أن تقوم بحساب معين وتُرجع (Return) الناتج إليك لتخزنه في متغير وتستخدمه لاحقاً.
+
+```python
+def calculate_area(width, height):
+    area = width * height
+    return area # إرجاع القيمة وإنهاء الدالة فوراً
+
+# يجب أن نخزن الناتج في متغير
+rect_area = calculate_area(5, 10)
+print(f"Area is {rect_area}")
+
+# أو نطبعه مباشرة
+print(calculate_area(4, 3))
+```
+
+### إرجاع عدة قيم (Multiple Returns) السحرية!
+هذه ميزة شبه حصرية في بايثون. يمكنك إرجاع أكثر من قيمة في نفس الوقت (والتي تُرجع خلف الكواليس كـ Tuple).
+
+```python
+def get_user_info():
+    name = "Ali"
+    score = 95
+    is_active = True
+    return name, score, is_active
+
+# نقوم بتفريغ (Unpacking) القيم في متغيرات
+n, s, status = get_user_info()
+
+print(n) # Ali
+print(s) # 95
+```
+
+---
+
+## 4. الـ Scope (Local vs Global)
+
+نطاق المتغير أو الـ Scope يحدد المكان الذي يمكننا فيه استخدام المتغير:
+- **Local (المحلي):** المتغيرات المُعرّفة داخل دالة تموت بمجرد انتهاء الدالة.
+- **Global (العام):** المتغيرات المُعرّفة في بداية الملف، متاحة للجميع.
+
+```python
+player_name = "Mario" # متغير عام (Global)
+
+def print_name():
+    points = 100 # متغير محلي (Local)
+    print(player_name) # يمكن للدالة رؤية المتغير العام ✅
+
+print_name()
+# print(points) ❌ خطأ (NameError)! المتغير نقاط محلي ولا يُرى بالخارج.
+```
+
+---
+
+## ⚡ Performance Notes
+
+:::tip تكلفة استدعاء الدوال (Function Call Overhead)
+في بايثون، استدعاء دالة يكلف وقتاً أكبر بكثير مقارنة بلغات مثل C++. إذا كان لديك حلقة `for` تدور ملايين المرات، وتقوم بداخلها باستدعاء دالة صغيرة جداً (مثلاً دالة تجمع رقمين)، فإن مجرد عملية "الذهاب للدالة والعودة منها" ستستهلك وقتاً أطول من عملية الجمع نفسها!
+**نصيحة الأداء:** في الأكواد فائقة الحساسية للوقت (Performance-critical)، تجنب وضع دوال صغيرة جداً داخل حلقات ضخمة، واكتب الكود مباشرة داخل الحلقة (Inlining) إذا أمكن.
+:::
+
+---
+
+## ⚠️ الأخطاء الشائعة (Common Mistakes)
+
+```python
+# ❌ 1 - الخطأ الأشهر على الإطلاق: المتغيرات الافتراضية القابلة للتعديل (Mutable Default Arguments)
+def add_item(item, my_list=[]):
+    my_list.append(item)
+    return my_list
+
+print(add_item("Apple"))  # ['Apple'] - يبدو صحيحاً
+print(add_item("Banana")) # ['Apple', 'Banana'] - 💥 كارثة! بايثون لا تنشئ القائمة كل مرة، بل أنشأتها مرة واحدة في الذاكرة عند تعريف الدالة، وتستمر في الإضافة عليها!
+
+# ✅ الصحيح: استخدم None
+def add_item_safe(item, my_list=None):
+    if my_list is None:
+        my_list = []
+    my_list.append(item)
+    return my_list
+```
+
+---
+
+## Interview Questions & Answers
+
+<details>
+<summary><strong>Q1: ماذا لو كان عندي متغير `Global`، وأردت تعديله من داخل الدالة؟</strong></summary>
+
+إذا حاولت تعديله مباشرة `player_name = "Luigi"` داخل الدالة، ستقوم بايثون بإنشاء متغير `Local` جديد بنفس الاسم ولن تعدل الأصلي! لتعديل المتغير الأصلي يجب استخدام كلمة **`global`**.
+```python
+score = 0
+def add_score():
+    global score
+    score += 10 # الآن سيتم تعديل الـ score العام
+```
+</details>
+
+---
+
+<ExerciseBox title="🏋️ Exercise - آلة حاسبة مصغرة">
+
+1. اكتب دالة باسم `calculate_discount`.
+2. الدالة تستقبل `price` (السعر) و `discount` (الخصم). اجعل نسبة الخصم الافتراضية `10` (أي 10%).
+3. تقوم الدالة بحساب قيمة الخصم `(price * discount / 100)`.
+4. وتقوم بحساب السعر النهائي بعد الخصم.
+5. الدالة يجب أن **ترجع (`return`)** القيمتين معاً (قيمة الخصم، والسعر النهائي).
+6. استدع الدالة لمنتج سعره 200 واطبع النتيجتين.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي</strong></summary>
+
+```python
+# تعريف الدالة
+def calculate_discount(price, discount=10):
+    discount_amount = price * (discount / 100)
+    final_price = price - discount_amount
+    return discount_amount, final_price
+
+# استدعاء الدالة واستقبال النتيجتين
+discount_val, new_price = calculate_discount(200)
+
+# الطباعة
+print(f"You saved: ${discount_val}")
+print(f"Price to pay: ${new_price}")
+```
+
+</details>
+
+---
+
+<SummaryBox title="📌 Lesson Summary">
+
+- استخدم `def name():` لتعريف الدالة وانتبه للمسافات (Indentation).
+- **Default Parameters** مفيدة جداً لتجنب الأخطاء (ويجب أن تكون في آخر المعاملات).
+- **`return`** تستخدم لإرجاع ناتج، ويمكن لبايثون إرجاع **أكثر من قيمة** معاً.
+- المتغيرات المعرفة داخل الدالة هي محلية (Local) ولا تُرى في الـ `main` كود.
+
+</SummaryBox>

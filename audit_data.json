@@ -1,0 +1,618 @@
+[
+  {
+    "course": "Flutter",
+    "file": "docs/part1-dart-fundamentals/async-programming.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "Flutter",
+    "file": "docs/part1-dart-fundamentals/collections.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "Flutter",
+    "file": "docs/part1-dart-fundamentals/control-flow.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "Flutter",
+    "file": "docs/part1-dart-fundamentals/functions.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "Flutter",
+    "file": "docs/part1-dart-fundamentals/generics.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "Flutter",
+    "file": "docs/part1-dart-fundamentals/null-safety.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "Flutter",
+    "file": "docs/part1-dart-fundamentals/oop-advanced.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "Flutter",
+    "file": "docs/part1-dart-fundamentals/oop-basics.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "Flutter",
+    "file": "docs/part1-dart-fundamentals/variables-and-data-types.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "Flutter",
+    "file": "docs/part2-flutter-basics/forms-and-validation.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "Flutter",
+    "file": "docs/part2-flutter-basics/layout-widgets.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "Flutter",
+    "file": "docs/part2-flutter-basics/navigation-go-router.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "Flutter",
+    "file": "docs/part2-flutter-basics/scrollable-views.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "Flutter",
+    "file": "docs/part2-flutter-basics/setup-and-architecture.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "Flutter",
+    "file": "docs/part2-flutter-basics/theming-and-dark-mode.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "Flutter",
+    "file": "docs/part2-flutter-basics/widget-and-element-tree.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "Flutter",
+    "file": "docs/part3-clean-code/clean-code-naming.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "Flutter",
+    "file": "docs/part3-clean-code/dependency-injection-get-it.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "Flutter",
+    "file": "docs/part3-clean-code/feature-first-folder-structure.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "Flutter",
+    "file": "docs/part3-clean-code/solid-and-srp.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "Flutter",
+    "file": "docs/part4-mvvm-state-management/bloc-and-cubit.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "Flutter",
+    "file": "docs/part4-mvvm-state-management/changenotifier-and-provider.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "Flutter",
+    "file": "docs/part4-mvvm-state-management/getx-state-management.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "Flutter",
+    "file": "docs/part4-mvvm-state-management/intro-to-mvvm.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "Flutter",
+    "file": "docs/part4-mvvm-state-management/state-handling-ui.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "Flutter",
+    "file": "docs/part4-mvvm-state-management/viewmodel-lifecycle.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "Flutter",
+    "file": "docs/part4-mvvm-state-management/wiring-view-viewmodel-repo.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "Flutter",
+    "file": "docs/part5-backend-integration/dio-and-interceptors.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "Flutter",
+    "file": "docs/part5-backend-integration/error-handling-failures.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "Flutter",
+    "file": "docs/part5-backend-integration/json-serialization.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "Flutter",
+    "file": "docs/part5-backend-integration/local-storage-shared-preferences.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "Flutter",
+    "file": "docs/part5-backend-integration/repository-pattern.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "Flutter",
+    "file": "docs/part6-testing/unit-testing.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "Flutter",
+    "file": "docs/part6-testing/widget-testing.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "Flutter",
+    "file": "docs/part7-capstone-project/domain-data-layer.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "Flutter",
+    "file": "docs/part7-capstone-project/presentation-viewmodels.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "Flutter",
+    "file": "docs/part7-capstone-project/project-setup.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "Flutter",
+    "file": "docs/part7-capstone-project/testing-and-polish.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "Flutter",
+    "file": "docs/part7-capstone-project/ui-implementation.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "JavaScript",
+    "file": "docs-js/part1-fundamentals/control-flow.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "JavaScript",
+    "file": "docs-js/part1-fundamentals/data-types-operators.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "JavaScript",
+    "file": "docs-js/part1-fundamentals/functions.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "JavaScript",
+    "file": "docs-js/part1-fundamentals/scope-hoisting.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "JavaScript",
+    "file": "docs-js/part1-fundamentals/variables.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "JavaScript",
+    "file": "docs-js/part2-objects-arrays/arrays-methods.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "JavaScript",
+    "file": "docs-js/part2-objects-arrays/destructuring-spread.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "JavaScript",
+    "file": "docs-js/part2-objects-arrays/objects.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "JavaScript",
+    "file": "docs-js/part3-oop/classes-constructors.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "JavaScript",
+    "file": "docs-js/part3-oop/inheritance-super.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "C++",
+    "file": "docs-cpp/module1-basics/intro-and-setup.mdx",
+    "status": "⚠️",
+    "missing": "الأخطاء الشائعة",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "C++",
+    "file": "docs-cpp/module1-basics/operators-and-io.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "C++",
+    "file": "docs-cpp/module1-basics/variables-and-data-types.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "C++",
+    "file": "docs-cpp/module10-capstone/library-system-project.mdx",
+    "status": "⚠️",
+    "missing": "Performance Notes, الأخطاء الشائعة, أسئلة الإنترفيو",
+    "hasPerformance": "لا"
+  },
+  {
+    "course": "C++",
+    "file": "docs-cpp/module2-control-flow/conditions.mdx",
+    "status": "⚠️",
+    "missing": "Performance Notes, الأخطاء الشائعة",
+    "hasPerformance": "لا"
+  },
+  {
+    "course": "C++",
+    "file": "docs-cpp/module2-control-flow/loops.mdx",
+    "status": "⚠️",
+    "missing": "Performance Notes, الأخطاء الشائعة, أسئلة الإنترفيو",
+    "hasPerformance": "لا"
+  },
+  {
+    "course": "C++",
+    "file": "docs-cpp/module3-functions/advanced-functions.mdx",
+    "status": "⚠️",
+    "missing": "الأخطاء الشائعة, أسئلة الإنترفيو",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "C++",
+    "file": "docs-cpp/module3-functions/functions-basics.mdx",
+    "status": "⚠️",
+    "missing": "Performance Notes, الأخطاء الشائعة, أسئلة الإنترفيو",
+    "hasPerformance": "لا"
+  },
+  {
+    "course": "C++",
+    "file": "docs-cpp/module4-arrays-strings/arrays.mdx",
+    "status": "⚠️",
+    "missing": "Performance Notes, الأخطاء الشائعة",
+    "hasPerformance": "لا"
+  },
+  {
+    "course": "C++",
+    "file": "docs-cpp/module4-arrays-strings/strings-and-vectors.mdx",
+    "status": "⚠️",
+    "missing": "Performance Notes, الأخطاء الشائعة",
+    "hasPerformance": "لا"
+  },
+  {
+    "course": "C++",
+    "file": "docs-cpp/module5-pointers-memory/dynamic-memory.mdx",
+    "status": "⚠️",
+    "missing": "Performance Notes, الأخطاء الشائعة",
+    "hasPerformance": "لا"
+  },
+  {
+    "course": "C++",
+    "file": "docs-cpp/module5-pointers-memory/pointers-basics.mdx",
+    "status": "⚠️",
+    "missing": "Performance Notes, الأخطاء الشائعة",
+    "hasPerformance": "لا"
+  },
+  {
+    "course": "C++",
+    "file": "docs-cpp/module6-oop/abstraction-interfaces.mdx",
+    "status": "⚠️",
+    "missing": "Performance Notes, الأخطاء الشائعة",
+    "hasPerformance": "لا"
+  },
+  {
+    "course": "C++",
+    "file": "docs-cpp/module6-oop/classes-objects.mdx",
+    "status": "⚠️",
+    "missing": "الأخطاء الشائعة",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "C++",
+    "file": "docs-cpp/module6-oop/inheritance-polymorphism.mdx",
+    "status": "⚠️",
+    "missing": "Performance Notes, الأخطاء الشائعة",
+    "hasPerformance": "لا"
+  },
+  {
+    "course": "C++",
+    "file": "docs-cpp/module7-advanced-oop/operator-overloading.mdx",
+    "status": "⚠️",
+    "missing": "Performance Notes, الأخطاء الشائعة",
+    "hasPerformance": "لا"
+  },
+  {
+    "course": "C++",
+    "file": "docs-cpp/module7-advanced-oop/templates.mdx",
+    "status": "⚠️",
+    "missing": "Performance Notes, الأخطاء الشائعة",
+    "hasPerformance": "لا"
+  },
+  {
+    "course": "C++",
+    "file": "docs-cpp/module8-stl/algorithms-iterators.mdx",
+    "status": "⚠️",
+    "missing": "Performance Notes, الأخطاء الشائعة",
+    "hasPerformance": "لا"
+  },
+  {
+    "course": "C++",
+    "file": "docs-cpp/module8-stl/containers.mdx",
+    "status": "⚠️",
+    "missing": "الأخطاء الشائعة",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "C++",
+    "file": "docs-cpp/module9-errors-files/exceptions.mdx",
+    "status": "⚠️",
+    "missing": "Performance Notes, الأخطاء الشائعة",
+    "hasPerformance": "لا"
+  },
+  {
+    "course": "C++",
+    "file": "docs-cpp/module9-errors-files/file-handling.mdx",
+    "status": "⚠️",
+    "missing": "Performance Notes, الأخطاء الشائعة",
+    "hasPerformance": "لا"
+  },
+  {
+    "course": "Python",
+    "file": "docs-python/module1-basics/intro-and-setup.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "Python",
+    "file": "docs-python/module1-basics/variables-and-data-types.mdx",
+    "status": "✅",
+    "missing": "لا يوجد نواقص",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "Python",
+    "file": "docs-python/module10-capstone/weather-app-project.mdx",
+    "status": "⚠️",
+    "missing": "Performance Notes, الأخطاء الشائعة, أسئلة الإنترفيو",
+    "hasPerformance": "لا"
+  },
+  {
+    "course": "Python",
+    "file": "docs-python/module2-control-flow/conditions.mdx",
+    "status": "⚠️",
+    "missing": "Performance Notes, الأخطاء الشائعة",
+    "hasPerformance": "لا"
+  },
+  {
+    "course": "Python",
+    "file": "docs-python/module2-control-flow/loops-and-iterables.mdx",
+    "status": "⚠️",
+    "missing": "الأخطاء الشائعة",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "Python",
+    "file": "docs-python/module3-data-structures/dictionaries-and-sets.mdx",
+    "status": "⚠️",
+    "missing": "Performance Notes, الأخطاء الشائعة",
+    "hasPerformance": "لا"
+  },
+  {
+    "course": "Python",
+    "file": "docs-python/module3-data-structures/lists-and-tuples.mdx",
+    "status": "⚠️",
+    "missing": "الأخطاء الشائعة",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "Python",
+    "file": "docs-python/module4-functions/args-kwargs-lambda.mdx",
+    "status": "⚠️",
+    "missing": "Performance Notes, الأخطاء الشائعة",
+    "hasPerformance": "لا"
+  },
+  {
+    "course": "Python",
+    "file": "docs-python/module4-functions/functions-basics.mdx",
+    "status": "⚠️",
+    "missing": "Performance Notes, الأخطاء الشائعة",
+    "hasPerformance": "لا"
+  },
+  {
+    "course": "Python",
+    "file": "docs-python/module5-oop/classes-and-objects.mdx",
+    "status": "⚠️",
+    "missing": "Performance Notes, الأخطاء الشائعة",
+    "hasPerformance": "لا"
+  },
+  {
+    "course": "Python",
+    "file": "docs-python/module5-oop/inheritance-dunder-methods.mdx",
+    "status": "⚠️",
+    "missing": "Performance Notes, الأخطاء الشائعة",
+    "hasPerformance": "لا"
+  },
+  {
+    "course": "Python",
+    "file": "docs-python/module6-errors-files/exceptions.mdx",
+    "status": "⚠️",
+    "missing": "Performance Notes, الأخطاء الشائعة",
+    "hasPerformance": "لا"
+  },
+  {
+    "course": "Python",
+    "file": "docs-python/module6-errors-files/file-handling-json.mdx",
+    "status": "⚠️",
+    "missing": "Performance Notes, الأخطاء الشائعة",
+    "hasPerformance": "لا"
+  },
+  {
+    "course": "Python",
+    "file": "docs-python/module7-modules-packages/imports-and-pip.mdx",
+    "status": "⚠️",
+    "missing": "Performance Notes, الأخطاء الشائعة",
+    "hasPerformance": "لا"
+  },
+  {
+    "course": "Python",
+    "file": "docs-python/module7-modules-packages/virtual-environments.mdx",
+    "status": "⚠️",
+    "missing": "Performance Notes, الأخطاء الشائعة",
+    "hasPerformance": "لا"
+  },
+  {
+    "course": "Python",
+    "file": "docs-python/module8-intermediate/context-managers.mdx",
+    "status": "⚠️",
+    "missing": "Performance Notes, الأخطاء الشائعة",
+    "hasPerformance": "لا"
+  },
+  {
+    "course": "Python",
+    "file": "docs-python/module8-intermediate/decorators-generators.mdx",
+    "status": "⚠️",
+    "missing": "الأخطاء الشائعة",
+    "hasPerformance": "نعم"
+  },
+  {
+    "course": "Python",
+    "file": "docs-python/module9-libraries/working-with-apis.mdx",
+    "status": "⚠️",
+    "missing": "Performance Notes, الأخطاء الشائعة",
+    "hasPerformance": "لا"
+  }
+]

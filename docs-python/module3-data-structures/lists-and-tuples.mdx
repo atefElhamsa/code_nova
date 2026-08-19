@@ -1,0 +1,217 @@
+---
+id: lists-and-tuples
+title: "3.1 Lists & Tuples"
+sidebar_label: "3.1 Lists & Tuples"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 3.1 القوائم (Lists) و الصفوف (Tuples)
+
+في التطبيقات الحقيقية، نحتاج لتخزين العديد من القيم المرتبطة معاً. بايثون تقدم لنا هياكل بيانات (Data Structures) قوية جداً ومدمجة في اللغة الأساسية لتسهيل هذا الأمر. سنبدأ بالـ Lists و Tuples.
+
+---
+
+## 1. القوائم (Lists)
+
+الـ `List` هي المعادل للمصفوفات (Arrays) في اللغات الأخرى، ولكنها أكثر مرونة بمراحل! يمكنك إضافة أو حذف العناصر، بل ويمكن أن تحتوي القائمة الواحدة على أنواع بيانات مختلفة! (أرقام، نصوص، وحتى قوائم أخرى).
+
+تُنشأ القوائم باستخدام الأقواس المربعة `[ ]`.
+
+```python
+# قائمة من نفس النوع (أرقام)
+grades = [90, 85, 92, 78]
+
+# قائمة بأنواع مختلفة! (مرونة بايثون)
+mixed_list = ["Ahmed", 25, True, 3.14]
+
+# الوصول للعناصر باستخدام الفهرس (Index) - يبدأ من 0
+print(grades[0]) # 90
+print(grades[2]) # 92
+
+# الفهرس السالب (Negative Indexing) - ميزة رائعة في بايثون!
+print(grades[-1]) # 78 (يُرجع آخر عنصر دائماً)
+print(grades[-2]) # 92 (العنصر قبل الأخير)
+```
+
+### تعديل عناصر الـ List والتلاعب بها (Slicing)
+
+القوائم في بايثون هي كائنات **مُتغيرة (Mutable)**، يعني يمكننا تغيير عناصرها بعد إنشائها.
+
+```python
+cars = ["BMW", "Audi", "Toyota", "Ford", "Honda"]
+
+# 1. تعديل عنصر
+cars[1] = "Mercedes"
+print(cars) # ['BMW', 'Mercedes', 'Toyota', 'Ford', 'Honda']
+
+# 2. اقتطاع جزء من القائمة (Slicing) [start:end] - النهاية غير متضمنة
+top_two = cars[0:2] # سيأخذ من 0 إلى 1 فقط
+print(top_two) # ['BMW', 'Mercedes']
+
+# 3. معرفة طول القائمة
+print(len(cars)) # 5
+```
+
+### دوال الـ List الأساسية
+
+```python
+fruits = ["Apple", "Banana"]
+
+fruits.append("Orange")     # إضافة للنهاية
+fruits.insert(1, "Mango")   # إدراج في الفهرس رقم 1
+fruits.remove("Banana")     # حذف بالاسم
+popped = fruits.pop()       # إزالة آخر عنصر وإرجاعه
+
+print(fruits) # ['Apple', 'Mango']
+```
+
+---
+
+## 2. الصفوف (Tuples)
+
+الـ `Tuple` يشبه القائمة تماماً، باستثناء فرق واحد جوهري: **لا يمكن تعديله (Immutable)** بعد إنشائه! لا يمكنك الإضافة إليه ولا الحذف منه.
+تُنشأ الـ Tuples باستخدام الأقواس العادية `( )` (أو حتى بدونها).
+
+```python
+# تعريف Tuple
+coordinates = (30.0444, 31.2357) # إحداثيات لا يجب أن تتغير!
+
+print(coordinates[0]) # 30.0444
+
+# محاولة التعديل ستعطي خطأ (TypeError)!
+# coordinates[0] = 50.111 # ❌ ERROR!
+```
+
+### لماذا نستخدم Tuples بدلاً من Lists؟
+1. **الأمان:** إذا كان لديك بيانات ثابتة (مثل أيام الأسبوع، الألوان الأساسية، الإحداثيات) فأنت تحميها من التعديل العرضي.
+2. **الأداء:** الـ Tuples تستهلك ذاكرة أقل وأسرع قليلاً في القراءة من الـ Lists.
+3. يمكن استخدام الـ Tuples كـ (Keys) في القواميس، بينما الـ Lists لا يمكن ذلك.
+
+---
+
+## 3. List Comprehensions (سحر بايثون)
+
+هذه ميزة متقدمة قليلاً ولكنها مشهورة جداً، وهي طريقة لبناء قائمة جديدة من قائمة موجودة في **سطر واحد**.
+
+```python
+numbers = [1, 2, 3, 4, 5]
+
+# الطريقة العادية لإنشاء قائمة بالمربعات (Squares)
+squares = []
+for n in numbers:
+    squares.append(n ** 2)
+
+# الطريقة الاحترافية (List Comprehension)
+# اقرأها: "أعطني n**2 لكل n موجود في numbers"
+fast_squares = [n ** 2 for n in numbers]
+
+print(fast_squares) # [1, 4, 9, 16, 25]
+
+# يمكنك إضافة شرط أيضاً!
+# "أعطني الأرقام الزوجية فقط من القائمة"
+evens = [n for n in numbers if n % 2 == 0]
+```
+
+---
+
+## ⚡ Performance Notes
+
+:::tip لماذا الـ Tuple أسرع ويستهلك ذاكرة أقل؟
+عندما ننشئ `List`، تقوم بايثون بـ "حجز مساحة إضافية" (Over-allocation) في الذاكرة تحسباً لأنك قد تقوم بعمل `append` لاحقاً. هذا يهدر بعض الذاكرة، ولكنه يجعل الإضافة سريعة جداً $O(1)$. 
+أما الـ `Tuple`، فبما أنه غير قابل للتعديل، بايثون تحجز له بالضبط حجم الذاكرة المطلوب لبياناته فقط، دون أي مساحة إضافية. هذا يجعله خفيفاً وسريعاً جداً في القراءة! 
+كما أن إنشاء الـ List Comprehensions أسرع بنحو 30% من كتابة حلقة `for` العادية لأنها تنفذ بالكامل داخل لغة C (التي بنيت عليها بايثون).
+:::
+
+---
+
+## ⚠️ الأخطاء الشائعة (Common Mistakes)
+
+```python
+# ❌ 1 - الخطأ الأشهر (IndexError)
+colors = ["Red", "Blue", "Green"]
+# print(colors[3]) 
+# 💥 خطأ: IndexError: list index out of range. أعلى فهرس متاح هو 2 (لأننا نبدأ من 0).
+
+# ❌ 2 - محاولة تعديل Tuple (النسيان)
+dimensions = (800, 600)
+# dimensions[0] = 1920 
+# 💥 خطأ: TypeError: 'tuple' object does not support item assignment
+# ✅ الصحيح: إذا أردت تعديله، يجب أن تنشئ Tuple جديداً بالكامل، أو تستخدم List من البداية.
+```
+
+---
+
+## Interview Questions & Answers
+
+<details>
+<summary><strong>Q1: ما الفرق بين `List` و `Tuple`؟ ولماذا نحتاج الاثنين؟</strong></summary>
+
+- **List:** قابلة للتعديل (Mutable)، تستخدم للأقواس المربعة `[]`، أبطأ نسبياً، تستخدم للبيانات التي تتوقع تغيرها.
+- **Tuple:** غير قابلة للتعديل (Immutable)، تستخدم الأقواس العادية `()`، أسرع، تستخدم للبيانات الثابتة ولحماية البيانات من التعديل الخطأ.
+</details>
+
+<details>
+<summary><strong>Q2: ما الفرق بين دالة `append()` ودالة `extend()` في القوائم؟</strong></summary>
+
+- `append()` تضيف العنصر المُمرر كما هو كعنصر **واحد** في نهاية القائمة (حتى لو كان قائمة أخرى، سيتم إدراجها كقائمة داخل القائمة).
+- `extend()` تأخذ مجموعة من العناصر (Iterable) وتضيفها **فرداً فرداً** في نهاية القائمة.
+```python
+list1 = [1, 2]
+list1.append([3, 4]) # النتيجة: [1, 2, [3, 4]] (طولها 3)
+
+list2 = [1, 2]
+list2.extend([3, 4]) # النتيجة: [1, 2, 3, 4] (طولها 4)
+```
+</details>
+
+---
+
+<ExerciseBox title="🏋️ Exercise - إدارة قائمة المشتريات">
+
+1. أنشئ قائمة (List) فارغة باسم `cart`.
+2. استخدم `append` لإضافة 3 عناصر (مثال: "Milk", "Bread", "Eggs").
+3. اكتشفت أنك نسيت القهوة! استخدم `insert` لإضافة "Coffee" في بداية القائمة (Index 0).
+4. استخدم `remove` لحذف أحد العناصر.
+5. اطبع طول القائمة النهائي باستخدام `len()`.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي</strong></summary>
+
+```python
+# 1. إنشاء القائمة
+cart = []
+
+# 2. الإضافة
+cart.append("Milk")
+cart.append("Bread")
+cart.append("Eggs")
+
+# 3. إدراج القهوة في البداية
+cart.insert(0, "Coffee")
+
+# القائمة الآن: ['Coffee', 'Milk', 'Bread', 'Eggs']
+
+# 4. الحذف
+cart.remove("Bread")
+
+# 5. الطباعة
+print("My Cart:", cart)
+print("Total items:", len(cart))
+```
+
+</details>
+
+---
+
+<SummaryBox title="📌 Lesson Summary">
+
+- **`List []`**: قائمة مرنة يمكن إضافة أو حذف أو تعديل العناصر فيها (Mutable).
+- **`Tuple ()`**: قائمة جامدة لا يمكن تعديلها بعد إنشائها (Immutable).
+- **Slicing `[a:b]`**: اقتطاع جزء من القائمة بسهولة.
+- **List Comprehensions**: سطر واحد سحري لإنشاء قوائم جديدة بناءً على حلقات وشروط.
+
+</SummaryBox>

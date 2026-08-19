@@ -1,0 +1,193 @@
+---
+id: weather-app-project
+title: "10.1 Weather App (Capstone)"
+sidebar_label: "10.1 Weather App (Capstone)"
+---
+
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 10.1 المشروع النهائي: تطبيق الطقس الذكي
+
+تهانينا على إنهاء رحلتك في تعلم لغة بايثون! لقد درست المتغيرات، الدوال، البرمجة الكائنية، معالجة الأخطاء، الملفات، والعمل مع الـ APIs.
+حان الوقت لدمج كل هذا في مشروع نهائي (Capstone Project) يجمع كل المهارات. سنبني معاً برنامجاً لمعرفة حالة الطقس لأي مدينة في العالم باستخدام API حقيقي.
+
+---
+
+## 💡 متطلبات المشروع
+
+النظام يجب أن يسمح للمستخدم بالآتي:
+1. **الاستعلام عن الطقس**: إدخال اسم مدينة، ليقوم البرنامج بجلب بيانات الطقس (درجة الحرارة، الوصف) وعرضها.
+2. **البرمجة الكائنية (OOP)**: يجب تنظيم الكود في كلاسات منفصلة (`WeatherAPI` لجلب البيانات، و `WeatherApp` لتشغيل البرنامج).
+3. **معالجة الأخطاء (Exceptions)**: يجب ألا ينهار البرنامج إذا أدخل المستخدم مدينة خاطئة، أو إذا انقطع الإنترنت.
+4. **الـ APIs (Requests)**: سنستخدم API مجاني من موقع `Open-Meteo` للطقس، وهو لا يحتاج لتسجيل أو API Key لسهولة التجربة.
+
+---
+
+## 🛠️ الكود الكامل للمشروع
+
+انسخ الكود التالي في ملف `weather_app.py` على جهازك لكي يعمل. تأكد من تثبيت مكتبة requests عبر الـ terminal أولاً (`pip install requests`).
+
+```python
+import requests
+
+# ==========================================
+# 1. كلاس مخصص لجلب البيانات (API Handler)
+# ==========================================
+class WeatherAPI:
+    def __init__(self):
+        # API للحصول على إحداثيات المدينة أولاً
+        self.geocode_url = "https://geocoding-api.open-meteo.com/v1/search"
+        # API للحصول على الطقس بناءً على الإحداثيات
+        self.weather_url = "https://api.open-meteo.com/v1/forecast"
+
+    def get_coordinates(self, city_name):
+        """دالة للبحث عن اسم المدينة وإرجاع خط الطول والعرض"""
+        params = {"name": city_name, "count": 1}
+        response = requests.get(self.geocode_url, params=params, timeout=5)
+        
+        # إذا السيرفر رد بخطأ
+        if response.status_code != 200:
+            raise ConnectionError("Failed to connect to the Geocoding API.")
+            
+        data = response.json()
+        
+        # إذا بحثنا عن مدينة غير موجودة (مثل 'asdfg')
+        if "results" not in data or len(data["results"]) == 0:
+            raise ValueError(f"City '{city_name}' not found!")
+            
+        # استخراج خط الطول والعرض
+        latitude = data["results"][0]["latitude"]
+        longitude = data["results"][0]["longitude"]
+        country = data["results"][0].get("country", "Unknown")
+        
+        return latitude, longitude, country
+
+    def get_weather(self, lat, lon):
+        """دالة تأخذ الإحداثيات وترجع درجة الحرارة الحالية"""
+        params = {
+            "latitude": lat,
+            "longitude": lon,
+            "current_weather": True
+        }
+        response = requests.get(self.weather_url, params=params, timeout=5)
+        
+        if response.status_code != 200:
+            raise ConnectionError("Failed to connect to the Weather API.")
+            
+        data = response.json()
+        temp = data["current_weather"]["temperature"]
+        windspeed = data["current_weather"]["windspeed"]
+        
+        return temp, windspeed
+
+
+# ==========================================
+# 2. كلاس التطبيق الرئيسي (User Interface)
+# ==========================================
+class WeatherApp:
+    def __init__(self):
+        # Composition: الـ App يمتلك نسخة من الـ API
+        self.api = WeatherAPI()
+
+    def start(self):
+        print("="*40)
+        print("🌤️ Welcome to the Python Weather App 🌤️")
+        print("="*40)
+        
+        while True:
+            city = input("\nEnter city name (or 'q' to quit): ").strip()
+            
+            if city.lower() == 'q':
+                print("Thanks for using the Weather App. Goodbye!")
+                break
+                
+            if not city:
+                print("Please enter a valid city name.")
+                continue
+
+            # بدء العمليات المعرضة للأخطاء
+            try:
+                # 1. جلب الإحداثيات
+                lat, lon, country = self.api.get_coordinates(city)
+                
+                # 2. جلب الطقس
+                temp, wind = self.api.get_weather(lat, lon)
+                
+                # 3. عرض النتيجة بنجاح
+                print("\n" + "-"*30)
+                print(f"📍 Location: {city.title()}, {country}")
+                print(f"🌡️  Temperature: {temp}°C")
+                print(f"💨 Wind Speed: {wind} km/h")
+                print("-"*30)
+                
+            except ValueError as e:
+                # اصطياد خطأ المدينة غير الموجودة
+                print(f"❌ Error: {e}")
+                
+            except requests.exceptions.Timeout:
+                # اصطياد خطأ بطء الإنترنت
+                print("❌ Error: Connection timed out. Please check your internet.")
+                
+            except Exception as e:
+                # شبكة أمان لأي خطأ آخر غير متوقع
+                print(f"❌ An unexpected error occurred: {e}")
+
+
+# ==========================================
+# 3. نقطة البداية (Entry Point)
+# ==========================================
+if __name__ == "__main__":
+    # إنشاء التطبيق وتشغيله
+    app = WeatherApp()
+    app.start()
+```
+
+---
+
+## 🔍 نظرة تحليلية للمشروع:
+
+1. **(OOP) Separation of Concerns**: قمنا بفصل الكود إلى `WeatherAPI` (وظيفته التحدث مع الإنترنت فقط) و `WeatherApp` (وظيفته التحدث مع المستخدم فقط). هذا يجعل الكود سهل القراءة والتطوير.
+2. **الـ API Chain**: واجهة `Open-Meteo` تتطلب الإحداثيات (Lat/Lon) ولا تقبل اسم المدينة مباشرة، فقمنا بعمل طلب للبحث عن المدينة أولاً، ثم طلب ثانٍ لمعرفة طقسها (عمليتان API).
+3. **Exceptions Management**: إذا كتب المستخدم مدينة خيالية، فإن الكود لن يُعطي Crash غريب، بل سيُطلق خطأ مخصص `ValueError` برسالة واضحة، ويتم اصطياده في واجهة المستخدم بـ `try/except`.
+4. **التنظيف بـ `strip()`**: قمنا بتنظيف المُدخلات لمنع المسافات العشوائية.
+
+---
+
+## ⚡ Performance Notes
+
+:::tip تسريع تطبيق الطقس (Caching & Sessions)
+لو طلب المستخدم طقس "Cairo" مرتين متتاليتين، سيقوم الكود الحالي بإرسال طلبين للسيرفر، وهذا مضيعة للوقت ويهدد باستهلاك الحد الأقصى للـ API المجاني (Rate Limit). 
+**كيفية التحسين:**
+1. استخدام الـ **Caching** لحفظ طقس "Cairo" في قاموس داخلي (Dictionary)، وإذا طُلبت مرة أخرى نعرضها من القاموس فوراً.
+2. استبدال `requests.get` بـ `requests.Session()` في دالة `__init__` لتقليل زمن الاستجابة إلى النصف!
+:::
+
+---
+
+## ⚠️ الأخطاء الشائعة (Common Mistakes) في المشاريع النهائية
+
+```python
+# ❌ 1 - صيد خطأ Timeout فقط وتجاهل باقي أعطال الشبكة
+# except requests.exceptions.Timeout:
+# 💥 وماذا لو انقطع سلك الإنترنت بالكامل؟ أو كان السيرفر مغلقاً؟ سيظهر ConnectionError ويدمر البرنامج!
+# ✅ الحل: في المشاريع الحقيقية، نصطاد الخطأ الشامل `RequestException` الذي يشمل كل مشاكل مكتبة requests.
+except requests.exceptions.RequestException as e:
+    print(f"Network Error: {e}")
+
+# ❌ 2 - تشابك الكود (Spaghetti Code)
+# كتابة الكود كله (جلب البيانات + الواجهة + معالجة الأخطاء) في دالة واحدة طويلة جداً.
+# ✅ الحل: كما فعلنا في الكود، قسمناه باستخدام الـ OOP لتسهيل التعديل المستقبلي والصيانة.
+```
+
+---
+
+<SummaryBox title="🎉 ختام كورس بايثون">
+
+بوصولك إلى هذا المشروع وإنهائك له، لقد انتقلت رسمياً من مرحلة "المبتدئ" إلى "المطور القادر على بناء تطبيقات حقيقية"!
+بايثون لغة ضخمة وتستخدم في مجالات لا حصر لها، والخطوة القادمة لك الآن هي اختيار تخصصك:
+- إذا كنت تحب الويب، تعلم (Django أو FastAPI).
+- إذا كنت تحب الذكاء الاصطناعي، ابدأ مع (Pandas ثم Scikit-Learn).
+
+نتمنى لك التوفيق في رحلتك القادمة، ودائماً استمر في التعلم مع **CodeNova**!
+
+</SummaryBox>

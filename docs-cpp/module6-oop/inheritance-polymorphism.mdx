@@ -1,0 +1,232 @@
+---
+id: inheritance-polymorphism
+title: "6.2 Inheritance & Polymorphism"
+sidebar_label: "6.2 Inheritance & Polymorphism"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 6.2 الوراثة (Inheritance) وتعدد الأشكال (Polymorphism)
+
+المبدأ الثاني والثالث في الـ OOP هما الوراثة وتعدد الأشكال. هذان المبدآن هما ما يمنعان تكرار الكود (DRY Principle) ويجعلان الكود قابلاً للتوسع بسهولة شديدة.
+
+---
+
+## 1. الوراثة (Inheritance)
+
+الوراثة تتيح لك إنشاء كلاس جديد (يسمى **الابن - Derived/Child Class**) يأخذ كل صفات ودوال كلاس موجود بالفعل (يسمى **الأب - Base/Parent Class**)، ثم يضيف عليها ما يخصه.
+
+تخيل كلاس اسمه `Animal`، وكلاس اسمه `Dog` وكلاس `Cat`. جميعها تشترك في صفات (كالاسم والعمر)، بدلاً من تكرارها، نجعلها ترث من الأب.
+
+```cpp
+#include <iostream>
+#include <string>
+using namespace std;
+
+// Base Class (الكلاس الأب)
+class Animal {
+  public:
+    void eat() {
+        cout << "I can eat!" << endl;
+    }
+};
+
+// Derived Class (الكلاس الابن)
+// ترث من Animal بوضع النقطتين الرأسيتين وكلمة public
+class Dog : public Animal {
+  public:
+    void bark() {
+        cout << "Woof woof!" << endl;
+    }
+};
+
+int main() {
+    Dog myDog;
+    myDog.eat();  // ورث هذه الدالة من Animal!
+    myDog.bark(); // هذه دالته الخاصة
+    return 0;
+}
+```
+
+### محدد الوصول `protected`
+المتغيرات من نوع `private` في كلاس الأب **لا يمكن** للابن رؤيتها. 
+وإذا جعلناها `public` سيراها الجميع. الحل هو الـ **`protected`**؛ وهو يجعل البيانات مخفية عن الـ `main` والناس بالخارج، ولكنها مرئية **للأبناء فقط**.
+
+---
+
+## 2. تعدد الأشكال (Polymorphism) والدوال الافتراضية (Virtual Functions)
+
+كلمة Polymorphism تعني "أشياء متعددة الأشكال". 
+أهم أشكالها في الـ OOP هي **تخطي الدوال (Function Overriding)**: عندما يرث الكلاس الابن دالة من الأب، ولكنه يقرر إعادة كتابتها لتناسبه بشكل مختلف.
+
+لنفعل ذلك بشكل صحيح وندعم الـ (Dynamic Binding)، يجب أن نكتب كلمة **`virtual`** قبل الدالة في كلاس الأب، ونكتب **`override`** في الكلاس الابن.
+
+```cpp
+class Animal {
+  public:
+    // virtual تخبر C++ أن هذه الدالة قد يتم تعديلها من قبل الأبناء
+    virtual void makeSound() {
+        cout << "Some generic animal sound..." << endl;
+    }
+};
+
+class Dog : public Animal {
+  public:
+    // override للتأكيد على أننا نعدل دالة ورثناها
+    void makeSound() override {
+        cout << "Woof!" << endl;
+    }
+};
+
+class Cat : public Animal {
+  public:
+    void makeSound() override {
+        cout << "Meow!" << endl;
+    }
+};
+
+int main() {
+    Animal genericAnimal;
+    Dog myDog;
+    Cat myCat;
+
+    genericAnimal.makeSound(); // Some generic animal sound...
+    myDog.makeSound();         // Woof!
+    myCat.makeSound();         // Meow!
+    
+    return 0;
+}
+```
+
+### القوة الحقيقية للـ Polymorphism (مع المؤشرات)
+تخيل أن لديك مصفوفة من الحيوانات المختلفة وتريد أن تصدر كلها صوتاً. الـ Polymorphism يتيح لك عمل مؤشر من نوع **الأب (`Animal`)**، ولكنه يشير لكائن من نوع **الابن (`Dog` أو `Cat`)**.
+
+```cpp
+Animal* animal1 = new Dog();
+Animal* animal2 = new Cat();
+
+// الكومبايلر ذكي بما يكفي (بفضل كلمة virtual) لتشغيل الدالة الصحيحة لكل كائن
+animal1->makeSound(); // Woof! (استخدمنا -> بدلاً من . لأننا نتعامل مع مؤشر)
+animal2->makeSound(); // Meow!
+
+delete animal1;
+delete animal2;
+```
+
+---
+
+## ⚡ Performance Notes
+
+:::tip مشكلة الـ Object Slicing
+عندما تمرر كائناً من نوع "الابن" إلى دالة تستقبل كائناً من نوع "الأب" **بالقيمة (by value)**، تقوم C++ بقص (Slice) كل المتغيرات والبيانات الإضافية التي يمتلكها الابن لكي يتناسب مع حجم الأب في الذاكرة. 
+**لتجنب ذلك ולتحقيق الـ Polymorphism السريع:** دائماً قم بتمرير الكائنات بالمرجع (`&`) أو كمؤشرات (`*`)، هكذا لا يتم نسخ أو قص أي شيء، وتحصل على أداء فائق وسلوك صحيح.
+:::
+
+---
+
+## ⚠️ الأخطاء الشائعة (Common Mistakes)
+
+```cpp
+class Parent {
+  public:
+    // ❌ 1 - نسيان الـ Virtual Destructor في كلاس الأب
+    ~Parent() { cout << "Parent deleted"; } 
+    // ✅ يجب أن يكون: virtual ~Parent()
+};
+
+class Child : public Parent {
+    int* data = new int[100];
+  public:
+    ~Child() { delete[] data; cout << "Child deleted"; }
+};
+
+int main() {
+    Parent* p = new Child();
+    delete p; 
+    // 💥 كارثة Memory Leak! لأن Destructor الأب ليس virtual، سيتم تدمير الأب فقط، وتبقى بيانات الابن معلقة في الذاكرة للأبد!
+}
+```
+
+---
+
+## Interview Questions & Answers
+
+<details>
+<summary><strong>Q1: ماذا لو نسينا كلمة `virtual` في دالة الأب `makeSound()`؟</strong></summary>
+
+إذا نسيت الـ `virtual`، وحاولت استدعاء `animal1->makeSound()` (وهو مؤشر من نوع Animal يشير لـ Dog)، فإن C++ ستقوم بالـ (Early Binding) وتستدعي دالة الأب `Animal::makeSound()` بدلاً من دالة الابن. 
+كلمة `virtual` تخبر C++ أن تنتظر حتى وقت التشغيل (Late Binding) لترى نوع الكائن الحقيقي وتستدعي الدالة المناسبة له.
+</details>
+
+<details>
+<summary><strong>Q2: هل تدعم C++ الوراثة المتعددة (Multiple Inheritance)؟</strong></summary>
+
+نعم، على عكس Java و C# التي تمنع ذلك، تدعم C++ الوراثة المتعددة؛ أي يمكن لكلاس أن يرث من أكثر من أب في نفس الوقت `class Child : public Parent1, public Parent2`.
+ولكن ينصح بتجنبها لأنها تسبب مشكلة تسمى "مربع الموت" (Diamond Problem) حيث يحدث تعارض إذا كان الأبوان يمتلكان دوالاً بنفس الاسم.
+</details>
+
+---
+
+<ExerciseBox title="🏋️ Exercise - وراثة الأشكال الهندسية">
+
+1. أنشئ Base Class باسم `Shape` يحتوي على دالة افتراضية (virtual) باسم `area()` تُرجع 0.
+2. أنشئ Derived Class باسم `Rectangle` يرث من `Shape`، ويحتوي على العرض والطول. قم بعمل override لدالة `area()` لترجع المساحة (الطول * العرض).
+3. في `main`، أنشئ كائن Rectangle، واطبع مساحته.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي</strong></summary>
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class Shape {
+  public:
+    virtual double area() {
+        return 0;
+    }
+};
+
+class Rectangle : public Shape {
+  private:
+    double width, height;
+
+  public:
+    Rectangle(double w, double h) {
+        width = w;
+        height = h;
+    }
+
+    double area() override {
+        return width * height;
+    }
+};
+
+int main() {
+    Rectangle rect(5, 10);
+    cout << "Rectangle area: " << rect.area() << endl; // 50
+
+    // الطريقة باستخدام الـ Polymorphism (اختياري)
+    Shape* shapePtr = new Rectangle(5, 10);
+    cout << "Area via Pointer: " << shapePtr->area() << endl;
+    delete shapePtr;
+
+    return 0;
+}
+```
+
+</details>
+
+---
+
+<SummaryBox title="📌 Lesson Summary">
+
+- **الوراثة (Inheritance)**: كلاس الابن يحصل على صفات ودوال كلاس الأب، لمنع تكرار الكود.
+- **`protected`**: بيانات محمية من الخارج، لكنها متاحة للأبناء.
+- **Overriding**: إعادة تعريف دالة الأب بداخل كلاس الابن لتعمل بشكل مختلف.
+- **تعدد الأشكال (Polymorphism) و `virtual`**: يضمن استدعاء الدالة الصحيحة (التابعة للابن) حتى لو كنا نستخدم مؤشراً من نوع الأب.
+
+</SummaryBox>

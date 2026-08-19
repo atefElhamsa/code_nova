@@ -1,0 +1,183 @@
+---
+id: decorators-generators
+title: "8.1 Decorators & Generators"
+sidebar_label: "8.1 Decorators & Generators"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 8.1 Decorators & Generators (مفاهيم متقدمة)
+
+كل ما تعلمناه سابقاً يجعلك مبرمج بايثون جيد، ولكن إتقانك لهذه المفاهيم (Decorators & Generators) سيجعلك مبرمجاً "محترفاً" وتكتب كوداً يطلق عليه **(Pythonic)**؛ أي كود يستخدم قوة اللغة الحقيقية لتسهيل المهام.
+
+---
+
+## 1. الديكوريتورز (Decorators)
+
+**ما هو الـ Decorator؟** هو ببساطة "دالة تأخذ دالة أخرى، وتضيف إليها وظيفة جديدة، ثم ترجعها، كل هذا دون تعديل كود الدالة الأصلية". 
+يُرمز له بالرمز `@` قبل اسم الدالة. استخدمناه مسبقاً مع `@staticmethod` و `@property`، والآن سنتعلم كيف نصنع واحداً بأنفسنا.
+
+### لماذا نحتاجه؟
+تخيل أن لديك 5 دوال مختلفة، وتريد حساب "الوقت الذي تستغرقه كل دالة" (Execution Time) لاختبار الأداء. بدلاً من تكرار كود حساب الوقت داخل الـ 5 دوال، نصنع Decorator واحد ونضعه فوقها!
+
+```python
+import time
+
+# 1. بناء الـ Decorator
+# الدالة الرئيسية تأخذ الدالة المراد تعديلها كمعامل
+def timer_decorator(func):
+    
+    # دالة التغليف الداخلية (Wrapper)
+    # نستخدم *args و **kwargs لتقبل الدالة الأصلية أي مدخلات
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        
+        # تشغيل الدالة الأصلية وحفظ ناتجها
+        result = func(*args, **kwargs)
+        
+        end_time = time.time()
+        print(f"Function '{func.__name__}' took {end_time - start_time:.4f} seconds to run.")
+        
+        return result
+    
+    return wrapper # نرجع الدالة المُعدلة
+
+# 2. استخدام الـ Decorator
+@timer_decorator
+def slow_function():
+    print("Starting slow function...")
+    time.sleep(2) # إيقاف البرنامج لثانيتين محاكاة للعمل البطيء
+    print("Finished.")
+
+# عند الاستدعاء، الكود سيمر عبر الـ Decorator تلقائياً!
+slow_function()
+```
+*الـ Decorators تستخدم بكثرة في إطارات العمل مثل Django للتحقق مما إذا كان المستخدم مسجلاً للدخول (Login Required) قبل فتح صفحة معينة.*
+
+---
+
+## 2. المولدات (Generators) وكلمة `yield`
+
+إذا طلبت منك كتابة دالة ترجع قائمة بها مليون رقم. ستنشئ قائمة، ثم تستخدم حلقة لملئها، ثم تعمل `return`. المشكلة؟ هذه القائمة ستحتل مساحة هائلة من الـ RAM وقد تتسبب في بطء أو انهيار جهازك (MemoryError).
+
+**الحل هو Generators:**
+المولدات هي دوال لا ترجع (Return) كل البيانات دفعة واحدة. بدلاً من `return` نستخدم كلمة **`yield`**. الـ `yield` تقوم بإرجاع قيمة واحدة، ثم تُجمد الدالة (Pause) حتى تطلب منها القيمة التالية! هذا يستهلك 0% تقريباً من الذاكرة (Memory-efficient).
+
+```python
+# دالة عادية (تستهلك الذاكرة)
+def get_numbers_normal(limit):
+    nums = []
+    for i in range(limit):
+        nums.append(i)
+    return nums # ترجع القائمة بالكامل
+
+# دالة Generator (سحرية)
+def get_numbers_generator(limit):
+    for i in range(limit):
+        # yield ترجع الرقم ثم تتوقف وتنتظر الاستدعاء التالي!
+        yield i
+
+# الاستخدام
+gen = get_numbers_generator(5)
+print(type(gen)) # <class 'generator'>
+
+# طلب القيمة التالية باستخدام دالة next() المدمجة
+print(next(gen)) # 0
+print(next(gen)) # 1
+
+# يمكن استخدام حلقة for معها ببساطة
+for num in gen:
+    print(num) # سيطبع 2, 3, 4 (يكمل من حيث توقف!)
+```
+
+### سحر الـ Generator Comprehension
+تذكر الـ List Comprehension الذي كان يُكتب بالأقواس `[]`؟ 
+`[x*x for x in range(10)]` 
+إذا استبدلت الأقواس المربعة بأقواس عادية `()`، سيتحول تلقائياً إلى Generator ولن يستهلك الذاكرة!
+`gen = (x*x for x in range(1000000))`
+
+---
+
+## ⚡ Performance Notes
+
+:::tip المعركة بين Generators و List Comprehensions
+بينما يعتبر الـ Generator موفراً مذهلاً للذاكرة (RAM) لأنه لا يخزن البيانات، إلا أنه **أبطأ بقليل** في سرعة المعالجة (CPU) مقارنة بالـ List Comprehension! 
+الـ List Comprehension ينفذ الحلقة بالكامل داخل محرك الـ C الخاص ببايثون دفعة واحدة، بينما الـ Generator يضطر للتبديل بين كود بايثون وكود C في كل مرة يطلب فيها قيمة `yield`.
+**القاعدة الذهبية:** استخدم Lists للبيانات الصغيرة (أسرع للمعالجة)، واستخدم Generators للبيانات الضخمة جداً (أو غير المحدودة) لتجنب انهيار الذاكرة.
+:::
+
+---
+
+## ⚠️ الأخطاء الشائعة (Common Mistakes)
+
+```python
+# ❌ 1 - محاولة إعادة استخدام الـ Generator بعد انتهائه
+gen = (x for x in range(3))
+for i in gen: print(i) # سيطبع 0, 1, 2
+
+# الآن الـ Generator فارغ تماماً!
+for i in gen: print(i) 
+# 💥 لن يطبع أي شيء! الـ Generators تُستخدم لمرة واحدة فقط (One-time use). 
+# ✅ الحل: إذا احتجت للمرور عليها مجدداً، يجب عليك إنشاء المتغير gen من جديد.
+
+# ❌ 2 - نسيان @wraps في الـ Decorators
+# عندما تصنع Decorator، فإنه يخفي اسم الدالة الأصلية ويستبدلها بـ wrapper.
+# ✅ الحل الدائم: استيراد from functools import wraps ووضع @wraps(func) فوق دالة الـ wrapper للحفاظ على هوية الدالة الأصلية للمبرمجين الآخرين.
+```
+
+---
+
+## Interview Questions & Answers
+
+<details>
+<summary><strong>Q1: ماذا لو طلبت `next(gen)` ولم يعد هناك قيم متبقية في الـ Generator؟</strong></summary>
+
+إذا تم استنفاد كل القيم ووصلنا لنهاية حلقة الـ Generator وحاولت استدعاء `next()`، ستقوم بايثون بإطلاق استثناء (Exception) من نوع `StopIteration` لتخبرك بأنه لا يوجد المزيد. حلقة `for` تتعامل مع هذا الاستثناء وتتوقف بسلاسة دون أن ينهار البرنامج.
+</details>
+
+<details>
+<summary><strong>Q2: متى أستخدم List ومتى أستخدم Generator؟</strong></summary>
+
+- استخدم الـ **List** إذا كنت تحتاج للبيانات بشكل عشوائي عدة مرات (مثلاً `my_list[50]`)، أو تريد التعديل عليها، أو كان حجمها صغيراً ومعروفاً.
+- استخدم الـ **Generator** إذا كان حجم البيانات ضخماً جداً، أو إذا كنت ستقرأها **مرة واحدة فقط بالترتيب** (مثلاً قراءة ملف نصي فيه ملايين الأسطر، استخدم `yield` لتقرأه سطراً سطراً دون تحميله بالكامل في الـ RAM).
+</details>
+
+---
+
+<ExerciseBox title="🏋️ Exercise - مولد الكلمات (Word Generator)">
+
+1. اكتب دالة Generator باسم `sentence_reader` تستقبل نصاً (String) كاملاً (مثال: `"Python is awesome"`).
+2. قم بتقسيم النص إلى قائمة من الكلمات باستخدام دالة `.split()`.
+3. استخدم `for` و `yield` لإرجاع كلمة واحدة في كل مرة يتم فيها استدعاء الـ Generator.
+4. اختبره باستخدام حلقة `for` لطباعة الكلمات.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي</strong></summary>
+
+```python
+def sentence_reader(text):
+    words = text.split() # تحويل النص لقائمة ["Python", "is", "awesome"]
+    for word in words:
+        yield word # إرجاع الكلمة وإيقاف الدالة مؤقتاً
+
+# الاستخدام
+my_generator = sentence_reader("Python is awesome")
+
+for w in my_generator:
+    print("Word:", w)
+```
+
+</details>
+
+---
+
+<SummaryBox title="📌 Lesson Summary">
+
+- **Decorators `@`**: تستخدم لـ "تغليف" أو التعديل على دالة موجودة دون تغيير كودها الأصلي، وتستخدم بشدة لتسجيل الدخول، التحقق من الأداء، والأمان.
+- **Generators**: تستخدم كلمة **`yield`** بدلاً من `return`، وتقوم بإنشاء كائنات Lazy ترجع البيانات واحدة تلو الأخرى لتوفير استهلاك الذاكرة (RAM).
+- استخدم `next()` للحصول على القيمة التالية من الـ Generator.
+
+</SummaryBox>

@@ -16,12 +16,15 @@ export default function Root({ children }) {
   const [isChecking, setIsChecking] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
 
-  const isFlutterCourse = location.pathname.startsWith('/docs');
+  const isFlutterCourse = location.pathname.startsWith('/docs') && !location.pathname.startsWith('/docs-js') && !location.pathname.startsWith('/docs-cpp') && !location.pathname.startsWith('/docs-python');
   const isJsCourse = location.pathname.startsWith('/docs-js');
-  const isCourseRoute = isFlutterCourse || isJsCourse;
+  const isCppCourse = location.pathname.startsWith('/docs-cpp');
+  const isPythonCourse = location.pathname.startsWith('/docs-python');
+  const isCourseRoute = isFlutterCourse || isJsCourse || isCppCourse || isPythonCourse;
   
   // تحديد اسم الكورس الحالي برمجياً
-  const currentCourse = isJsCourse ? 'js' : (isFlutterCourse ? 'flutter' : 'none');
+  const currentCourse = isJsCourse ? 'js' : isCppCourse ? 'cpp' : isPythonCourse ? 'python' : (isFlutterCourse ? 'flutter' : 'none');
+  const currentCourseName = currentCourse === 'flutter' ? 'كورس فلاتر & Dart' : currentCourse === 'js' ? 'كورس جافاسكريبت' : currentCourse === 'cpp' ? 'كورس C++' : 'كورس Python';
 
   useEffect(() => {
     let isMounted = true;
@@ -183,7 +186,7 @@ export default function Root({ children }) {
             </div>
             <h2 className="gate-title">وصول حصري</h2>
             <p className="gate-subtitle">
-              هذا المحتوى مخصص فقط للمشتركين. يرجى إدخال كود التفعيل الخاص بـ {currentCourse === 'flutter' ? 'كورس فلاتر' : 'كورس جافاسكريبت'} للبدء.
+              هذا المحتوى مخصص فقط للمشتركين. يرجى إدخال كود التفعيل الخاص بـ {currentCourseName} للبدء.
             </p>
 
             <form onSubmit={handleManualCodeSubmit} className="gate-form">
@@ -229,11 +232,8 @@ export default function Root({ children }) {
             <div className="gate-footer" style={{ marginTop: '1.5rem' }}>
               <p>للاشتراك والحصول على الكود، تواصل معنا:</p>
               <div className="gate-contact-links">
-                <a href={`https://wa.me/201272442829?text=أريد%20تفعيل%20كورس%20${currentCourse === 'flutter' ? 'فلاتر' : 'جافاسكريبت'}`} target="_blank" rel="noreferrer" className="contact-btn whatsapp">
+                <a href={`https://wa.me/201272442829?text=أريد%20تفعيل%20${encodeURIComponent(currentCourseName)}`} target="_blank" rel="noreferrer" className="contact-btn whatsapp">
                   💬 واتساب
-                </a>
-                <a href={`https://t.me/atefelhamsa`} target="_blank" rel="noreferrer" className="contact-btn telegram">
-                  ✈️ تيليجرام
                 </a>
               </div>
             </div>

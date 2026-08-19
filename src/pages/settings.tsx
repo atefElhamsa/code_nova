@@ -160,6 +160,8 @@ export default function Settings() {
   const getCourseName = (c: string) => {
     if (c === 'flutter') return 'دورة Flutter & Dart';
     if (c === 'js') return 'دورة JavaScript OOP';
+    if (c === 'cpp') return 'دورة C++ Mastery';
+    if (c === 'python') return 'دورة Python Pro';
     if (c === 'all') return 'الباقة الشاملة (جميع الكورسات)';
     return 'كورس غير معروف';
   };
@@ -367,17 +369,21 @@ export default function Settings() {
                             <div className="st-course-card-bg"></div>
                             <div className="st-course-card-content">
                               <div className="st-course-icon-large">
-                                {c.target_course === 'js' ? (
+                                 {c.target_course === 'js' ? (
                                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
                                 ) : c.target_course === 'flutter' ? (
                                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path><line x1="16" y1="8" x2="2" y2="22"></line><line x1="17.5" y1="15" x2="9" y2="6.5"></line></svg>
+                                ) : c.target_course === 'cpp' ? (
+                                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                                ) : c.target_course === 'python' ? (
+                                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M12 8v4l3 3"/></svg>
                                 ) : (
                                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 16.1A5 5 0 0 1 5.9 20M2 12.05A9 9 0 0 1 9.95 20M2 8V6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-6"></path><line x1="2" y1="20" x2="2.01" y2="20"></line></svg>
                                 )}
                               </div>
                               <h4 className="st-course-card-title">{getCourseName(c.target_course)}</h4>
                               <p className="st-course-card-date">تم التفعيل في: {new Date(c.created_at).toLocaleDateString('ar-EG')}</p>
-                              <a href={c.target_course === 'js' ? '/javascript' : '/flutter'} className="st-btn-go-full">دخول للكورس</a>
+                              <a href={c.target_course === 'js' ? '/javascript' : c.target_course === 'flutter' ? '/flutter' : c.target_course === 'cpp' ? '/cpp' : c.target_course === 'python' ? '/python' : '/'} className="st-btn-go-full">دخول للكورس</a>
                             </div>
                           </div>
                         ))}
@@ -856,6 +862,9 @@ const stStyles = `
   }
   .st-course-card.js .st-course-icon-large { background: rgba(250, 204, 21, 0.1); color: #facc15; border: 1px solid rgba(250, 204, 21, 0.2); }
   .st-course-card.flutter .st-course-icon-large { background: rgba(14, 165, 233, 0.1); color: #38bdf8; border: 1px solid rgba(14, 165, 233, 0.2); }
+  .st-course-card.cpp .st-course-icon-large { background: rgba(249, 115, 22, 0.1); color: #f97316; border: 1px solid rgba(249, 115, 22, 0.2); }
+  .st-course-card.python .st-course-icon-large { background: rgba(55, 118, 171, 0.1); color: #4da8da; border: 1px solid rgba(55, 118, 171, 0.2); }
+  .st-course-card.all .st-course-icon-large { background: rgba(167, 139, 250, 0.1); color: #a78bfa; border: 1px solid rgba(167, 139, 250, 0.2); }
   .st-course-icon-large svg { width: 32px; height: 32px; }
 
   .st-course-card-title { font-size: 1.15rem; font-weight: 800; color: #fff; margin: 0 0 8px; }
@@ -872,9 +881,14 @@ const stStyles = `
     font-size: 0.95rem;
     transition: all 0.2s;
     border: 1px solid rgba(255,255,255,0.1);
+    display: block;
+    text-align: center;
   }
   .st-course-card.js .st-btn-go-full:hover { background: #facc15; color: #000; border-color: #facc15; }
   .st-course-card.flutter .st-btn-go-full:hover { background: #0ea5e9; color: #fff; border-color: #0ea5e9; }
+  .st-course-card.cpp .st-btn-go-full:hover { background: #f97316; color: #fff; border-color: #f97316; }
+  .st-course-card.python .st-btn-go-full:hover { background: #3776ab; color: #fff; border-color: #3776ab; }
+  .st-course-card.all .st-btn-go-full:hover { background: #a78bfa; color: #fff; border-color: #a78bfa; }
 
   /* Danger Card */
   .st-danger-card {

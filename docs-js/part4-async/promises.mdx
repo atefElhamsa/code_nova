@@ -1,0 +1,180 @@
+---
+id: promises
+title: "4.2 Promises"
+sidebar_label: "4.2 Promises"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 4.2 الوعود (Promises)
+
+بعدما رأينا كابوس الـ Callback Hell، قدمت جافاسكريبت حلاً رائعاً ومرتباً في تحديث ES6 وهو **الوعود (Promises)**. وهو يتطابق تماماً في الفكرة مع ما درسته في Dart.
+
+---
+
+##  الأهداف التعليمية
+
+1. فهم ما هو الـ Promise وكيف يحل مشكلة الـ Callback Hell.
+2. معرفة حالات الـ Promise الثلاث (Pending, Fulfilled, Rejected).
+3. استخدام `then` للنجاح و `catch` لالتقاط الأخطاء.
+4. الإجابة على أسئلة المقابلات الشخصية لمهندسي الواجهات الأمامية.
+
+---
+
+## 1. ما هو الـ Promise؟
+
+الـ Promise (الوعد) هو كائن في جافاسكريبت يمثل **النتيجة المستقبلية** لعملية غير متزامنة. تماماً كما تعد شخصاً بشيء ما، إما أن تفي بوعدك (نجاح) أو تخلفه (فشل).
+
+> 💡 **مقارنة بـ Dart:**
+> الـ `Promise` في جافاسكريبت هو **نسخة طبق الأصل** من الـ `Future` في لغة Dart! كل ما تعرفه عن الـ `Future` ينطبق هنا.
+
+### حالات الـ Promise:
+1. **Pending (قيد الانتظار):** العملية لم تكتمل بعد وما زالت جارية.
+2. **Fulfilled (مكتمل بنجاح):** نجحت العملية وحصلنا على البيانات (`resolve`).
+3. **Rejected (مرفوض/فشل):** فشلت العملية بسبب خطأ مثل انقطاع الإنترنت (`reject`).
+
+---
+
+## 2. إنشاء Promise
+
+نادراً ما ستكتب وعداً من الصفر، غالباً ستستخدم دوالاً (مثل `fetch`) ترجع لك وعوداً جاهزة. ولكن هكذا يتم بناؤه في الخلفية:
+
+```javascript
+const orderFood = new Promise((resolve, reject) => {
+  const isAvailable = true;
+
+  setTimeout(() => {
+    if (isAvailable) {
+      resolve("Pizza is ready!"); // إعلان النجاح وتمرير القيمة
+    } else {
+      reject("Sorry, out of stock."); // إعلان الفشل وتمرير سبب الخطأ
+    }
+  }, 2000);
+});
+```
+
+---
+
+## 3. التعامل مع الـ Promise
+
+للتعامل مع النتيجة عندما يكتمل الوعد، نستخدم دالة `then()` للنجاح، ودالة `catch()` لمعالجة الأخطاء.
+
+> 💡 **مقارنة بـ Dart:**
+> هذا يطابق تماماً استخدام `then()` و `catchError()` مع كائنات الـ `Future`.
+
+```javascript
+orderFood
+  .then((message) => {
+    // تتنفذ عند استدعاء resolve
+    console.log("Success:", message); 
+  })
+  .catch((error) => {
+    // تتنفذ عند استدعاء reject
+    console.error("Error:", error); 
+  })
+  .finally(() => {
+    // تتنفذ دائماً في النهاية (سواء نجح أو فشل) تعادل whenComplete في Dart
+    console.log("Operation finished.");
+  });
+```
+
+### تسلسل الوعود (Promise Chaining)
+بفضل الـ Promises، تخلصنا من الـ Callback Hell، حيث يمكننا تسلسل دوال `then` بشكل نظيف ومقروء:
+
+```javascript
+getUser()
+  .then(user => getPosts(user.id))         // يرجع وعداً جديداً
+  .then(posts => getComments(posts[0].id)) // يرجع وعداً آخر
+  .then(comments => console.log(comments)) // النتيجة النهائية
+  .catch(error => console.log("Something went wrong", error)); // يصطاد أي خطأ في السلسلة
+```
+
+---
+
+## ⚡ Performance Notes
+
+:::tip استخدام Promise.all للعمليات المتوازية
+إذا كان لديك 3 طلبات للإنترنت ولا تعتمد على بعضها (مثلاً جلب الأقسام، جلب الإعلانات، جلب الإعدادات)، لا تجعلهم ينتظرون بعضهم البعض (Sequential). استخدم `Promise.all` ليتم إرسال الـ 3 طلبات في **نفس اللحظة** مما يوفر الكثير من الوقت (Parallel Execution).
+```javascript
+Promise.all([fetchCategories(), fetchAds(), fetchSettings()])
+  .then(([categories, ads, settings]) => {
+    console.log("All data loaded fast!");
+  });
+```
+:::
+
+---
+
+## ⚠️ الأخطاء الشائعة (Common Mistakes)
+
+```javascript
+// ❌ 1 - نسيان الـ catch
+myPromise().then(data => console.log(data));
+// 💥 إذا فشل الوعد ولم يكن هناك catch، سيظهر خطأ UnhandledPromiseRejection في المتصفح.
+
+// ❌ 2 - نسيان الـ return داخل الـ then في الـ Chaining
+getUser()
+  .then(user => { getPosts(user.id); }) // 💥 نسينا الـ return
+  .then(posts => console.log(posts)); // ستكون undefined!
+// ✅ الحل: تأكد من إرجاع القيمة أو الوعد الجديد.
+```
+
+---
+
+## Interview Questions & Answers
+
+<details>
+<summary><strong>Q1: ما الفرق بين الماكرو تاسك (Macrotask) والمايكرو تاسك (Microtask) في الـ Event Loop؟</strong></summary>
+
+هذا سؤال متقدم! 
+الـ `setTimeout` ترسل الـ Callback لـ **Macrotask Queue**. 
+بينما الـ `Promises` ترسل دوال הـ `then`/`catch` لـ **Microtask Queue**. 
+الـ Event Loop **دائماً** يعطي الأولوية القصوى لإنهاء كل مهام الـ Microtask قبل أن يلتفت للـ Macrotask. لذا، الكود الموجود في `.then` سينفذ دائماً **قبل** الكود الموجود في `setTimeout` حتى لو كان الوقت 0.
+</details>
+
+---
+
+<ExerciseBox title="🏋️ تمرين عملي (Exercise)">
+
+1. قم بإنشاء `Promise` يحاكي جلب بيانات مستخدم، ويقوم بعمل `resolve` بعد ثانية واحدة يُرجع كائناً يحتوي على `{ id: 1, name: "CodeNova" }`.
+2. استخدم `.then` لطباعة اسم المستخدم.
+3. استخدم `.catch` لطباعة خطأ افتراضي.
+4. قم بتغيير الكود الداخلي للوعد ليقوم بعمل `reject("Network Failed")` ولاحظ كيف سيتم تنفيذ الـ `catch`.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل (Solution)</strong></summary>
+
+```javascript
+const fetchUser = new Promise((resolve, reject) => {
+  setTimeout(() => {
+    // لتجربة الرفض، غير الشرط لـ false
+    const success = true; 
+    
+    if (success) {
+      resolve({ id: 1, name: "CodeNova" });
+    } else {
+      reject("Network Failed");
+    }
+  }, 1000);
+});
+
+fetchUser
+  .then((user) => console.log(`Welcome, ${user.name}!`))
+  .catch((err) => console.log(`Error: ${err}`));
+```
+
+</details>
+
+---
+
+<SummaryBox title="📌 ملخص الدرس (Summary)">
+
+- الـ `Promise` في جافاسكريبت يعادل الـ `Future` في Dart لتمثيل قيم غير متزامنة.
+- له ثلاث حالات: `Pending` (جاري)، `Fulfilled` (نجاح)، `Rejected` (فشل).
+- نستخدم `then()` للحصول على النتيجة، و `catch()` لاصطياد الأخطاء.
+- `Promise.all` يستخدم لتسريع البرنامج بتشغيل عدة وعود في نفس الوقت.
+
+</SummaryBox>

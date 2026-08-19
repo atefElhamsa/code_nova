@@ -1,0 +1,215 @@
+---
+id: working-with-apis
+title: "9.1 Working with APIs (Requests)"
+sidebar_label: "9.1 Working with APIs"
+---
+
+import ExerciseBox from '@site/src/components/ExerciseBox';
+import SummaryBox from '@site/src/components/SummaryBox';
+
+# 9.1 العمل مع واجهات برمجة التطبيقات (APIs)
+
+في عالم البرمجة الحديث، نادراً ما يعيش تطبيقك بمعزل عن العالم الخارجي. ستحتاج غالباً لجلب بيانات الطقس من الإنترنت، أو إرسال تغريدة لـ Twitter، أو قراءة أسعار العملات. هنا يأتي دور الـ **API (Application Programming Interface)**.
+
+الـ API هو وسيط يسمح لبرنامجك بالتحدث مع سيرفر (خادم) على الإنترنت لتبادل البيانات. أشهر مكتبة في بايثون للقيام بذلك هي مكتبة `requests`.
+
+---
+
+## 1. تثبيت مكتبة Requests
+
+مكتبة `requests` ليست مدمجة في بايثون الافتراضية، لذا يجب تحميلها باستخدام `pip`.
+افتح הـ Terminal واكتب:
+```bash
+pip install requests
+```
+
+---
+
+## 2. إرسال طلب (GET Request)
+
+لنقم بجلب بيانات من API حقيقي ومجاني (مخصص للتجارب) يسمى JSONPlaceholder.
+
+```python
+import requests
+
+# 1. عنوان الـ API الذي نريد التحدث معه
+url = "https://jsonplaceholder.typicode.com/users/1"
+
+# 2. إرسال الطلب من نوع GET (يعني "أعطني بيانات")
+response = requests.get(url)
+
+# 3. التحقق من حالة الرد (Status Code)
+# الرقم 200 يعني OK (العملية نجحت)
+if response.status_code == 200:
+    print("Success!")
+    
+    # 4. تحويل النص القادم من السيرفر (والذي يكون بصيغة JSON) إلى قاموس بايثون
+    data = response.json()
+    
+    # الآن أصبح لدينا قاموس عادي يمكننا قراءته
+    print("User Name:", data["name"])
+    print("User Email:", data["email"])
+else:
+    print(f"Failed to fetch data. Error code: {response.status_code}")
+```
+
+### الأكواد الشائعة (HTTP Status Codes):
+- **`200 OK`**: كل شيء على ما يرام وتم إرجاع البيانات.
+- **`404 Not Found`**: الرابط خاطئ أو غير موجود.
+- **`500 Internal Server Error`**: خطأ في السيرفر نفسه (المشكلة ليست من كودك).
+
+---
+
+## 3. إرسال بيانات (POST Request)
+
+ماذا لو أردت إنشاء حساب مستخدم جديد أو نشر تغريدة؟ هنا نستخدم طلب من نوع `POST` (يعني "خذ هذه البيانات واحفظها عندك").
+
+```python
+import requests
+
+url = "https://jsonplaceholder.typicode.com/posts"
+
+# البيانات التي نريد إرسالها (في شكل قاموس)
+new_post = {
+    "title": "Learning Python",
+    "body": "Python APIs are awesome!",
+    "userId": 1
+}
+
+# نمرر البيانات في معامل اسمه json (ليتم تحويله تلقائياً)
+response = requests.post(url, json=new_post)
+
+# في حالة الـ POST، غالباً ما يرد السيرفر بكود 201 (Created)
+if response.status_code == 201:
+    print("Post created successfully!")
+    print("Server Response:", response.json())
+```
+
+---
+
+## 4. إضافة معاملات (Query Parameters) للرابط
+
+في كثير من الأحيان، تحتاج لتصفية البيانات. مثلاً، إذا كنت تبحث في API للكتب وتريد الكتب التي مؤلفها "Ali" فقط. بدلاً من لصق الكلمات في الرابط يدوياً `?author=Ali`، يمكنك تمريرها في قاموس.
+
+```python
+import requests
+
+url = "https://jsonplaceholder.typicode.com/posts"
+
+# نريد المقالات الخاصة بالمستخدم رقم 1 فقط
+my_params = {
+    "userId": 1
+}
+
+# نمررها في معامل params
+response = requests.get(url, params=my_params)
+
+# بايثون ستقوم بدمج الرابط ليصبح هكذا:
+# https://jsonplaceholder.typicode.com/posts?userId=1
+
+posts = response.json()
+print(f"Found {len(posts)} posts for User 1.")
+```
+
+---
+
+## ⚡ Performance Notes
+
+:::tip تسريع الطلبات باستخدام `requests.Session()`
+عندما تستخدم `requests.get()` لطلب 10 صور متتالية من نفس السيرفر، ستقوم بايثون بفتح وإغلاق اتصال (TCP Connection) جديد 10 مرات! هذا يهدر وقتاً كبيراً.
+**نصيحة الأداء:** إذا كنت ستتحدث مع نفس الـ API عدة مرات، استخدم الـ Sessions.
+```python
+session = requests.Session()
+response1 = session.get("https://api.example.com/user/1")
+response2 = session.get("https://api.example.com/user/2")
+```
+هذا يعيد استخدام نفس الاتصال المفتوح ويجعل الطلبات أسرع بنسبة تصل إلى 200%!
+:::
+
+---
+
+## ⚠️ الأخطاء الشائعة (Common Mistakes)
+
+```python
+# ❌ 1 - كتابة الـ API Key السري داخل الكود (Hardcoding)
+api_key = "123456789_SECRET_KEY"
+# 💥 كارثة أمنية! عندما ترفع كودك على GitHub، سيقوم الهاكرز بسرقة مفتاحك واستخدامه وقد يكلفك ذلك آلاف الدولارات.
+# ✅ الحل: احفظه في ملف مخفي يسمى .env واستخدم مكتبة `python-dotenv` لقراءته.
+
+# ❌ 2 - نسيان التحقق من الأخطاء بشكل احترافي
+# response = requests.get(url)
+# print(response.json()) # 💥 ماذا لو كان الرد 404 أو 500؟ سيحدث خطأ JSONDecodeError.
+# ✅ الحل الدائم: استخدم دالة `raise_for_status()` لتطلق خطأ فورياً إذا كان الرد غير ناجح.
+response = requests.get(url)
+response.raise_for_status() # سيوقف البرنامج إذا كان هناك خطأ 404 أو 500
+```
+
+---
+
+## Interview Questions & Answers
+
+<details>
+<summary><strong>Q1: ماذا لو كان السيرفر الذي أتحدث معه بطيئاً جداً أو متوقفاً؟ هل سيتوقف برنامجي للأبد؟</strong></summary>
+
+افتراضياً، نعم! دالة `requests.get` ستنتظر بلا نهاية حتى يرد السيرفر (وهذا قد يسبب تجمد البرنامج).
+لتجنب هذه الكارثة في سوق العمل، **يجب دائماً** استخدام معامل `timeout`.
+`requests.get(url, timeout=5)`
+بهذا الكود، ستنتظر بايثون 5 ثوانٍ فقط، وإذا لم يرد السيرفر ستطلق استثناء (Timeout Exception) يمكنك اصطياده بـ `try/except` لتخبر المستخدم أن الإنترنت بطيء.
+</details>
+
+<details>
+<summary><strong>Q2: ما الفرق بين إرسال البيانات كـ `data` و كـ `json` في طلب الـ POST؟</strong></summary>
+
+- `json=my_dict`: سيقوم تلقائياً بتحويل القاموس إلى نص بصيغة JSON، ويخبر السيرفر بأن نوع البيانات المُرسلة هو `application/json`. وهو الأكثر شيوعاً.
+- `data=my_dict`: سيقوم بإرسال البيانات كأنها مُدخلات من نموذج ويب عادي (Form Data)، ويخبر السيرفر أن النوع هو `application/x-www-form-urlencoded`. يجب استخدام أحدهما حسب ما يطلبه مبرمج الـ API.
+</details>
+
+---
+
+<ExerciseBox title="🏋️ Exercise - جلب نكتة برمجية">
+
+يوجد API مجاني يعطيك نكتة برمجية عشوائية عند كل زيارة. 
+الرابط هو: `https://v2.jokeapi.dev/joke/Programming?type=single`
+1. استخدم مكتبة `requests` لجلب البيانات من هذا الرابط.
+2. تأكد من أن حالة الرد (status_code) تساوي 200.
+3. حول الرد إلى قاموس بـ `.json()`.
+4. اطبع محتوى المتغير المُسمى `joke` الموجود داخل القاموس الذي رجع.
+
+</ExerciseBox>
+
+<details>
+<summary><strong>💡 اضغط هنا لرؤية الحل النموذجي</strong></summary>
+
+```python
+import requests
+
+url = "https://v2.jokeapi.dev/joke/Programming?type=single"
+
+try:
+    # أضفنا timeout ليكون الكود احترافياً
+    response = requests.get(url, timeout=5)
+    
+    if response.status_code == 200:
+        data = response.json()
+        print("Here is a programming joke for you:")
+        print(data["joke"])
+    else:
+        print("Failed to get joke. Status:", response.status_code)
+        
+except requests.exceptions.Timeout:
+    print("Error: The server took too long to respond.")
+```
+
+</details>
+
+---
+
+<SummaryBox title="📌 Lesson Summary">
+
+- **API**: وسيط للتخاطب بين برنامجك والسيرفرات الخارجية.
+- استخدم `requests.get()` لقراءة وجلب البيانات.
+- استخدم `requests.post()` لإرسال بيانات جديدة (غالباً باستخدام معامل `json=`).
+- الكود **200** يعني النجاح، بينما الأكواد في الـ 400 والـ 500 تعني وجود أخطاء.
+- دائماً استخدم `timeout` لحماية برنامجك من التوقف النهائي بسبب بطء الشبكة.
+
+</SummaryBox>
