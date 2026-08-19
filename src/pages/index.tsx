@@ -77,7 +77,7 @@ export default function Hub() {
         
         <div className="mouse-glow"></div>
 
-        <div style={{ position: 'absolute', top: '24px', right: '24px', zIndex: 100 }}>
+        <div className="settings-btn-container" style={{ position: 'absolute', top: '24px', right: '24px', zIndex: 100 }}>
           <Link to="/settings" className="start-btn" style={{ padding: '8px 16px', background: 'rgba(56, 189, 248, 0.1)', borderColor: 'rgba(56, 189, 248, 0.2)', width: 'auto', borderRadius: '12px', gap: '8px' }}>
             <span dir="rtl" style={{ fontSize: '0.95rem', fontWeight: 700, color: '#38bdf8' }}>⚙️ إعدادات حسابي</span>
           </Link>
@@ -275,7 +275,8 @@ export default function Hub() {
         }
 
         @media (max-width: 768px) {
-          .modern-hub { padding: 3rem 1rem; }
+          .modern-hub { padding: 4rem 1rem 3rem; }
+          .settings-btn-container { top: 10px; right: 10px; left: 10px; display: flex; justify-content: flex-end; }
           .brand-name { font-size: clamp(3rem, 10vw, 4rem); }
           .brand-academy { font-size: clamp(1.5rem, 6vw, 2rem); }
           .main-subtitle { font-size: 1rem; }
