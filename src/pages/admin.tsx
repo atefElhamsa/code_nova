@@ -153,7 +153,27 @@ export default function AdminPage() {
       .from('course_access_requests')
       .select('*')
       .order('created_at', { ascending: false });
-    if (!error && data) setAccessCodes(data);
+      
+    if (!error && data) {
+      const userIds = data.map(d => d.user_id).filter(Boolean);
+      if (userIds.length > 0) {
+        const { data: users } = await codesSupabase
+          .from('user_profiles')
+          .select('id, full_name, email, avatar_url')
+          .in('id', userIds);
+          
+        if (users) {
+          const userMap = {};
+          users.forEach((u: any) => userMap[u.id] = u);
+          data.forEach(d => {
+            if (d.user_id && userMap[d.user_id]) {
+              d.user = userMap[d.user_id];
+            }
+          });
+        }
+      }
+      setAccessCodes(data);
+    }
     setCodesLoading(false);
   }, []);
 
@@ -690,8 +710,9 @@ export default function AdminPage() {
               ) : (
                 <div style={{ overflowX: 'auto', paddingBottom: '8px' }}>
                   <div className="grid-tbl">
-                    <div className="grid-hdr" style={{ gridTemplateColumns: '25% 22% 13% 15% 25%' }}>
+                    <div className="grid-hdr" style={{ gridTemplateColumns: '20% 25% 15% 15% 10% 15%' }}>
                       <div>الكود</div>
+                      <div style={{ textAlign: 'center' }}>المستخدم</div>
                       <div style={{ textAlign: 'center' }}>الكورس</div>
                       <div style={{ textAlign: 'center' }}>المصدر</div>
                       <div style={{ textAlign: 'center' }}>الحالة</div>
@@ -704,9 +725,19 @@ export default function AdminPage() {
                     ) : accessCodes.map((codeRow, i) => {
                       const isStudentReq = codeRow.code_type === 'student';
                       return (
-                        <div key={codeRow.id} className="grid-row" style={{ gridTemplateColumns: '25% 22% 13% 15% 25%', animationDelay: `${i * .04}s` }}>
+                        <div key={codeRow.id} className="grid-row" style={{ gridTemplateColumns: '20% 25% 15% 15% 10% 15%', animationDelay: `${i * .04}s` }}>
                           <div className="grid-cell">
                             <span className="cpill">{codeRow.device_code}</span>
+                          </div>
+                          <div className="grid-cell" style={{ textAlign: 'center' }}>
+                            {codeRow.user ? (
+                              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                <span style={{ color: '#f8fafc', fontWeight: 700, fontSize: '0.85rem' }}>{codeRow.user.full_name || 'بدون اسم'}</span>
+                                <span style={{ color: '#64748b', fontSize: '0.75rem', fontFamily: 'monospace' }}>{codeRow.user.email}</span>
+                              </div>
+                            ) : (
+                              <span style={{ color: '#64748b', fontSize: '0.8rem' }}>—</span>
+                            )}
                           </div>
                           <div className="grid-cell" style={{ textAlign: 'center', color: '#e2e8f0', fontSize: '0.88rem', fontWeight: 600 }}>
                             {getCourseName(codeRow.target_course || 'all')}
@@ -737,7 +768,7 @@ export default function AdminPage() {
                             )}
                             {!isStudentReq && (
                               <button onClick={() => copyToClipboard(codeRow.device_code)} className="abtn" style={{ background: 'rgba(56,189,248,.1)', color: '#38bdf8', border: '1px solid rgba(56,189,248,.2)' }}>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> نسخ الكود
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> نسخ
                               </button>
                             )}
                           </div>

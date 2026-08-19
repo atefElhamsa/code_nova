@@ -206,14 +206,24 @@ export default function Root({ children }) {
                 {isChecking ? 'جاري التحقق...' : 'تفعيل و دخول الكورس'}
               </button>
               
-              <button 
-                type="button" 
-                onClick={() => window.location.href = '/'}
-                className="gate-btn"
-                style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#cbd5e1', marginTop: '0.5rem' }}
-              >
-                🏠 العودة للصفحة الرئيسية
-              </button>
+              <div style={{ display: 'flex', gap: '10px', marginTop: '0.5rem' }}>
+                <button 
+                  type="button" 
+                  onClick={() => window.location.href = '/'}
+                  className="gate-btn"
+                  style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#cbd5e1', flex: 1, margin: 0 }}
+                >
+                  🏠 الرئيسية
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => window.location.href = '/settings'}
+                  className="gate-btn"
+                  style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#cbd5e1', flex: 1, margin: 0 }}
+                >
+                  ⚙️ إعدادات الحساب
+                </button>
+              </div>
             </form>
             
             <div className="gate-footer" style={{ marginTop: '1.5rem' }}>

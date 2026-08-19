@@ -71,6 +71,7 @@ const config: Config = {
       items: [
         {to: '/flutter', label: 'Flutter Course', position: 'left'},
         {to: '/javascript', label: 'JavaScript Course', position: 'left'},
+        {to: '/settings', label: 'الإعدادات ⚙️', position: 'right'},
         {to: '/', label: 'Hub', position: 'right'},
       ],
     },

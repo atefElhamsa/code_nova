@@ -102,6 +102,12 @@ export default function Hub() {
               Build the future with world-class interactive programming courses.<br/>
               <span dir="rtl" className="subtitle-ar">ابنِ مستقبلك مع أقوى الدورات البرمجية التفاعلية بمستوى عالمي.</span>
             </p>
+
+            <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center', gap: '15px', flexWrap: 'wrap' }}>
+              <Link to="/settings" className="start-btn" style={{ width: 'auto', background: 'rgba(56, 189, 248, 0.1)', borderColor: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8' }}>
+                <span className="btn-text-ar" dir="rtl" style={{ color: '#38bdf8' }}>⚙️ إعدادات حسابي</span>
+              </Link>
+            </div>
           </header>
 
           <section className="courses-showcase">
