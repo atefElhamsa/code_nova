@@ -38,9 +38,32 @@ export default function Root({ children }) {
         return;
       }
 
-      // التحقق من الصلاحية للكورس الحالي
-      const hasCourseAccess = localStorage.getItem(`CodeNova_Course_Access_${currentCourse}`) === 'GRANTED';
-      const hasAllAccess = localStorage.getItem(`CodeNova_Course_Access_all`) === 'GRANTED';
+      // التحقق من الصلاحية للكورس الحالي من LocalStorage (كخطوة احتياطية)
+      let hasCourseAccess = localStorage.getItem(`CodeNova_Course_Access_${currentCourse}`) === 'GRANTED';
+      let hasAllAccess = localStorage.getItem(`CodeNova_Course_Access_all`) === 'GRANTED';
+
+      // التحقق من قاعدة البيانات للمستخدم الحالي
+      const { data: sessionData } = await supabase.auth.getSession();
+      const user = sessionData?.session?.user;
+      
+      if (user) {
+        const { data: dbAccess } = await supabase
+          .from('course_access_requests')
+          .select('target_course')
+          .eq('user_id', user.id)
+          .eq('is_approved', true);
+
+        if (dbAccess && dbAccess.length > 0) {
+          if (dbAccess.some(r => r.target_course === 'all')) {
+            hasAllAccess = true;
+            localStorage.setItem(`CodeNova_Course_Access_all`, 'GRANTED');
+          }
+          if (dbAccess.some(r => r.target_course === currentCourse)) {
+            hasCourseAccess = true;
+            localStorage.setItem(`CodeNova_Course_Access_${currentCourse}`, 'GRANTED');
+          }
+        }
+      }
 
       if (hasCourseAccess || hasAllAccess) {
         setIsLocked(false);
@@ -105,10 +128,18 @@ export default function Root({ children }) {
         setIsChecking(false); return;
       }
 
-      // الكود سليم! نقوم بحرقه فوراً (تحديث is_approved لتصبح true لكي لا يُستخدم ثانية)
+      // الكود سليم! نقوم بحرقه وربطه بالمستخدم فوراً
+      const { data: sessionData } = await supabase.auth.getSession();
+      const user = sessionData?.session?.user;
+
+      const updatePayload: any = { is_approved: true };
+      if (user) {
+        updatePayload.user_id = user.id;
+      }
+
       const { error: updateError } = await supabase
         .from('course_access_requests')
-        .update({ is_approved: true })
+        .update(updatePayload)
         .eq('id', data.id);
 
       if (!updateError) {
