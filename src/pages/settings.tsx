@@ -26,6 +26,7 @@ export default function Settings() {
   const [courses, setCourses] = useState<any[]>([]);
   
   // Security
+  const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passError, setPassError] = useState('');
@@ -107,6 +108,11 @@ export default function Settings() {
     setPassError('');
     setPassSuccess('');
 
+    if (!currentPassword) {
+      setPassError('يرجى إدخال كلمة المرور الحالية للتأكيد.');
+      return;
+    }
+
     if (newPassword !== confirmPassword) {
       setPassError('كلمتا المرور غير متطابقتين.');
       return;
@@ -118,12 +124,27 @@ export default function Settings() {
     }
 
     setSaving(true);
+
+    // Verify current password first
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: session.user.email,
+      password: currentPassword,
+    });
+
+    if (signInError) {
+      setPassError('❌ كلمة المرور الحالية غير صحيحة.');
+      setSaving(false);
+      return;
+    }
+
+    // Now update password
     const { error } = await supabase.auth.updateUser({ password: newPassword });
     
     if (error) {
       setPassError('❌ حدث خطأ أثناء تغيير كلمة المرور.');
     } else {
       setPassSuccess('✅ تم تغيير كلمة المرور بنجاح.');
+      setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
       setTimeout(() => setPassSuccess(''), 3000);
@@ -185,6 +206,10 @@ export default function Settings() {
             {/* Sidebar Navigation */}
             <aside className="st-sidebar">
               <div className="st-sidebar-header">
+                <a href="/" className="st-back-home" title="العودة للرئيسية">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                </a>
+                
                 {avatar ? (
                   <img src={avatar} alt="Avatar" className="st-avatar" />
                 ) : (
@@ -375,6 +400,14 @@ export default function Settings() {
                     <form onSubmit={handleUpdatePassword}>
                       <div className="st-form-grid">
                         <div className="st-inp-wrap st-full-width">
+                          <label className="st-label">كلمة المرور الحالية</label>
+                          <input 
+                            type="password" className="st-inp" placeholder="••••••••"
+                            value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} 
+                            dir="ltr"
+                          />
+                        </div>
+                        <div className="st-inp-wrap">
                           <label className="st-label">كلمة المرور الجديدة</label>
                           <input 
                             type="password" className="st-inp" placeholder="••••••••"
@@ -383,7 +416,7 @@ export default function Settings() {
                           />
                         </div>
                         
-                        <div className="st-inp-wrap st-full-width">
+                        <div className="st-inp-wrap">
                           <label className="st-label">تأكيد كلمة المرور الجديدة</label>
                           <input 
                             type="password" className="st-inp" placeholder="••••••••"
@@ -394,7 +427,7 @@ export default function Settings() {
                       </div>
 
                       <div className="st-form-actions">
-                        <button type="submit" className="st-btn st-btn-primary" disabled={saving || !newPassword}>
+                        <button type="submit" className="st-btn st-btn-primary" disabled={saving || !currentPassword || !newPassword}>
                           {saving ? 'جاري التحديث...' : 'تغيير كلمة المرور'}
                         </button>
                       </div>
@@ -468,7 +501,31 @@ const stStyles = `
     padding-bottom: 24px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     margin-bottom: 20px;
+    position: relative;
   }
+
+  .st-back-home {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    color: #94a3b8;
+    transition: all 0.2s ease;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  .st-back-home:hover {
+    background: rgba(56, 189, 248, 0.1);
+    color: #38bdf8;
+    border-color: rgba(56, 189, 248, 0.2);
+    transform: translateX(2px);
+  }
+  .st-back-home svg { width: 20px; height: 20px; }
 
   .st-avatar {
     width: 90px;
@@ -496,18 +553,26 @@ const stStyles = `
     margin-bottom: 16px;
   }
 
+  .st-user-info { width: 100%; overflow: hidden; }
+
   .st-user-name {
     font-size: 1.15rem;
     font-weight: 800;
     color: #f8fafc;
     margin: 0 0 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .st-user-email {
-    font-size: 0.85rem;
-    color: #64748b;
+    font-size: 0.9rem;
+    color: #cbd5e1;
     margin: 0;
     font-family: monospace;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .st-nav-menu {
@@ -888,12 +953,35 @@ const stStyles = `
   }
 
   @media (max-width: 900px) {
-    .st-layout { flex-direction: column; }
-    .st-sidebar { width: 100%; position: static; display: flex; flex-direction: column; }
-    .st-sidebar-header { flex-direction: row; text-align: right; gap: 20px; align-items: center; }
-    .st-avatar, .st-avatar-placeholder { margin-bottom: 0; width: 70px; height: 70px; font-size: 2rem; }
-    .st-nav-menu { flex-direction: row; flex-wrap: wrap; }
-    .st-nav-item { width: auto; flex: 1; min-width: 150px; justify-content: center; }
+    .st-layout { flex-direction: column; gap: 20px; }
+    .st-sidebar { width: 100%; position: static; padding: 20px; display: block; border-radius: 20px; }
+    .st-sidebar-header { 
+      flex-direction: row; text-align: right; justify-content: flex-start;
+      gap: 16px; align-items: center; padding-bottom: 16px; margin-bottom: 16px;
+    }
+    .st-avatar, .st-avatar-placeholder { margin-bottom: 0; width: 64px; height: 64px; font-size: 1.8rem; }
+    .st-user-name { font-size: 1.1rem; }
+    .st-user-email { font-size: 0.85rem; }
+    
+    /* Horizontal scrollable nav menu for mobile */
+    .st-nav-menu { 
+      flex-direction: row; 
+      overflow-x: auto; 
+      padding-bottom: 8px;
+      margin: 0 -10px;
+      padding-left: 10px;
+      padding-right: 10px;
+    }
+    .st-nav-menu::-webkit-scrollbar { height: 0; width: 0; display: none; }
+    
+    .st-nav-item { 
+      width: auto; 
+      white-space: nowrap; 
+      padding: 10px 16px; 
+      background: rgba(255,255,255,0.03); 
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 100px;
+    }
     .st-nav-divider { display: none; }
   }
 
