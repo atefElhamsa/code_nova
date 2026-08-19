@@ -377,7 +377,7 @@ export default function Settings() {
                               </div>
                               <h4 className="st-course-card-title">{getCourseName(c.target_course)}</h4>
                               <p className="st-course-card-date">تم التفعيل في: {new Date(c.created_at).toLocaleDateString('ar-EG')}</p>
-                              <a href={c.target_course === 'js' ? '/docs-js' : '/docs'} className="st-btn-go-full">دخول للكورس</a>
+                              <a href={c.target_course === 'js' ? '/javascript' : '/flutter'} className="st-btn-go-full">دخول للكورس</a>
                             </div>
                           </div>
                         ))}
