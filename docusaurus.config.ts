@@ -87,13 +87,10 @@ const config: Config = {
         src: 'img/codeNovaLogo.jpg', // Ensure you have a logo or it might break, fallback to empty string if not needed but doc_flutter probably has it
       },
       items: [
-        {to: '/flutter', label: 'Flutter Course', position: 'left'},
-        {to: '/javascript', label: 'JavaScript Course', position: 'left'},
-        {to: '/cpp', label: 'C++ Course', position: 'left'},
-        {to: '/python', label: 'Python Course', position: 'left'},
-        {to: '/settings', label: 'الإعدادات ⚙️', position: 'right'},
-        {to: '/', label: 'Hub', position: 'right'},
-      ],
+          {to: '/', label: 'الرئيسية', position: 'right', exact: true},
+          {to: '/about', label: 'من نحن', position: 'right'},
+          {to: '/settings', label: 'حسابي', position: 'right'},
+        ],
     },
     colorMode: {
       defaultMode: 'dark',

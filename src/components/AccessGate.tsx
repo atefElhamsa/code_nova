@@ -470,8 +470,8 @@ export default function AccessGate({ children }: { children: React.ReactNode }) 
     );
   }
 
-  // ── 4. Needs Access Request (status = none) ──────────────────────
-  if (session && accessStatus === 'none' && !blocked) {
+  // ── 4. Needs Phone Number ───────────────────────────────────────
+  if (session && userPhone === null && !blocked) {
     return (
       <div className="ag-overlay">
         <Head><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" /></Head>
@@ -526,47 +526,36 @@ export default function AccessGate({ children }: { children: React.ReactNode }) 
           }
         `}</style>
         <div className="ag-card">
-          <img src={session.user.user_metadata.avatar_url || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp'} alt="" style={{ width: 80, height: 80, borderRadius: '50%', marginBottom: 16, border: '2px solid rgba(255,255,255,.1)' }} />
-          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#f8fafc', margin: '0 0 12px' }}>أهلاً، {session.user.user_metadata.full_name || 'بك'}</h2>
+          <img src={session.user.user_metadata?.avatar_url || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp'} alt="" style={{ width: 80, height: 80, borderRadius: '50%', marginBottom: 16, border: '2px solid rgba(255,255,255,.1)' }} />
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#f8fafc', margin: '0 0 12px' }}>أهلاً، {session.user.user_metadata?.full_name || 'بك'}</h2>
 
-          {userPhone === null ? (
-            <form onSubmit={handleUpdatePhone}>
-              <p style={{ fontSize: '.9rem', color: '#94a3b8', margin: '0 0 8px' }}>يرجى إدخال رقم هاتفك للمتابعة:</p>
-              <div style={{ marginTop: '16px', marginBottom: '16px' }}>
-                <div style={{ position: 'relative' }}>
-                  <PhoneInput
-                    country={'eg'}
-                    enableSearch={true}
-                    disableCountryCode={true}
-                    searchPlaceholder="ابحث عن الدولة..."
-                    searchNotFound="لا توجد نتائج"
-                    value={phone ? (phone.startsWith('+' + dialCode) ? phone.slice(dialCode.length + 1) : phone) : ''}
-                    onChange={(p, data: any) => {
-                      let newPhone = p;
-                      if (newPhone && !newPhone.startsWith('+')) newPhone = '+' + newPhone;
-                      setPhone(newPhone);
-                      if (data?.dialCode) setDialCode(data.dialCode);
-                    }}
-                    dropdownStyle={{ maxHeight: '200px' }}
-                    inputProps={{ required: true, dir: 'ltr', placeholder: '10XXXXXXXX' }}
-                  />
-                  <div style={{ position: 'absolute', top: 0, left: '26px', height: '100%', display: 'flex', alignItems: 'center', color: '#f8fafc', fontWeight: 'bold', fontSize: '.95rem', pointerEvents: 'none', zIndex: 1, direction: 'ltr' }}>
-                    +{dialCode}
-                  </div>
+          <form onSubmit={handleUpdatePhone}>
+            <p style={{ fontSize: '.9rem', color: '#94a3b8', margin: '0 0 8px' }}>يرجى إدخال رقم هاتفك للمتابعة:</p>
+            <div style={{ marginTop: '16px', marginBottom: '16px' }}>
+              <div style={{ position: 'relative' }}>
+                <PhoneInput
+                  country={'eg'}
+                  enableSearch={true}
+                  disableCountryCode={true}
+                  searchPlaceholder="ابحث عن الدولة..."
+                  searchNotFound="لا توجد نتائج"
+                  value={phone ? (phone.startsWith('+' + dialCode) ? phone.slice(dialCode.length + 1) : phone) : ''}
+                  onChange={(p, data: any) => {
+                    let newPhone = p;
+                    if (newPhone && !newPhone.startsWith('+')) newPhone = '+' + newPhone;
+                    setPhone(newPhone);
+                    if (data?.dialCode) setDialCode(data.dialCode);
+                  }}
+                  dropdownStyle={{ maxHeight: '200px' }}
+                  inputProps={{ required: true, dir: 'ltr', placeholder: '10XXXXXXXX' }}
+                />
+                <div style={{ position: 'absolute', top: 0, left: '26px', height: '100%', display: 'flex', alignItems: 'center', color: '#f8fafc', fontWeight: 'bold', fontSize: '.95rem', pointerEvents: 'none', zIndex: 1, direction: 'ltr' }}>
+                  +{dialCode}
                 </div>
               </div>
-              <button type="submit" className="ag-btn" disabled={loading}>حفظ الرقم</button>
-            </form>
-          ) : (
-            <>
-              <p style={{ fontSize: '.95rem', color: '#94a3b8', lineHeight: 1.8, margin: '0 0 32px' }}>
-                حسابك مسجل لدينا بنجاح، لكنك بحاجة إلى موافقة المشرف للوصول إلى المنصة.
-              </p>
-              <button onClick={handleRequestAccess} className="ag-btn" disabled={loading}>
-                {loading ? 'جاري الإرسال...' : 'طلب الموافقة من المشرف'}
-              </button>
-            </>
-          )}
+            </div>
+            <button type="submit" className="ag-btn" disabled={loading}>حفظ الرقم</button>
+          </form>
 
           <button type="button" onClick={handleLogout} className="ag-logout">
             تسجيل الخروج
@@ -576,48 +565,8 @@ export default function AccessGate({ children }: { children: React.ReactNode }) 
     );
   }
 
-  // ── 5. Pending Approval (status = pending) ─────────────────────
-  if (session && accessStatus === 'pending' && !blocked) {
-    const waMsgRequest = encodeURIComponent(`مرحباً، لقد أرسلت طلب موافقة للمنصة (الإيميل: ${session.user.email})، هل يمكن المراجعة؟`);
-    const waLinkRequest = `https://wa.me/${WA_NUMBER}?text=${waMsgRequest}`;
-
-    return (
-      <div className="ag-overlay">
-        <Head><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" /></Head>
-        <style>{`
-          .ag-overlay { position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:#020617;font-family:'Cairo','Inter',sans-serif;direction:rtl; }
-          .ag-card { background:rgba(15,23,42,.95); backdrop-filter:blur(24px); border:1px solid rgba(255,255,255,.08); border-radius:32px; padding:60px 48px; max-width:440px; width:90%; box-shadow:0 40px 80px rgba(0,0,0,.6); animation:ag-fadeup .5s ease; text-align:center; }
-          @keyframes ag-fadeup { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
-          .ag-wa-link { display:flex;align-items:center;justify-content:center;gap:8px;margin-top:32px;color:#34d399;font-weight:700;text-decoration:none;font-size:.95rem;transition:color .2s; background:rgba(52,211,153,.1); padding:12px; border-radius:12px; border:1px solid rgba(52,211,153,.2); }
-          .ag-wa-link:hover { background:rgba(52,211,153,.2); }
-          .ag-logout { display:block; text-align:center; margin-top:24px; color:#64748b; font-size:.85rem; cursor:pointer; background:none; border:none; width:100%; }
-          .ag-logout:hover { color:#94a3b8; }
-          .pulse { animation:pulse 2s infinite; }
-          @keyframes pulse { 0% { opacity:1; } 50% { opacity:.5; } 100% { opacity:1; } }
-        `}</style>
-        <div className="ag-card">
-          <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'center' }} className="pulse">
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-          </div>
-          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#f8fafc', margin: '0 0 12px' }}>جاري المراجعة</h2>
-          <p style={{ fontSize: '.95rem', color: '#94a3b8', lineHeight: 1.8, margin: '0 0 24px' }}>
-            تم إرسال طلبك بنجاح! يرجى الانتظار لحين قيام المشرف بمراجعة حسابك والموافقة عليه.
-          </p>
-
-          <a href={waLinkRequest} target="_blank" rel="noopener noreferrer" className="ag-wa-link">
-            تواصل معنا لتسريع الموافقة
-          </a>
-
-          <button type="button" onClick={handleLogout} className="ag-logout">
-            تسجيل الخروج
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // ── 6. Granted (status = approved) ─────────────────────────────
-  if (session && accessStatus === 'approved' && !blocked) {
+  // ── 5. Granted ──────────────────────────────────────────────────
+  if (session && userPhone !== null && !blocked) {
     return <>{children}</>;
   }
 

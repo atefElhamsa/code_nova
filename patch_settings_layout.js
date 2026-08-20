@@ -1,4 +1,8 @@
-import React, { useState, useEffect } from 'react';
+const fs = require('fs');
+let settingsContent = fs.readFileSync('src/pages/settings.tsx', 'utf-8');
+
+// We will overwrite the entire file to ensure a pristine state for the new design
+const newSettingsCode = `import React, { useState, useEffect } from 'react';
 import Layout from '@theme/Layout';
 import { supabase } from '../lib/supabaseClient';
 import PhoneInput from 'react-phone-input-2';
@@ -185,10 +189,10 @@ export default function Settings() {
         <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#09090b' }}>
           <div className="st-spin" />
         </div>
-        <style>{`
+        <style>{\`
           .st-spin { width:40px; height:40px; border-radius:50%; border:3px solid rgba(56,189,248,.2); border-top-color:#38bdf8; animation:st-spin 1s linear infinite; }
           @keyframes st-spin { to { transform:rotate(360deg); } }
-        `}</style>
+        \`}</style>
       </Layout>
     );
   }
@@ -236,21 +240,21 @@ export default function Settings() {
 
           <div className="st-tabs">
             <button 
-              className={`st-tab ${activeTab === 'profile' ? 'active' : ''}`}
+              className={\`st-tab \${activeTab === 'profile' ? 'active' : ''}\`}
               onClick={() => setActiveTab('profile')}
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
               البيانات الشخصية
             </button>
             <button 
-              className={`st-tab ${activeTab === 'courses' ? 'active' : ''}`}
+              className={\`st-tab \${activeTab === 'courses' ? 'active' : ''}\`}
               onClick={() => setActiveTab('courses')}
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
               كورساتي والاشتراكات
             </button>
             <button 
-              className={`st-tab ${activeTab === 'security' ? 'active' : ''}`}
+              className={\`st-tab \${activeTab === 'security' ? 'active' : ''}\`}
               onClick={() => setActiveTab('security')}
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
@@ -324,6 +328,30 @@ export default function Settings() {
 
             {activeTab === 'courses' && (
               <div className="st-tab-pane animate-fade-up">
+                <div className="st-card" style={{ marginBottom: '30px' }}>
+                  <div className="st-status-box">
+                    <div className={\`st-status-icon \${accessStatus}\`}>
+                      {accessStatus === 'approved' ? (
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      ) : accessStatus === 'pending' ? (
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                      ) : (
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                      )}
+                    </div>
+                    <div>
+                      <h3 style={{ margin: '0 0 6px', fontSize: '1.4rem', color: '#fff', fontWeight: 800 }}>
+                        {accessStatus === 'approved' ? 'الحساب مفعل وجاهز للتعلم' : accessStatus === 'pending' ? 'جاري مراجعة الحساب' : 'الحساب غير مفعل'}
+                      </h3>
+                      <p style={{ margin: 0, fontSize: '1.05rem', color: '#94a3b8', lineHeight: 1.6 }}>
+                        {accessStatus === 'approved' 
+                          ? 'مبروك! حسابك مفعل تماماً ويمكنك الاستمتاع بالكورسات المفتوحة لديك بحرية.' 
+                          : 'حسابك في مرحلة المراجعة من قبل المشرف. سيتم التفعيل قريباً لتتمكن من الوصول للمحتوى.'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="st-card">
                   <div className="st-card-hdr">
                     <div>
@@ -342,7 +370,7 @@ export default function Settings() {
                   ) : (
                     <div className="st-course-grid">
                       {courses.map((c, i) => (
-                        <div key={i} className={`st-course-card ${c.target_course}`}>
+                        <div key={i} className={\`st-course-card \${c.target_course}\`}>
                           <div className="st-course-card-bg"></div>
                           <div className="st-course-card-content">
                             <div className="st-course-icon-large">
@@ -441,7 +469,7 @@ export default function Settings() {
   );
 }
 
-const stStyles = `
+const stStyles = \`
   :root {
     --st-bg: #09090b;
     --st-surface: #18181b;
@@ -855,4 +883,6 @@ const stStyles = `
     .st-danger-header { flex-direction: column; text-align: center; }
     .st-btn-danger { margin: 16px auto 0 !important; }
   }
-`;
+\`;`;
+
+fs.writeFileSync('src/pages/settings.tsx', newSettingsCode);

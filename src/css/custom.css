@@ -40,8 +40,8 @@
 
   --ifm-background-color: var(--bg-base);
   --ifm-background-surface-color: var(--bg-surface);
-  --ifm-navbar-background-color: transparent;
-  --ifm-navbar-height: 0px !important;
+  --ifm-navbar-background-color: rgba(4, 8, 15, 0.85);
+  --ifm-navbar-height: 70px;
   --ifm-color-content: var(--text-primary);
   --ifm-color-content-secondary: var(--text-secondary);
   --ifm-color-emphasis-300: var(--border);
@@ -215,14 +215,17 @@ body::before {
    ================================================================ */
 
 .navbar {
-  display: none !important;
+  /* Restored default Docusaurus navbar */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 html[class*="docs-"] .navbar {
-  display: none !important;
+  /* Show navbar even in courses */
 }
 html[class*="docs-"] {
-  --ifm-navbar-height: 0px !important;
+  --ifm-navbar-height: 70px !important;
 }
 
 .navbar__inner {
@@ -260,6 +263,9 @@ html[class*="docs-"] {
 }
 
 .navbar__logo img {
+  border-radius: 50% !important;
+  background: transparent !important;
+  box-shadow: 0 0 10px rgba(56,189,248,0.3);
   object-fit: contain;
   height: 100%;
   width: auto;
@@ -967,6 +973,7 @@ article tr:hover td {
 .main-wrapper {
   position: relative;
   z-index: 1;
+  animation: fadeIn 0.5s ease-out;
 }
 
 .main-wrapper::before {

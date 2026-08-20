@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 150">
+  <defs>
+    <linearGradient id="gradPurple" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7e22ce" />
+      <stop offset="100%" stop-color="#4c1d95" />
+    </linearGradient>
+    <linearGradient id="gradOrange" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f97316" />
+      <stop offset="100%" stop-color="#ea580c" />
+    </linearGradient>
+  </defs>
+  
+  <!-- i dot -->
+  <path d="M 60 15 L 85 15 L 75 40 L 50 40 Z" fill="url(#gradPurple)" />
+  
+  <!-- i stem -->
+  <path d="M 45 50 L 70 50 L 45 110 L 20 110 Z" fill="url(#gradPurple)" />
+  
+  <!-- P stem -->
+  <path d="M 120 50 L 145 50 L 120 110 L 95 110 Z" fill="url(#gradPurple)" />
+  
+  <!-- P loop -->
+  <path d="M 130 50 L 160 50 C 190 50 200 65 190 80 C 180 95 150 100 130 100 L 115 100 L 125 75 L 140 75 C 155 75 160 70 165 65 C 170 60 160 55 145 55 Z" fill="url(#gradPurple)" />
+  
+  <!-- Orange arrows intertwined -->
+  <path d="M 75 50 L 105 50 L 120 70 L 90 70 Z" fill="url(#gradOrange)" />
+  <path d="M 105 70 L 135 70 L 150 90 L 120 90 Z" fill="url(#gradOrange)" />
+  <path d="M 50 70 L 80 70 L 95 90 L 65 90 Z" fill="url(#gradOrange)" />
+  
+</svg>

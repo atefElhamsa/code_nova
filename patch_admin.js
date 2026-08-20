@@ -1,4 +1,7 @@
-import React, { useState, useEffect, useCallback, useLayoutEffect } from 'react';
+const fs = require('fs');
+const path = require('path');
+
+const newAdminContent = `import React, { useState, useEffect, useCallback, useLayoutEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { supabase as codesSupabase } from '../lib/supabaseClient';
 
@@ -24,9 +27,9 @@ interface UserProfile {
 const relTime = (iso: string) => {
   const m = Math.floor((Date.now() - +new Date(iso)) / 60000);
   if (m < 1) return 'الآن';
-  if (m < 60) return `${m}د`;
-  if (m < 1440) return `${Math.floor(m / 60)}س`;
-  return `${Math.floor(m / 1440)}ي`;
+  if (m < 60) return \`\${m}د\`;
+  if (m < 1440) return \`\${Math.floor(m / 60)}س\`;
+  return \`\${Math.floor(m / 1440)}ي\`;
 };
 const fmtDate = (iso: string) =>
   new Date(iso).toLocaleString('ar-EG', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -60,7 +63,7 @@ const colorAvatar = (str: string) => {
 
 const formatPhoneForWA = (phone: string | null) => {
   if (!phone) return '';
-  let clean = phone.replace(/\D/g, '');
+  let clean = phone.replace(/\\D/g, '');
   if (clean.startsWith('01') && clean.length === 11) {
     return '20' + clean.substring(1);
   }
@@ -265,7 +268,7 @@ export default function AdminPage() {
 
   return (
     <>
-      <style>{`
+      <style>{\`
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800;900&family=Fira+Code:wght@400;500&display=swap');
         
         :root {
@@ -310,10 +313,10 @@ export default function AdminPage() {
           display: flex; align-items: center; gap: 12px; color: #fff;
         }
         .v-logo-icon {
-          width: 65px; height: 65px; border-radius: 50%; background: transparent;
-          border: 2px solid rgba(56, 189, 248, 0.5);
+          width: 32px; height: 32px; border-radius: 10px;
+          background: linear-gradient(135deg, var(--primary), var(--purple));
           display: flex; align-items: center; justify-content: center;
-          animation: glowPulse 2.5s infinite;
+          box-shadow: 0 4px 15px var(--primary-glow);
         }
         .v-menu { display: flex; flex-direction: column; gap: 8px; flex: 1; }
         .v-menu-item {
@@ -343,21 +346,6 @@ export default function AdminPage() {
         }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
-        
-        @keyframes vSlideUp {
-          0% { opacity: 0; transform: translateY(20px); }
-          100% { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes vFadeIn {
-          0% { opacity: 0; }
-          100% { opacity: 1; }
-        }
-        @keyframes glowPulse {
-          0% { box-shadow: 0 0 15px rgba(56, 189, 248, 0.4); }
-          50% { box-shadow: 0 0 25px rgba(56, 189, 248, 0.8); }
-          100% { box-shadow: 0 0 15px rgba(56, 189, 248, 0.4); }
-        }
-        
         /* ── Main Content ── */
         .v-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg-base); }
         
@@ -388,12 +376,7 @@ export default function AdminPage() {
           background: var(--bg-surface); border: 1px solid var(--border);
           border-radius: 20px; padding: 24px; position: relative; overflow: hidden;
           transition: transform 0.2s, border-color 0.2s;
-          animation: vSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
         }
-        .v-stat-card:nth-child(1) { animation-delay: 0.1s; }
-        .v-stat-card:nth-child(2) { animation-delay: 0.2s; }
-        .v-stat-card:nth-child(3) { animation-delay: 0.3s; }
-        .v-stat-card:nth-child(4) { animation-delay: 0.4s; }
         .v-stat-card:hover { transform: translateY(-3px); border-color: var(--primary); }
         .v-stat-icon { font-size: 1.8rem; margin-bottom: 12px; display: inline-block; }
         .v-stat-num { font-size: 2.2rem; font-weight: 900; margin: 0 0 4px; line-height: 1; }
@@ -429,7 +412,6 @@ export default function AdminPage() {
         .v-table-row {
           display: grid; padding: 16px 24px; align-items: center; text-align: center;
           border-bottom: 1px solid rgba(255,255,255,0.03); cursor: pointer; transition: background 0.2s;
-          animation: vSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
         }
         .v-table-row:hover { background: rgba(255,255,255,0.02); }
         .v-table-row:last-child { border-bottom: none; }
@@ -479,7 +461,7 @@ export default function AdminPage() {
         
         /* ── Login ── */
         .v-login-wrap {
-          display: flex; align-items: center; justify-content: center; height: 100vh; width: 100%;
+          display: flex; align-items: center; justify-content: center; height: 100vh;
         }
         .v-login-card {
           width: 440px; background: var(--bg-surface); border: 1px solid var(--border);
@@ -487,14 +469,16 @@ export default function AdminPage() {
           box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
         }
 
-      `}</style>
+      \`}</style>
 
       <div id="v-admin">
         {/* Login Screen */}
         {!authed ? (
           <div className="v-login-wrap">
             <div className="v-login-card">
-              <img src="/img/codeNovaLogo.jpg" alt="CodeNova Logo" style={{ width: 170, height: 170, borderRadius: '50%', margin: '0 auto 24px', display: 'block', objectFit: 'cover', border: '3px solid rgba(56, 189, 248, 0.6)', animation: 'glowPulse 2.5s infinite' }} />
+              <div style={{ width: 80, height: 80, borderRadius: 24, background: 'var(--primary-glow)', margin: '0 auto 24px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+              </div>
               <h1 style={{ fontSize: '1.8rem', fontWeight: 900, margin: '0 0 8px' }}>بوابة الإدارة</h1>
               <p style={{ color: 'var(--text-muted)', marginBottom: '32px' }}>يرجى تسجيل الدخول للوصول للوحة التحكم</p>
               
@@ -513,16 +497,16 @@ export default function AdminPage() {
           <>
             <div className="v-sidebar">
               <div className="v-logo">
-                <img src="/img/codeNovaLogo.jpg" alt="CodeNova Logo" className="v-logo-icon" style={{ objectFit: 'cover' }} />
+                <div className="v-logo-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="4 14 10 14 10 20"></polyline><polyline points="20 10 14 10 14 4"></polyline><line x1="14" y1="10" x2="21" y2="3"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg></div>
                 CodeNova
               </div>
               
               <div className="v-menu">
-                <div className={`v-menu-item ${tab !== 'codes' ? 'active' : ''}`} onClick={() => setTab('all')}>
+                <div className={\`v-menu-item \${tab !== 'codes' ? 'active' : ''}\`} onClick={() => setTab('all')}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                   إدارة الطلاب
                 </div>
-                <div className={`v-menu-item ${tab === 'codes' ? 'active' : ''}`} onClick={() => setTab('codes')}>
+                <div className={\`v-menu-item \${tab === 'codes' ? 'active' : ''}\`} onClick={() => setTab('codes')}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                   أكواد التفعيل
                 </div>
@@ -590,8 +574,8 @@ export default function AdminPage() {
                       </div>
                       {rows.length === 0 ? (
                         <div style={{ padding: '60px', textAlign: 'center', color: 'var(--text-muted)' }}>لا توجد بيانات لعرضها</div>
-                      ) : rows.map((s, i) => (
-                        <div key={s.id} className="v-table-row" style={{ gridTemplateColumns: '2fr 1.5fr 1fr 1fr 1fr', animationDelay: `${0.1 + (i * 0.05)}s` }} onClick={() => setSelectedUser(s)}>
+                      ) : rows.map(s => (
+                        <div key={s.id} className="v-table-row" style={{ gridTemplateColumns: '2fr 1.5fr 1fr 1fr 1fr' }} onClick={() => setSelectedUser(s)}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', textAlign: 'right' }}>
                             {s.avatar_url ? <img src={s.avatar_url} className="v-ava" alt="" /> : (
                               <div className="v-ava" style={{ background: colorAvatar(s.display_name || s.id), borderColor: colorAvatar(s.display_name || s.id) }}>
@@ -608,7 +592,7 @@ export default function AdminPage() {
                           </div>
                           
                           <div style={{ fontFamily: 'monospace', fontSize: '1.05rem', color: 'var(--primary)' }}>
-                            {s.phone ? <a href={`https://wa.me/${formatPhoneForWA(s.phone)}`} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()} style={{color:'var(--primary)', textDecoration:'none'}}>{s.phone}</a> : '—'}
+                            {s.phone ? <a href={\`https://wa.me/\${formatPhoneForWA(s.phone)}\`} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()} style={{color:'var(--primary)', textDecoration:'none'}}>{s.phone}</a> : '—'}
                           </div>
                           
                           <div>
@@ -623,7 +607,7 @@ export default function AdminPage() {
                             {s.is_blocked ? <span className="v-badge bad">محظور</span>
                             : s.status === 'pending' ? <span className="v-badge warn">مراجعة</span>
                             : s.status === 'approved' ? <span className="v-badge ok">مفعل</span>
-                            : <span className="v-badge neutral">حساب مسجل</span>}
+                            : <span className="v-badge neutral">لم يطلب</span>}
                           </div>
 
                           <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }} onClick={e => e.stopPropagation()}>
@@ -634,9 +618,6 @@ export default function AdminPage() {
                             ) : (
                               <button className="v-btn" style={{ padding: '6px 12px', color: 'var(--danger)' }} onClick={() => updateUser(s.id, s.status, true)}>حظر</button>
                             )}
-                            <button className="v-btn" style={{ padding: '6px', background: 'rgba(248,113,113,0.1)', color: 'var(--danger)', borderColor: 'rgba(248,113,113,0.2)' }} onClick={() => { setConfirmDelete({id: s.id, name: s.display_name}); }} title="مسح نهائي">
-                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                            </button>
                           </div>
                         </div>
                       ))}
@@ -679,10 +660,10 @@ export default function AdminPage() {
                         <div style={{ padding: '60px', textAlign: 'center' }}>جاري التحميل...</div>
                       ) : accessCodes.length === 0 ? (
                         <div style={{ padding: '60px', textAlign: 'center', color: 'var(--text-muted)' }}>لا توجد أكواد</div>
-                      ) : accessCodes.map((c, i) => {
+                      ) : accessCodes.map(c => {
                         const isStud = c.code_type === 'student';
                         return (
-                          <div key={c.id} className="v-table-row" style={{ gridTemplateColumns: '1.5fr 2fr 1.5fr 1fr 1fr 1.5fr', animationDelay: `${0.1 + (i * 0.05)}s` }}>
+                          <div key={c.id} className="v-table-row" style={{ gridTemplateColumns: '1.5fr 2fr 1.5fr 1fr 1fr 1.5fr' }}>
                             <div><span className="v-pill">{c.device_code}</span></div>
                             <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column' }}>
                               {c.user ? (
@@ -799,3 +780,7 @@ export default function AdminPage() {
     </>
   );
 }
+`;
+
+fs.writeFileSync(path.join(__dirname, 'admin.tsx'), newAdminContent);
+console.log('Done writing admin.tsx');
